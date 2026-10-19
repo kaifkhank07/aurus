@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Values below are measured from the Figma file "Aurus Website New"
+   (Page 1 › Homepage, node 2:2). The frame is 1920 x 10661 with a 1683px
+   content column at x=121, so the side gutter is 120px = 6.25vw of 1920.
+   Type sizes are expressed as vw of 1920 and capped at the design value, so
+   the layout is pixel-exact at 1920 and scales proportionally below it.
+--------------------------------------------------------------------------- */
+
+@theme {
+  --breakpoint-3xl: 1800px;
+
+  /* Palette */
+  --color-cream: #f5f3ee;
+  /* Homepage frame fill */
+  --color-cream-deep: #e8e4db;
+  /* resident-voice card */
+  --color-ink: #000000;
+  /* Figma uses pure black for text */
+  --color-paper: #ffffff;
+  --color-muted: #77736b;
+  /* body / secondary copy */
+  --color-line: rgba(0, 0, 0, 0.14);
+  --color-line-dark: rgba(255, 255, 255, 0.14);
+
+  /* Families */
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-instrument), ui-serif, Georgia, serif;
+  --font-mono: var(--font-space-mono), ui-monospace, SFMono-Regular, monospace;
+
+  --radius-panel: 57px;
+  /* Figma: Rectangle 2 / Rectangle 11 */
+  --radius-card: 20px;
+  /* Figma: accordion rows, photos */
+  --radius-media: 40px;
+  /* Figma: Group 27 image pair */
+  --radius-wide: 30px;
+  /* Figma: image 6, locations */
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* Lenis smooth scroll adjustments */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
