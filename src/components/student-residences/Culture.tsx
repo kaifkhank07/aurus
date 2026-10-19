@@ -58,7 +58,7 @@ export function Culture() {
   return (
     <section
       id="culture"
-      ref={sectionRef}
+      // ref={sectionRef}
       className="w-full min-h-screen py-8 sm:py-12 lg:py-16 text-ink overflow-hidden bg-cream flex flex-col justify-center"
     >
       <Container>
@@ -88,7 +88,9 @@ export function Culture() {
       </Container>
 
       {/* HORIZONTAL SCROLL TRACK */}
-      <div className="w-full overflow-hidden mt-5 sm:mt-7 lg:mt-[min(3vw,44px)]">
+      <section
+        ref={sectionRef}
+        className="w-full overflow-hidden pt-5 sm:pt-7 lg:pt-[min(3vw,44px)]">
         <div
           ref={trackRef}
           className="flex gap-4 sm:gap-6 lg:gap-8 w-max pl-5 sm:pl-8 lg:pl-[6.25vw] pr-5 sm:pr-8 lg:pr-[6.25vw] will-change-transform"
@@ -102,7 +104,7 @@ export function Culture() {
             </div>
           ))}
         </div>
-      </div>
+      </section>
     </section>
   );
 }

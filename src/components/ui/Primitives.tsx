@@ -211,10 +211,11 @@ export function Panel({
   className?: string;
   innerClassName?: string;
 }) {
+  const hasOverflow = /(^|\s)overflow-(hidden|auto|scroll|visible|clip)(\s|$)/.test(className);
   return (
     <div className="mx-auto w-full max-w-[1920px] lg:px-[min(1.3021vw,25px)]">
       {/* <div className={`rounded-panel overflow-hidden ${className}`}> */}
-      <div className={`overflow-hidden ${className}`}>
+      <div className={`${hasOverflow ? "" : "overflow-hidden"} ${className}`}>
         {/* Figma: 25px panel inset + 87px padding = the 112px text origin */}
         <div className={`px-6 sm:px-10 lg:px-[min(4.5313vw,87px)] ${innerClassName}`}>{children}</div>
       </div>

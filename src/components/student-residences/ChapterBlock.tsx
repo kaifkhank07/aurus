@@ -24,7 +24,7 @@ export function ChapterBlock() {
             <Heading
               title1={chapter.titleTop + " " + chapter.titleBottom}
               title2={chapter.titleAccent}
-              className="uppercase max-w-3xl"
+              className="uppercase max-w-3xl 3xl:max-w-5xl"
             />
 
             <div className="lg:pt-2">

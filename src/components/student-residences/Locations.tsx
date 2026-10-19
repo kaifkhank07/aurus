@@ -84,7 +84,7 @@ export function Locations() {
           <Heading
             title1={locations.titleTop + " " + locations.titleBottom}
             title2={locations.titleAccent}
-            className="uppercase max-w-md"
+            className="uppercase max-w-md 3xl:max-w-5xl"
           />
         </div>
 

@@ -53,7 +53,7 @@ export function RealLife() {
             <Heading
               title1={realLife.titleTop}
               title2={realLife.titleAccent}
-              className="uppercase max-w-sm"
+              className="uppercase max-w-sm 3xl:max-w-2xl"
             />
 
             {/* Figma: 456px wide, Manrope 19px */}
