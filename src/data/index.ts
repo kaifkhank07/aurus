@@ -11,3 +11,8 @@ export * from "./testimonial";
 export * from "./journey";
 export * from "./footer";
 export * from "./landing";
+export * from "./exploreResidences";
+export * from "./upcomingChapters";
+export * from "./lifeAtAurus";
+
+

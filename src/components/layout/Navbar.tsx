@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { nav } from "@/data/nav";
-import { ArrowRight } from "@/components/ui/Primitives";
+import { ArrowRight, Container } from "@/components/ui/Primitives";
 import Image from "next/image";
+
 
 export interface NavbarProps {
   variant?: "auto" | "light" | "dark";
@@ -52,8 +53,9 @@ export function Navbar({ variant = "auto", className = "" }: NavbarProps) {
 
   return (
     <header className={`${headerClasses} ${className}`}>
-      <div className="relative z-50 mx-auto flex w-full max-w-[1920px] items-center justify-between px-5 py-3.5 sm:px-8 sm:py-4 lg:px-[4.5833vw] lg:py-5">
+      <Container className="relative z-50 flex items-center justify-between py-3.5 sm:py-4 lg:py-5">
         {/* Brand Logo */}
+
         <Link href="/" aria-label="Aurus home" className="flex items-center shrink-0">
           <Image
             src="/images/logo.png"
@@ -133,9 +135,10 @@ export function Navbar({ variant = "auto", className = "" }: NavbarProps) {
             </span>
           </button>
         </div>
-      </div>
+      </Container>
 
       {/* Dimmed backdrop overlay when open (below header bar) */}
+
       <div
         aria-hidden="true"
         onClick={() => setOpen(false)}
@@ -156,9 +159,10 @@ export function Navbar({ variant = "auto", className = "" }: NavbarProps) {
       >
         <div className="overflow-hidden min-h-0">
           <nav
-            className="flex flex-col gap-4 px-6 py-6 sm:px-8 sm:py-7 bg-cream text-ink"
+            className="flex flex-col gap-4 px-5 py-6 sm:px-8 sm:py-7 bg-cream text-ink"
             aria-label="Primary mobile"
           >
+
             {nav.links.map((link) => (
               <Link
                 key={link.href}
