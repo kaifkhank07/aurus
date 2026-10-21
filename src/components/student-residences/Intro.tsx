@@ -1,6 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import { intro } from "@/data/intro";
-import { Container, Eyebrow } from "@/components/ui/Primitives";
+import { landing } from "@/data/landing";
+import { Container, Eyebrow, ArrowRight } from "@/components/ui/Primitives";
 import NumberRoller from "../animation/NumberRoller";
 import ViewReveal from "../animation/ViewReveal";
 
@@ -61,6 +63,61 @@ export function Intro() {
               </div>
             ))}
           </dl>
+
+          {/* Residence Image Cards below stats */}
+          <ViewReveal className="">
+            <div className="mt-10 sm:mt-14 lg:mt-[min(4vw,70px)] grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 lg:gap-[min(1.5vw,28px)]">
+              {landing.brands.map((brand) => (
+                <Link
+                  key={brand.titleTop}
+                  href={brand.cta.href}
+                  className="group relative isolate flex flex-col justify-between overflow-hidden rounded-[24px] sm:rounded-[34px] lg:rounded-[40px] p-5 sm:p-8 lg:p-[min(2.5vw,48px)] h-[46vh] min-h-[260px] max-h-[46vh] sm:h-[50vh] sm:max-h-[50vh] lg:h-auto lg:min-h-[580px] lg:max-h-none text-white transition-shadow duration-300 hover:shadow-2xl"
+                >
+                  <Image
+                    src={brand.image}
+                    alt={brand.alt}
+                    fill
+                    sizes="(min-width: 1024px) 50vw, 100vw"
+                    className="absolute inset-0 -z-20 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+
+                  {/* Dark gradient overlay for text legibility */}
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 -z-10 bg-gradient-to-t from-black/85 via-black/40 to-black/25"
+                  />
+
+                  {/* Bottom Content Area */}
+                  <div className="mt-auto">
+                    <p className="font-mono uppercase text-[10px] sm:text-[12px] tracking-[2px] text-white/80">
+                      {brand.eyebrow.replace("·", "//").toUpperCase()}
+                    </p>
+
+                    <h3 className="font-sans font-light text-[24px] xs:text-[27px] sm:text-[34px] lg:text-[clamp(2rem,2.6vw,50px)] leading-[1.08] tracking-[-0.04em] text-white mt-1.5 sm:mt-3">
+                      {brand.titleTop}
+                      <br />
+                      <span className="font-display italic font-normal tracking-[-0.03em] normal-case">
+                        {brand.titleAccent}
+                      </span>
+                    </h3>
+
+                    <p className="font-sans font-normal text-[11.5px] xs:text-[12px] sm:text-[14px] lg:text-[15px] leading-[1.35] sm:leading-[1.45] tracking-[-0.02em] text-white/85 mt-1.5 sm:mt-3 max-w-[480px] line-clamp-2 sm:line-clamp-none">
+                      {brand.body}
+                    </p>
+
+                    <p className="font-mono text-[9.5px] xs:text-[10.5px] sm:text-[12px] lg:text-[13px] tracking-[0.5px] text-white/70 mt-1 sm:mt-2 truncate sm:overflow-visible">
+                      {brand.cities}
+                    </p>
+
+                    <span className="font-mono uppercase text-[10px] sm:text-[12px] tracking-[2px] inline-flex items-center gap-2 rounded-full bg-white text-ink px-4 py-2 sm:px-6 sm:py-3 mt-3 sm:mt-5 transition-all duration-300 group-hover:bg-ink group-hover:text-paper">
+                      {brand.cta.label}
+                      <ArrowRight />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </ViewReveal>
         </div>
       </Container>
     </section>
