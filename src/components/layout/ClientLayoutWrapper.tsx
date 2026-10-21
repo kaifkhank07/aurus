@@ -23,7 +23,9 @@ export default function ClientLayoutWrapper({
 
   // Avoid hydration mismatch: default to isHomeRoute until client hydrates
   const isHomeRoute = !mounted || selectedResidence === "choose-residence";
-  const isNotHomepage = pathname !== "/";
+  // const isNotHomepage = pathname !== "/";
+  const isNotHomepage = pathname !== "/" && pathname !== "/student-residences" && pathname !== "/managed-residences";
+  const isNotOnlyHomepage = pathname !== "/";
 
   // if (isHomeRoute) {
   //   return <>{children}</>;
@@ -34,7 +36,8 @@ export default function ClientLayoutWrapper({
       {isNotHomepage && <Navbar />}
       <SmoothScroll />
       {children}
-      <Footer />
+      {/* <Footer /> */}
+      {isNotOnlyHomepage && <Footer />}
     </>
   );
 }

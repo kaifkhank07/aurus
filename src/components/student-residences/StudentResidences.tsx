@@ -9,7 +9,6 @@ import { Locations } from "./Locations";
 import { RealLife } from "./RealLife";
 import { Residences } from "./Residences";
 
-
 export default function StudentResidences() {
     return (
         <main>

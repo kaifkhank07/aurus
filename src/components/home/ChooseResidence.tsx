@@ -13,23 +13,23 @@ interface BrandCardProps {
   brand: (typeof landing.brands)[number];
   cardRef?: React.Ref<HTMLAnchorElement>;
   imageRef?: React.Ref<HTMLImageElement>;
-  onClick: () => void;
+  // onClick: () => void;
 }
 
-function BrandCard({ brand, cardRef, imageRef, onClick }: BrandCardProps) {
+function BrandCard({ brand, cardRef, imageRef }: BrandCardProps) {
   return (
-    // <Link
-    //   ref={cardRef}
-    //   href={brand.cta.href}
+    // <button
+    //   ref={cardRef as React.Ref<HTMLButtonElement>}
+    //   type="button"
+    //   onClick={onClick}
     //   aria-label={`${brand.titleTop} ${brand.titleAccent} — enter`}
-    //   className="group relative isolate flex min-h-0 flex-col overflow-hidden rounded-[22px] px-[31px] pt-[31px] pb-[31px] text-white lg:h-full lg:rounded-[min(2.9688vw,57px)] lg:px-[min(3.1771vw,61px)] lg:pt-[min(2.5vw,48px)] lg:pb-[min(2.2396vw,43px)]"
+    //   className="group relative isolate flex min-h-0 w-full cursor-pointer flex-col overflow-hidden rounded-[22px] px-[31px] pt-[31px] pb-[31px] text-left text-white lg:h-full lg:rounded-[min(2.9688vw,57px)] lg:px-[min(3.1771vw,61px)] lg:pt-[min(2.5vw,48px)] lg:pb-[min(2.2396vw,43px)]"
     // >
-    <button
-      ref={cardRef as React.Ref<HTMLButtonElement>}
-      type="button"
-      onClick={onClick}
+    <Link
+      ref={cardRef}
+      href={brand.cta.href}
       aria-label={`${brand.titleTop} ${brand.titleAccent} — enter`}
-      className="group relative isolate flex min-h-0 w-full cursor-pointer flex-col overflow-hidden rounded-[22px] px-[31px] pt-[31px] pb-[31px] text-left text-white lg:h-full lg:rounded-[min(2.9688vw,57px)] lg:px-[min(3.1771vw,61px)] lg:pt-[min(2.5vw,48px)] lg:pb-[min(2.2396vw,43px)]"
+      className="group relative isolate flex min-h-0 flex-col overflow-hidden rounded-[22px] px-[31px] pt-[31px] pb-[31px] text-white lg:h-full lg:rounded-[min(2.9688vw,57px)] lg:px-[min(3.1771vw,61px)] lg:pt-[min(2.5vw,48px)] lg:pb-[min(2.2396vw,43px)]"
     >
       <Figure
         imageRef={imageRef}
@@ -72,8 +72,8 @@ function BrandCard({ brand, cardRef, imageRef, onClick }: BrandCardProps) {
           <ArrowRight />
         </span>
       </div>
-      {/* </Link> */}
-    </button>
+    </Link>
+    // </button>
   );
 }
 
@@ -191,11 +191,11 @@ export function ChooseResidence() {
             brand={brand}
             cardRef={index === 0 ? leftCardRef : rightCardRef}
             imageRef={index === 0 ? leftImageRef : rightImageRef}
-            onClick={() => {
-              setSelectedResidence(
-                index === 0 ? "student-residences" : "managed-residences"
-              );
-            }}
+            // onClick={() => {
+            //   setSelectedResidence(
+            //     index === 0 ? "student-residences" : "managed-residences"
+            //   );
+            // }}
           />
         ))}
       </div>
