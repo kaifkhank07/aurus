@@ -216,9 +216,9 @@ export function Amenities() {
           {/* IMAGE CARD: Sticky on mobile, tablet & desktop */}
           <div
             ref={stickyRef}
-            className="order-1 lg:order-1 sticky top-2 sm:top-4 lg:top-16 xl:lg:top-18 z-20 w-full self-start bg-ink/95 backdrop-blur-md pt-2 pb-3 lg:bg-transparent lg:backdrop-blur-none lg:py-0"
+            className="order-1 lg:order-1 sticky top-0 lg:top-16 xl:lg:top-18 z-20 w-full self-start bg-ink pt-2 pb-3 sm:pt-3 sm:pb-4 lg:bg-transparent lg:backdrop-blur-none lg:py-0"
           >
-            <div className="relative w-full h-[220px] xs:h-[250px] sm:h-[300px] md:h-[360px] lg:h-[540px] xl:h-[580px] rounded-[18px] sm:rounded-[24px] lg:rounded-[28px] overflow-hidden bg-[#121212] border border-white/10 shadow-2xl">
+            <div className="relative w-full h-[220px] xs:h-[250px] sm:h-[300px] md:h-[360px] lg:h-[540px] xl:h-[580px] rounded-[18px] sm:rounded-[24px] lg:rounded-[28px] overflow-hidden bg-[#121212] border border-white/10 shadow-2xl isolate [transform:translateZ(0)]">
               {/* Stacked Images */}
               {amenities.items.map((item, i) => (
                 <div
@@ -227,7 +227,7 @@ export function Amenities() {
                     imageRefs.current[i] = el;
                   }}
                   aria-hidden={active !== i}
-                  className={`absolute inset-0 will-change-transform ${
+                  className={`absolute inset-0 rounded-[inherit] overflow-hidden will-change-transform ${
                     i === 0 ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
                   }`}
                 >
@@ -237,13 +237,13 @@ export function Amenities() {
                     fill
                     sizes="(min-width: 1024px) 45vw, 100vw"
                     priority={i <= 1}
-                    className="object-cover"
+                    className="object-cover rounded-[inherit]"
                   />
                 </div>
               ))}
 
               {/* Dark Gradient Overlay for text contrast */}
-              <div className="absolute inset-x-0 bottom-0 h-32 sm:h-44 lg:h-52 bg-gradient-to-t from-black/90 via-black/45 to-transparent pointer-events-none z-20" />
+              <div className="absolute inset-x-0 bottom-0 h-32 sm:h-44 lg:h-52 bg-gradient-to-t from-black/90 via-black/45 to-transparent pointer-events-none z-20 rounded-b-[inherit]" />
 
               {/* Bottom Card Information: Active Title on left, Counter on right */}
               <div className="absolute inset-x-0 bottom-0 z-30 p-4 sm:p-6 lg:p-8 flex items-end justify-between gap-3 sm:gap-4 pointer-events-none">

@@ -32,6 +32,11 @@ export function Culture() {
         return amount > 0 ? -amount : 0;
       };
 
+      const getScrollDistance = () => {
+        const distance = track.scrollWidth - window.innerWidth;
+        return Math.max(0, distance);
+      };
+
       gsap.to(track, {
         x: getScrollAmount,
         ease: "none",
@@ -41,11 +46,7 @@ export function Culture() {
           pin: true,
           pinSpacing: true,
           scrub: 1,
-          end: () => {
-            const scrollDistance = track.scrollWidth - window.innerWidth;
-            // Ensure enough scroll distance so all cards are comfortably viewed before unpinning
-            return `+=${Math.max(scrollDistance + 350, window.innerHeight * 1.5)}`;
-          },
+          end: () => `+=${getScrollDistance()}`,
           invalidateOnRefresh: true,
           anticipatePin: 1,
         },
@@ -58,66 +59,66 @@ export function Culture() {
   return (
     <section
       id="culture"
-      // ref={sectionRef}
-      className="w-full min-h-screen py-8 sm:py-12 lg:py-16 text-ink overflow-hidden bg-cream flex flex-col justify-center"
+      ref={sectionRef}
+      className="relative w-full h-[100svh] min-h-[100svh] py-4 sm:py-6 lg:py-6 text-ink overflow-hidden bg-cream flex flex-col justify-between"
     >
-      <Container>
-        <Eyebrow
-          right={
-            <Link
-              href={culture.handleLink.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] inline-flex shrink-0 items-center gap-1.5 text-ink transition-colors hover:text-muted"
-            >
-              {culture.handleLink.label}
-              <ArrowRight />
-            </Link>
-          }
-        >
-          {culture.eyebrow}
-        </Eyebrow>
+      <div className="shrink-0 w-full">
+        <Container>
+          <Eyebrow
+            right={
+              <Link
+                href={culture.handleLink.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] inline-flex shrink-0 items-center gap-1.5 text-ink transition-colors hover:text-muted"
+              >
+                {culture.handleLink.label}
+                <ArrowRight />
+              </Link>
+            }
+          >
+            {culture.eyebrow}
+          </Eyebrow>
 
-        <div className="mt-4 sm:mt-6 lg:mt-[min(2.4vw,46px)]">
-          <Heading
-            title1={culture.titleTop}
-            title2={culture.titleAccent}
-            className="uppercase"
-          />
-        </div>
-      </Container>
+          <div className="mt-2.5 sm:mt-3 lg:mt-4">
+            <Heading
+              title1={culture.titleTop}
+              title2={culture.titleAccent}
+              className="uppercase"
+            />
+          </div>
+        </Container>
+      </div>
 
       {/* HORIZONTAL SCROLL TRACK */}
-      <section
-        ref={sectionRef}
-        className="w-full overflow-hidden pt-5 sm:pt-7 lg:pt-[min(3vw,44px)]">
+      <div className="w-full flex-1 min-h-0 flex items-center overflow-hidden py-2 sm:py-3">
         <div
           ref={trackRef}
-          className="flex gap-4 sm:gap-6 lg:gap-8 w-max pl-5 sm:pl-8 lg:pl-[6.25vw] pr-5 sm:pr-8 lg:pr-[6.25vw] will-change-transform"
+          className="flex items-stretch gap-4 sm:gap-6 lg:gap-8 w-max pl-5 sm:pl-8 lg:pl-[6.25vw] pr-5 sm:pr-8 lg:pr-[6.25vw] will-change-transform"
         >
           {culture.posts.map((item, index) => (
             <div
               key={index}
-              className="w-[260px] xs:w-[290px] sm:w-[340px] md:w-[380px] lg:w-[420px] shrink-0"
+              className="w-[260px] xs:w-[280px] sm:w-[320px] md:w-[350px] lg:w-[clamp(280px,46vh,380px)] xl:w-[clamp(300px,48vh,420px)] 2xl:w-[clamp(320px,52vh,420px)] shrink-0"
             >
               <CultureCard item={item} />
             </div>
           ))}
         </div>
-      </section>
+      </div>
     </section>
   );
 }
 
 function CultureCard({ item }: { item: (typeof culture.posts)[number] }) {
   return (
-    <article className="relative h-full rounded-[14px] sm:rounded-[20px] border border-line bg-white p-2.5 sm:p-4 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col justify-between">
-      <div className="relative overflow-hidden rounded-[8px] sm:rounded-[12px]">
+    <article className="relative h-full rounded-[14px] sm:rounded-[20px] border border-line bg-white p-2.5 sm:p-3.5 lg:p-4 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col justify-between">
+      <div className="relative overflow-hidden rounded-[8px] sm:rounded-[12px] w-full shrink-0">
         <Figure
           src={item.image}
           alt={item.alt}
           sizes="(min-width: 1024px) 25vw, (min-width: 640px) 44vw, 76vw"
-          className="aspect-[4/5] w-full rounded-[8px] sm:rounded-[12px] object-cover transition-transform duration-500 hover:scale-105"
+          className="aspect-[4/5] w-full max-h-[50vh] rounded-[8px] sm:rounded-[12px] object-cover transition-transform duration-500 hover:scale-105"
         />
 
         {item.isVideo && (
@@ -132,7 +133,7 @@ function CultureCard({ item }: { item: (typeof culture.posts)[number] }) {
         )}
       </div>
 
-      <div className="px-0.5 pb-1 pt-2 sm:pt-4 flex flex-col flex-1 justify-between">
+      <div className="px-0.5 pb-0.5 pt-2 sm:pt-3 lg:pt-3.5 flex flex-col flex-1 justify-between min-h-0">
         <div>
           <div className="flex items-center gap-3 sm:gap-4 text-ink">
             <Metric label="likes" value={item.likes} />
@@ -150,13 +151,13 @@ function CultureCard({ item }: { item: (typeof culture.posts)[number] }) {
             </svg>
           </div>
 
-          <p className="font-sans font-normal text-[12px] sm:text-[14px] leading-[1.4] tracking-[-0.03em] mt-2 sm:mt-3 whitespace-pre-line text-ink line-clamp-2 sm:line-clamp-3">
+          <p className="font-sans font-normal text-[11px] xs:text-[12px] sm:text-[13px] lg:text-[14px] leading-[1.35] sm:leading-[1.4] tracking-[-0.03em] mt-1.5 sm:mt-2.5 whitespace-pre-line text-ink line-clamp-2">
             <span className="font-semibold text-ink">@{item.handle}</span>{" "}
             {item.caption}
           </p>
         </div>
 
-        <p className="font-mono uppercase text-[10px] sm:text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] mt-2 sm:mt-3 text-muted">
+        <p className="font-mono uppercase text-[9px] xs:text-[10px] sm:text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] mt-1.5 sm:mt-2 text-muted">
           {item.timeAgo}
         </p>
       </div>
