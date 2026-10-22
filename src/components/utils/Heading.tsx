@@ -38,7 +38,7 @@ export function Heading({
   start = "top 85%",
   once = true,
   scrollTrigger = true,
-  as: Component = "h1",
+  as: Component = "h3",
 }: NewHeadingProps) {
   const containerRef = useRef<HTMLElement>(null);
 
@@ -101,7 +101,10 @@ export function Heading({
     >
       {title1 && (
         <span
-          className={`font-sans font-light text-[clamp(2.125rem,5.2083vw,100px)] leading-[0.9] tracking-[-0.04em] ${title1ClassName}`}
+          // className={`${title1ClassName || "text-[clamp(2.125rem,5.2083vw,100px)]"
+          // className={`${title1ClassName || "text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[100px]"
+          className={`${title1ClassName || "text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 3xl:text-[100px]"
+            } font-sans font-light leading-[0.9]`}
         >
           {title1}{" "}
         </span>
@@ -109,7 +112,10 @@ export function Heading({
 
       {title2 && (
         <span
-          className={`font-display italic font-normal text-[clamp(2.125rem,5.2083vw,100px)] tracking-[-0.04em] normal-case ${title2ClassName}`}
+          // className={`${title2ClassName || "text-[clamp(2.125rem,5.2083vw,100px)]"
+          // className={`${title2ClassName || "text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[100px]"
+          className={`${title2ClassName || "text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 3xl:text-[100px]"
+            } font-display italic font-normal normal-case`}
         >
           {title2.replace(/^\*/, "").replace(/\*$/, "")}
         </span>

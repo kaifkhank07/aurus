@@ -13,12 +13,12 @@ export const upcomingChapters = {
     {
       chapter: "CHAPTER VI",
       location: "GREATER NOIDA",
-      detail: "Near Shiv Nadar & Bennett University · Launching Q3 2026",
+      detail: "Near Bennett & Sharda Universities • Launching Q1 2027",
     },
     {
       chapter: "CHAPTER VII",
       location: "NAVI MUMBAI",
-      detail: "Near NMIMS Navi Mumbai & DY Patil · Launching Q4 2026",
+      detail: "Near DY Patil & Seawoods Hub • Launching Q2 2027",
     },
   ] satisfies UpcomingChapterItem[],
 };

@@ -14,7 +14,7 @@ export const lifeAtAurus = {
   eyebrow: "LIFE & AURUS",
   titleTop: "NOT JUST WHERE YOU",
   titleAccent: "Stay.",
-  body: "A Chapter is only half the story. Study pods that stay silent at 2am, four meals you didn't have to think about, a terrace for yoga and a courtyard for doing nothing at all — the same six things in every residence.",
+  body: "A Chapter is only half the story. Study pods that stay silent at 2am, four meals you didn't have to think about, a terrace for yoga and a courtyard for doing nothing at all - the same six things, in every residence.",
   cta: {
     label: "EXPLORE LIFE @ AURUS",
     href: "/life-at-aurus",

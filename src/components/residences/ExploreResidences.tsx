@@ -90,17 +90,17 @@ export function ExploreResidences() {
   }, [searchQuery, selectedCity, selectedGender, selectedOccupancy]);
 
   return (
-    <section className="pt-8 pb-16 sm:pt-12 sm:pb-20 lg:pt-[min(4.5vw,86px)] lg:pb-[min(8vw,150px)]">
-      <Container>
+    <section className="py-8 sm:py-12 lg:py-16">
+      <Container className="">
         {/* Heading & Subtitle */}
         <ViewReveal duration={800}>
-          <div>
+          <div className="">
             <Heading
               title1={exploreResidences.titleTop}
               title2={exploreResidences.titleAccent}
-              className="uppercase"
+              className="uppercase max-w-[36ch] sm:max-w-none"
             />
-            <p className="mt-4 sm:mt-5 lg:mt-6 max-w-[56ch] font-sans font-normal text-[15px] sm:text-[17px] lg:text-[19px] leading-[1.4] tracking-[-0.03em] text-muted">
+            <p className="mt-4 sm:mt-5 lg:mt-6 max-w-[56ch] lg:max-w-[43ch] font-sans font-normal text-[15px] sm:text-[17px] lg:text-[19px] leading-[1.4] tracking-[-0.03em] text-muted">
               {exploreResidences.body}
             </p>
           </div>
@@ -108,7 +108,7 @@ export function ExploreResidences() {
 
         {/* Filter Bar */}
         <ViewReveal duration={800} startDelay={100}>
-          <div className="mt-8 sm:mt-10 lg:mt-12 rounded-[20px] sm:rounded-[24px] border border-ink/10 bg-[#faf8f4] p-4 sm:p-5 lg:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+          <div className="mt-8 sm:mt-10 lg:mt-12 rounded-[20px] border border-ink/10 bg-[#FAF8F5] p-4 sm:p-5 lg:p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1.3fr_1fr_auto] gap-3.5 sm:gap-4 items-end">
               {/* Field 1: Search */}
               <div className="w-full">
@@ -124,7 +124,7 @@ export function ExploreResidences() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by locality, college (NMIMS, Amity, Symbiosis) or chapter..."
-                  className="w-full h-[46px] rounded-xl border border-ink/15 bg-white/75 px-4 text-[13px] text-ink placeholder:text-[#88847c]/70 placeholder:text-[11.5px] sm:placeholder:text-[12.5px] outline-none transition-all duration-200 focus:border-ink/50 focus:bg-white"
+                  className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 text-[13px] text-ink placeholder:text-[#88847c]/70 placeholder:text-[11.5px] sm:placeholder:text-[12.5px] outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
                 />
               </div>
 
@@ -141,7 +141,7 @@ export function ExploreResidences() {
                     id="filter-city"
                     value={selectedCity}
                     onChange={(e) => setSelectedCity(e.target.value)}
-                    className="w-full h-[46px] rounded-xl border border-ink/15 bg-white/75 px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-white"
+                    className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
                   >
                     {exploreResidences.cities.map((city) => (
                       <option key={city} value={city}>
@@ -166,7 +166,7 @@ export function ExploreResidences() {
                     id="filter-gender"
                     value={selectedGender}
                     onChange={(e) => setSelectedGender(e.target.value)}
-                    className="w-full h-[46px] rounded-xl border border-ink/15 bg-white/75 px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-white"
+                    className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
                   >
                     {exploreResidences.genderWings.map((wing) => (
                       <option key={wing} value={wing}>
@@ -191,7 +191,7 @@ export function ExploreResidences() {
                     id="filter-occupancy"
                     value={selectedOccupancy}
                     onChange={(e) => setSelectedOccupancy(e.target.value)}
-                    className="w-full h-[46px] rounded-xl border border-ink/15 bg-white/75 px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-white"
+                    className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
                   >
                     {exploreResidences.occupancies.map((occ) => (
                       <option key={occ} value={occ}>
@@ -204,7 +204,7 @@ export function ExploreResidences() {
               </div>
 
               {/* Action: Reset Filters */}
-              <div className="w-full lg:w-auto">
+              <div className="mt-1 md:mt-0 w-full lg:w-auto">
                 <button
                   type="button"
                   onClick={resetFilters}

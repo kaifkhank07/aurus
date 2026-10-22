@@ -14,7 +14,7 @@ export function ChapterBlock() {
           {/* Watermark: desktop only */}
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute -top-25 -right-6 -z-10 hidden select-none text-[16vw] leading-none tracking-[2px] font-semibold tracking-[-0.04em] text-ink/[0.06] uppercase lg:block"
+            className="pointer-events-none absolute -top-25 -right-6 -z-10 hidden select-none text-[15vw] leading-none tracking-[3px] font-semibold tracking-[-0.04em] text-ink/[0.06] uppercase lg:block"
           >
             {chapter.watermark}
           </span>
