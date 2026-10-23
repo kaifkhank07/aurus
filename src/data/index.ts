@@ -14,5 +14,5 @@ export * from "./landing";
 export * from "./exploreResidences";
 export * from "./upcomingChapters";
 export * from "./lifeAtAurus";
-
-
+export * from "./about";
+export * from "./lifePage";
