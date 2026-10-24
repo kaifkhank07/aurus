@@ -21,35 +21,6 @@ export function ArrowRight({ className = "" }: { className?: string }) {
   );
 }
 
-/** Mono eyebrow + hairline rule. Figma: Space Mono 14px / 25px / +2px. */
-// export function Eyebrow({
-//   children,
-//   rule = true,
-//   dark = false,
-//   right,
-// }: {
-//   children: React.ReactNode;
-//   rule?: boolean;
-//   dark?: boolean;
-//   right?: React.ReactNode;
-// }) {
-//   return (
-//     <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-//       <span className={`font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] whitespace-nowrap ${dark ? "text-white" : "text-ink"}`}>
-//         {children}
-//       </span>
-//       {rule && (
-//         <span
-//           aria-hidden="true"
-//           className={`h-px min-w-6 flex-1 ${dark ? "bg-line-dark" : "bg-line"}`}
-//         />
-//       )}
-//       {right}
-//     </div>
-//   );
-// }
-
-
 export function Eyebrow({
   children,
   rule = true,
@@ -79,7 +50,6 @@ export function Eyebrow({
     </div>
   );
 }
-
 
 export function PillButton({
   href,
@@ -183,10 +153,6 @@ export function Figure({
   );
 }
 
-/**
- * Page grid. Figma: 1920 frame, 1683 content column at x=121,
- * i.e. a 120px gutter = 6.25vw.
- */
 export function Container({
   children,
   className = "",
@@ -201,7 +167,6 @@ export function Container({
   );
 }
 
-/** Rounded panel that bleeds to a small page inset (hero, dark sections, footer). */
 export function Panel({
   children,
   className = "",

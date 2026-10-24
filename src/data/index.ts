@@ -16,3 +16,6 @@ export * from "./upcomingChapters";
 export * from "./lifeAtAurus";
 export * from "./about";
 export * from "./lifePage";
+export * from "./stories";
+export * from "./contact";
+export * from "./faq";
