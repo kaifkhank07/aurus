@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -43,3 +44,14 @@ next-env.d.ts
 
 # ignore
 ignore/*
+
+# Admin Panel & UI
+src/app/admin/
+src/components/admin/
+src/lib/admin-api.ts
+src/lib/admin-nav.ts
+src/store/
+ADMIN_FRONTEND_README.md
+ADMIN_BACKEND_README.md
+
+

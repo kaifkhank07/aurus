@@ -8,6 +8,7 @@ import { Navbar } from "./Navbar";
 
 function LayoutNav() {
   const pathname = usePathname();
+  if (pathname?.startsWith("/admin")) return null;
   const isNotHomepage =
     pathname !== "/" &&
     pathname !== "/student-residences" &&
@@ -19,10 +20,17 @@ function LayoutNav() {
 
 function LayoutFooter() {
   const pathname = usePathname();
+  if (pathname?.startsWith("/admin")) return null;
   const isNotOnlyHomepage = pathname !== "/";
 
   if (!isNotOnlyHomepage) return null;
   return <Footer />;
+}
+
+function LayoutScroll() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/admin")) return null;
+  return <SmoothScroll />;
 }
 
 export default function ClientLayoutWrapper({
@@ -36,7 +44,7 @@ export default function ClientLayoutWrapper({
         <LayoutNav />
       </Suspense>
       <Suspense fallback={null}>
-        <SmoothScroll />
+        <LayoutScroll />
       </Suspense>
       {children}
       <Suspense fallback={null}>

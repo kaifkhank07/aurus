@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../**/*.{js,ts,jsx,tsx}";
 
 /* ---------------------------------------------------------------------------
    Values below are measured from the Figma file "Aurus Website New"
