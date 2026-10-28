@@ -63,9 +63,9 @@ function BrandCard({ brand, cardRef, imageRef }: BrandCardProps) {
         <p className="mt-[33px] max-w-[280px] text-[12px] leading-[14px] lg:mt-[clamp(16px,2vh,36px)] lg:max-w-[min(28.4896vw,547px)] lg:text-[min(0.9896vw,19px)] lg:leading-[1.3158] opacity-90 font-light">
           {brand.body}
         </p>
-        <p className="mt-[33px] max-w-[280px] text-[12px] leading-[14px] lg:mt-[clamp(8px,1vh,14px)] lg:max-w-[min(28.4896vw,547px)] lg:text-[min(0.9896vw,19px)] lg:leading-[1.3158] opacity-90 font-light">
+        {/* <p className="mt-[33px] max-w-[280px] text-[12px] leading-[14px] lg:mt-[clamp(8px,1vh,14px)] lg:max-w-[min(28.4896vw,547px)] lg:text-[min(0.9896vw,19px)] lg:leading-[1.3158] opacity-90 font-light">
           {brand.cities}
-        </p>
+        </p> */}
 
         <span className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] mt-[33px] inline-flex h-[35px] w-[102px] items-center justify-center gap-2 rounded-full bg-paper text-ink transition-colors duration-300 group-hover:bg-ink group-hover:text-paper lg:mt-[clamp(16px,2.2vh,36px)] lg:h-[min(2.1875vw,42px)] lg:w-[min(6.6667vw,128px)]">
           {brand.cta.label}
@@ -191,24 +191,25 @@ export function ChooseResidence() {
             brand={brand}
             cardRef={index === 0 ? leftCardRef : rightCardRef}
             imageRef={index === 0 ? leftImageRef : rightImageRef}
-            // onClick={() => {
-            //   setSelectedResidence(
-            //     index === 0 ? "student-residences" : "managed-residences"
-            //   );
-            // }}
+          // onClick={() => {
+          //   setSelectedResidence(
+          //     index === 0 ? "student-residences" : "managed-residences"
+          //   );
+          // }}
           />
         ))}
       </div>
 
       {/* Bottom bar — responsive on all devices */}
-      <footer className="flex shrink-0 flex-col items-center justify-between gap-3 px-6 py-6 text-center sm:flex-row sm:gap-4 sm:px-8 sm:py-4 lg:h-[min(2.8125vw,54px)] lg:px-[min(1.8229vw,35px)] lg:py-0">
-        <Link href={footerBar.phone.href} className="font-mono font-normal uppercase text-[clamp(11px,0.6771vw,13px)] leading-[1] tracking-[2px] text-ink transition-opacity hover:opacity-60">
+      {/* <footer className="flex shrink-0 flex-col items-center justify-between gap-3 px-6 py-6 text-center sm:flex-row sm:gap-4 sm:px-8 sm:py-4 lg:h-[min(2.8125vw,54px)] lg:px-[min(1.8229vw,35px)] lg:py-0"> */}
+      <footer className="flex shrink-0 flex-col items-center justify-between gap-3 px-6 py-6 text-center sm:flex-row sm:gap-4 sm:px-8 sm:py-4 lg:h-[min(2.8125vw,20px)] lg:px-[min(1.8229vw,35px)] lg:py-0">
+        {/* <Link href={footerBar.phone.href} className="font-mono font-normal uppercase text-[clamp(11px,0.6771vw,13px)] leading-[1] tracking-[2px] text-ink transition-opacity hover:opacity-60">
           {footerBar.phone.label}
         </Link>
         <span className="font-mono font-normal uppercase text-[clamp(11px,0.6771vw,13px)] leading-[1] tracking-[2px] text-ink">{footerBar.legal}</span>
         <Link href={footerBar.email.href} className="font-mono font-normal uppercase text-[clamp(11px,0.6771vw,13px)] leading-[1] tracking-[2px] text-ink transition-opacity hover:opacity-60">
           {footerBar.email.label}
-        </Link>
+        </Link> */}
       </footer>
     </main>
   );

@@ -4,7 +4,8 @@ import { ViewReveal } from "../animation";
 
 export function Testimonial() {
   return (
-    <section className="pb-14 sm:pb-20 lg:pb-[min(12vw,230px)]">
+    // <section className="pb-14 sm:pb-20 lg:pb-[min(12vw,230px)]">
+    <section className="py-8 sm:py-12 lg:py-16">
       <Container>
         <ViewReveal duration={800} startDelay={100}>
           <figure className="mx-auto flex min-h-[auto] lg:min-h-[min(37.81vw,726px)] max-w-[1690px] flex-col items-center justify-center rounded-[28px] sm:rounded-[36px] lg:rounded-[var(--radius-panel)] bg-cream-deep px-5 sm:px-12 lg:px-16 py-10 sm:py-14 lg:py-[min(4.2vw,80px)] text-center">

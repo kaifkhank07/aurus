@@ -1,10 +1,10 @@
-// import AssetClass from "@/components/developers/AssetClass";
-// import DeveloperHero from "@/components/developers/DeveloperHero";
-// import ExecutionProcess from "@/components/developers/ExecutionProcess";
-// import IdealAssets from "@/components/developers/IdealAssets";
-// import PartnershipModels from "@/components/developers/PartnershipModels";
-// import StrategicPartner from "@/components/developers/StrategicPartner";
-// import SubmitProjectForm from "@/components/developers/SubmitProjectForm";
+import AssetClass from "@/components/developers/AssetClass";
+import DeveloperHero from "@/components/developers/DeveloperHero";
+import ExecutionProcess from "@/components/developers/ExecutionProcess";
+import IdealAssets from "@/components/developers/IdealAssets";
+import PartnershipModels from "@/components/developers/PartnershipModels";
+import StrategicPartner from "@/components/developers/StrategicPartner";
+import SubmitProjectForm from "@/components/developers/SubmitProjectForm";
 import { Metadata } from "next";
 
 
@@ -16,16 +16,14 @@ export const metadata: Metadata = {
 
 export default function DevelopersPage() {
   return (
-    <main className="min-h-screen flex flex-col justify-center items-center">
-      <h3 className="text-4xl font-bold">Developers Page</h3>
-      <p className="mt-2">Coming soon...</p>
-      {/* <DeveloperHero />
+    <main>
+      <DeveloperHero />
       <StrategicPartner />
       <AssetClass />
       <PartnershipModels />
       <IdealAssets />
       <ExecutionProcess />
-      <SubmitProjectForm /> */}
+      <SubmitProjectForm />
     </main>
   );
 }

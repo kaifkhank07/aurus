@@ -5,7 +5,7 @@ import { Heading } from "../utils/Heading";
 
 export function Journey() {
   return (
-    <section className="relative overflow-hidden pb-16 sm:pb-20 lg:pb-[min(6vw,115px)]">
+    <section className="relative overflow-hidden py-8 sm:py-12 lg:py-16 pb-16 sm:pb-20 lg:pb-[min(6vw,115px)]">
       <Container className="relative text-center">
         <p className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] text-muted lg:text-ink">{journey.eyebrow}</p>
         <Heading
@@ -49,11 +49,10 @@ export function Journey() {
               <Link
                 key={action.href}
                 href={action.href}
-                className={`font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] flex aspect-square w-[10.2vw] min-w-[120px] items-center justify-center rounded-full p-4 text-center leading-relaxed transition-colors duration-300 ${
-                  action.solid
-                    ? "bg-ink text-cream hover:bg-ink/85"
-                    : "border border-ink/35 text-ink hover:bg-ink hover:text-cream"
-                }`}
+                className={`font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] flex aspect-square w-[10.2vw] min-w-[120px] items-center justify-center rounded-full p-4 text-center leading-relaxed transition-colors duration-300 ${action.solid
+                  ? "bg-ink text-cream hover:bg-ink/85"
+                  : "border border-ink/35 text-ink hover:bg-ink hover:text-cream"
+                  }`}
               >
                 <span className="inline-flex items-center gap-1 px-3">
                   {action.label}
