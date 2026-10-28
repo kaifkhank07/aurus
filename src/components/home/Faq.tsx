@@ -21,7 +21,7 @@ export default function Faq() {
     };
 
     return (
-        <section className="py-8 sm:py-12 lg:py-16 border">
+        <section className="py-8 sm:py-12 lg:py-16">
             <Container>
                 {/* Section Heading & Subtitle */}
                 <div>
@@ -36,7 +36,7 @@ export default function Faq() {
 
                 {/* Main FAQ Layout: Left Category Nav & Right Questions */}
                 <ViewReveal duration={800} startDelay={100}>
-                    <div className="mt-8 sm:mt-10 lg:mt-12 space-y-10 sm:space-y-12 px-6 sm:px-8 lg:px-16 border">
+                    <div className="mt-8 sm:mt-10 lg:mt-12 space-y-10 sm:space-y-12 px-6 sm:px-8 lg:px-16">
                         {filteredData.map((cat, catIdx) => (
                             <div
                                 key={cat.id}
