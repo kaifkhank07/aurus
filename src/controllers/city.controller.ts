@@ -23,6 +23,7 @@ import {
 import { SafeCity, PaginatedCitiesResult } from "@/types/city.types";
 import { createLogger } from "@/lib/logger";
 import { safeDeleteS3File, uploadS3File, parseRequestBody } from "@/lib/s3";
+import { getMediaUrl } from "@/lib/media";
 
 const logger = createLogger("CityController");
 
@@ -33,9 +34,9 @@ function formatSafeCity(doc: ICityDocument): SafeCity {
     state: doc.state,
     city: doc.city,
     slug: doc.slug,
-    image: doc.image
+    image: doc.image && doc.image.publickey
       ? {
-          id: doc.image.id,
+          url: doc.image.url || getMediaUrl(doc.image.publickey) || "",
           publickey: doc.image.publickey,
         }
       : undefined,

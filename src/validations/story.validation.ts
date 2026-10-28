@@ -36,7 +36,7 @@ export const createStorySchema = z
   })
   .strict()
   .superRefine((data, ctx) => {
-    if (data.isFeatured && (!data.image || !data.image.id || !data.image.publickey)) {
+    if (data.isFeatured && (!data.image || !data.image.publickey)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "An image is required for featured stories.",

@@ -16,7 +16,7 @@ export interface ICityDocument extends Document {
 
 const CityImageSchema = new Schema<IFileOption>(
   {
-    id: { type: String, required: [true, "Image ID is required"], trim: true },
+    url: { type: String, required: [true, "Image URL is required"], trim: true },
     publickey: { type: String, required: [true, "Image publickey is required"], trim: true },
   },
   { _id: false }

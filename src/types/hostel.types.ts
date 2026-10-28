@@ -75,14 +75,14 @@ export interface UpdateHostelInput {
   isActive?: boolean;
   frontImage?: IFileOption;
   galleryImages?: IFileOption[];
-  firstImage?: IFileOption;
-  secondImage?: IFileOption;
+  firstImage?: IFileOption | null;
+  secondImage?: IFileOption | null;
   rent?: number;
   rentFrequency?: RentFrequency;
   amenities?: string[];
   description?: string;
   location?: Partial<IHostelLocation>;
-  brochure?: IFileOption;
+  brochure?: IFileOption | null;
   metadata?: ISeoMetadata;
 }
 

@@ -15,7 +15,7 @@ export interface IBlogDocument extends Document {
 
 const BlogImageSchema = new Schema<IFileOption>(
   {
-    id: { type: String, required: [true, "Image ID is required"], trim: true },
+    url: { type: String, required: [true, "Image URL is required"], trim: true },
     publickey: { type: String, required: [true, "Image publickey is required"], trim: true },
   },
   { _id: false }
@@ -77,6 +77,10 @@ const BlogSchema = new Schema<IBlogDocument>(
 
 // Indexes
 BlogSchema.index({ createdAt: -1 });
+
+if (process.env.NODE_ENV !== "production" && mongoose.models.Blog) {
+  mongoose.deleteModel("Blog");
+}
 
 export const Blog: Model<IBlogDocument> =
   (mongoose.models.Blog as Model<IBlogDocument>) ||

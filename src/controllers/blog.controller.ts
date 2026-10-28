@@ -20,6 +20,7 @@ import {
 import { SafeBlog, PaginatedBlogsResult } from "@/types/blog.types";
 import { createLogger } from "@/lib/logger";
 import { safeDeleteS3File, uploadS3File, parseRequestBody } from "@/lib/s3";
+import { getMediaUrl } from "@/lib/media";
 
 const logger = createLogger("BlogController");
 
@@ -30,8 +31,8 @@ function formatSafeBlog(doc: IBlogDocument): SafeBlog {
     slug: doc.slug,
     subtitle: doc.subtitle,
     image: {
-      id: doc.image.id,
-      publickey: doc.image.publickey,
+      url: doc.image?.url || getMediaUrl(doc.image?.publickey) || "",
+      publickey: doc.image?.publickey || "",
     },
     tags: doc.tags ?? [],
     description: doc.description,

@@ -11,7 +11,7 @@ export interface IOccupancyDocument extends Document {
 
 const OccupancyImageSchema = new Schema<IFileOption>(
   {
-    id: { type: String, required: [true, "Image ID is required"], trim: true },
+    url: { type: String, required: [true, "Image URL is required"], trim: true },
     publickey: { type: String, required: [true, "Image publickey is required"], trim: true },
   },
   { _id: false }
@@ -45,6 +45,10 @@ OccupancySchema.index(
   { name: 1 },
   { unique: true, collation: { locale: "en", strength: 2 } }
 );
+
+if (process.env.NODE_ENV !== "production" && mongoose.models.Occupancy) {
+  mongoose.deleteModel("Occupancy");
+}
 
 export const Occupancy: Model<IOccupancyDocument> =
   (mongoose.models.Occupancy as Model<IOccupancyDocument>) ||

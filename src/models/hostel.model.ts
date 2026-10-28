@@ -32,7 +32,7 @@ export interface IHostelDocument extends Document {
 
 const HostelFileSchema = new Schema<IFileOption>(
   {
-    id: { type: String, required: [true, "File/Image ID is required"], trim: true },
+    url: { type: String, required: [true, "File/Image URL is required"], trim: true },
     publickey: { type: String, required: [true, "File/Image publickey is required"], trim: true },
   },
   { _id: false }
@@ -187,6 +187,10 @@ const HostelSchema = new Schema<IHostelDocument>(
 HostelSchema.index({ "location.city": 1, "location.locality": 1 });
 HostelSchema.index({ rent: 1, rentFrequency: 1 });
 HostelSchema.index({ tenantType: 1 });
+
+if (process.env.NODE_ENV !== "production" && mongoose.models.Hostel) {
+  mongoose.deleteModel("Hostel");
+}
 
 export const Hostel: Model<IHostelDocument> =
   (mongoose.models.Hostel as Model<IHostelDocument>) ||

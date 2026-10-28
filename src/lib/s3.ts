@@ -26,6 +26,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { AppError } from "@/lib/api-response";
 import { createLogger } from "@/lib/logger";
 import { IFileOption } from "@/types/general.types";
+import { getMediaUrl } from "@/lib/media";
 import connectToDatabase from "@/lib/mongodb";
 import { City } from "@/models/city.model";
 import { Amenity } from "@/models/amenity.model";
@@ -325,18 +326,16 @@ export async function uploadFileToS3(params: {
 
   await client.send(command);
 
-  const fileId = crypto.randomUUID();
+  const url = getMediaUrl(key) || `https://${config.bucket}.s3.${config.region}.amazonaws.com/${key}`;
   const file: IFileOption = {
-    id: fileId,
+    url,
     publickey: key,
   };
-
-  const url = await getFileUrl(key);
 
   logger.info("File uploaded to S3 successfully", {
     operation: "uploadFileToS3",
     key,
-    fileId,
+    url,
   });
 
   return {
@@ -530,7 +529,7 @@ export function extractS3Key(file: IFileOption | string | null | undefined): str
 /**
  * Resolves or uploads a file input to S3 and returns a standardized IFileOption.
  * Accepts:
- * - Existing IFileOption ({ id, publickey }) -> returned unchanged
+ * - Existing IFileOption ({ url, publickey }) -> returned unchanged
  * - File / Blob object (from multipart/form-data) -> uploaded to S3
  * - Base64 Data URL string (e.g., "data:image/png;base64,...") -> uploaded to S3
  * - S3 key string -> wrapped into IFileOption
@@ -542,16 +541,18 @@ export async function uploadS3File(
 ): Promise<IFileOption | undefined> {
   if (!input) return undefined;
 
-  // 1. If it's already an IFileOption object
+  // 1. If it's already an IFileOption object (or has publickey)
   if (
     typeof input === "object" &&
     input !== null &&
     "publickey" in input &&
-    typeof (input as { publickey: unknown }).publickey === "string" &&
-    "id" in input &&
-    typeof (input as { id: unknown }).id === "string"
+    typeof (input as { publickey: unknown }).publickey === "string"
   ) {
-    return input as IFileOption;
+    const raw = input as { publickey: string; url?: string };
+    return {
+      url: raw.url || getMediaUrl(raw.publickey) || "",
+      publickey: raw.publickey,
+    };
   }
 
   // 2. If it's a File or Blob instance
@@ -594,7 +595,7 @@ export async function uploadS3File(
   // 4. If it's an existing S3 key string
   if (typeof input === "string" && input.trim().length > 0) {
     const key = input.trim();
-    return { id: key, publickey: key };
+    return { url: getMediaUrl(key) || "", publickey: key };
   }
 
   // 5. If it's an object with a Buffer

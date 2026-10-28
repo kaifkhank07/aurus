@@ -19,6 +19,7 @@ import {
 import { SafeStory, PaginatedStoriesResult } from "@/types/story.types";
 import { createLogger } from "@/lib/logger";
 import { safeDeleteS3File, uploadS3File, parseRequestBody } from "@/lib/s3";
+import { getMediaUrl } from "@/lib/media";
 
 const logger = createLogger("StoryController");
 
@@ -32,9 +33,9 @@ function formatSafeStory(doc: IStoryDocument): SafeStory {
     description: doc.description,
     isActive: doc.isActive ?? true,
     isFeatured: doc.isFeatured ?? false,
-    image: doc.image
+    image: doc.image && doc.image.publickey
       ? {
-          id: doc.image.id,
+          url: doc.image.url || getMediaUrl(doc.image.publickey) || "",
           publickey: doc.image.publickey,
         }
       : null,
@@ -281,7 +282,7 @@ export async function update(
     const finalImage =
       validated.image !== undefined ? validated.image : story.image;
 
-    if (finalIsFeatured && (!finalImage || !finalImage.id || !finalImage.publickey)) {
+    if (finalIsFeatured && (!finalImage || !finalImage.publickey)) {
       throw new AppError("An image is required for featured stories.", 400, [
         { field: "image", message: "An image is required for featured stories." },
       ]);

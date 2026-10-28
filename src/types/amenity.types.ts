@@ -18,7 +18,7 @@ export interface CreateAmenityInput {
 
 export interface UpdateAmenityInput {
   name?: string;
-  image?: IFileOption;
+  image?: IFileOption | null;
   isActive?: boolean;
 }
 

@@ -27,6 +27,7 @@ import { SafeLocality } from "@/types/locality.types";
 import { SafeAmenity } from "@/types/amenity.types";
 import { createLogger } from "@/lib/logger";
 import { safeDeleteS3File, uploadS3File, uploadMultipleS3Files, parseRequestBody } from "@/lib/s3";
+import { getMediaUrl } from "@/lib/media";
 
 const logger = createLogger("HostelController");
 
@@ -42,8 +43,11 @@ function formatSafeHostel(doc: IHostelDocument): SafeHostel {
       state: cityDoc.state,
       city: cityDoc.city,
       slug: cityDoc.slug,
-      image: cityDoc.image
-        ? { id: cityDoc.image.id, publickey: cityDoc.image.publickey }
+      image: cityDoc.image && cityDoc.image.publickey
+        ? {
+            url: cityDoc.image.url || getMediaUrl(cityDoc.image.publickey) || "",
+            publickey: cityDoc.image.publickey,
+          }
         : undefined,
       sortOrder: cityDoc.sortOrder ?? 0,
       isActive: cityDoc.isActive ?? true,
@@ -96,8 +100,11 @@ function formatSafeHostel(doc: IHostelDocument): SafeHostel {
       return {
         id: amenDoc._id.toString(),
         name: amenDoc.name,
-        image: amenDoc.image
-          ? { id: amenDoc.image.id, publickey: amenDoc.image.publickey }
+        image: amenDoc.image && amenDoc.image.publickey
+          ? {
+              url: amenDoc.image.url || getMediaUrl(amenDoc.image.publickey) || "",
+              publickey: amenDoc.image.publickey,
+            }
           : undefined,
         isActive: amenDoc.isActive ?? true,
         createdAt: amenDoc.createdAt ? amenDoc.createdAt.toISOString() : new Date().toISOString(),
@@ -115,26 +122,26 @@ function formatSafeHostel(doc: IHostelDocument): SafeHostel {
     tenantType: doc.tenantType,
     isActive: doc.isActive ?? true,
     frontImage: {
-      id: doc.frontImage?.id,
-      publickey: doc.frontImage?.publickey,
+      url: doc.frontImage?.url || getMediaUrl(doc.frontImage?.publickey) || "",
+      publickey: doc.frontImage?.publickey || "",
     },
     galleryImages: (doc.galleryImages || []).map((img) => ({
-      id: img.id,
+      url: img.url || getMediaUrl(img.publickey) || "",
       publickey: img.publickey,
     })),
-    firstImage: doc.firstImage
-      ? { id: doc.firstImage.id, publickey: doc.firstImage.publickey }
+    firstImage: doc.firstImage && doc.firstImage.publickey
+      ? { url: doc.firstImage.url || getMediaUrl(doc.firstImage.publickey) || "", publickey: doc.firstImage.publickey }
       : undefined,
-    secondImage: doc.secondImage
-      ? { id: doc.secondImage.id, publickey: doc.secondImage.publickey }
+    secondImage: doc.secondImage && doc.secondImage.publickey
+      ? { url: doc.secondImage.url || getMediaUrl(doc.secondImage.publickey) || "", publickey: doc.secondImage.publickey }
       : undefined,
     rent: doc.rent,
     rentFrequency: doc.rentFrequency,
     amenities: formattedAmenities,
     description: doc.description,
     location: safeLocation,
-    brochure: doc.brochure
-      ? { id: doc.brochure.id, publickey: doc.brochure.publickey }
+    brochure: doc.brochure && doc.brochure.publickey
+      ? { url: doc.brochure.url || getMediaUrl(doc.brochure.publickey) || "", publickey: doc.brochure.publickey }
       : undefined,
     metadata: doc.metadata
       ? {

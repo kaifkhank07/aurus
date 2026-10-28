@@ -2,9 +2,8 @@ import { z } from "zod";
 export { objectIdSchema } from "./admin.validation";
 
 export const cityImageSchema = z.object({
-  id: z.string().trim().min(1, { message: "Image ID is required." }),
+  url: z.string().trim().min(1, { message: "Image URL is required." }),
   publickey: z.string().trim().min(1, { message: "Image publickey is required." }),
-  url: z.string().trim().optional(),
 });
 export const fileOptionSchema = cityImageSchema;
 

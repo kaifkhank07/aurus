@@ -21,6 +21,7 @@ import {
 } from "@/validations/institute.validation";
 import { SafeInstitute, PaginatedInstitutesResult } from "@/types/institute.types";
 import { createLogger } from "@/lib/logger";
+import { getMediaUrl } from "@/lib/media";
 
 const logger = createLogger("InstituteController");
 
@@ -36,8 +37,8 @@ function formatSafeInstitute(doc: IInstituteDocument): SafeInstitute {
       state: populatedCity.state,
       city: populatedCity.city,
       slug: populatedCity.slug,
-      image: populatedCity.image
-        ? { id: populatedCity.image.id, publickey: populatedCity.image.publickey }
+      image: populatedCity.image && populatedCity.image.publickey
+        ? { url: populatedCity.image.url || getMediaUrl(populatedCity.image.publickey) || "", publickey: populatedCity.image.publickey }
         : undefined,
       sortOrder: populatedCity.sortOrder ?? 0,
       isActive: populatedCity.isActive ?? true,

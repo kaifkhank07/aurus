@@ -29,7 +29,7 @@ export interface UpdateCityInput {
   country?: string;
   state?: string;
   city?: string;
-  image?: IFileOption;
+  image?: IFileOption | null;
   sortOrder?: number;
   isActive?: boolean;
   metadata?: ISeoMetadata;

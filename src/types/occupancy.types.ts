@@ -18,7 +18,7 @@ export interface CreateOccupancyInput {
 
 export interface UpdateOccupancyInput {
   name?: string;
-  image?: IFileOption;
+  image?: IFileOption | null;
   isActive?: boolean;
 }
 

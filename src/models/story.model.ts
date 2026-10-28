@@ -16,7 +16,7 @@ export interface IStoryDocument extends Document {
 
 const StoryImageSchema = new Schema<IFileOption>(
   {
-    id: { type: String, required: [true, "Image ID is required"], trim: true },
+    url: { type: String, required: [true, "Image URL is required"], trim: true },
     publickey: { type: String, required: [true, "Image publickey is required"], trim: true },
   },
   { _id: false }
@@ -78,6 +78,10 @@ const StorySchema = new Schema<IStoryDocument>(
 // Compound and single indexes
 StorySchema.index({ createdAt: -1 });
 StorySchema.index({ isFeatured: 1, isActive: 1 });
+
+if (process.env.NODE_ENV !== "production" && mongoose.models.Story) {
+  mongoose.deleteModel("Story");
+}
 
 export const Story: Model<IStoryDocument> =
   (mongoose.models.Story as Model<IStoryDocument>) ||

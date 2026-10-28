@@ -8,7 +8,7 @@ export interface PaginationMeta {
 }
 
 export interface IFileOption {
-  id: string;
+  url: string;
   publickey: string;
 }
 
