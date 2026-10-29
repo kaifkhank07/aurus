@@ -1,4 +1,4 @@
-import { ExploreResidenceItem, exploreResidences } from "@/data";
+import { ExploreResidenceItem, exploreResidences } from "@/data/residences";
 import { ArrowRight, Container, Eyebrow, Figure } from "../ui/Primitives";
 import Link from "next/link";
 
@@ -6,12 +6,12 @@ export default function RelatedResidences() {
     const filteredItems = exploreResidences.items.slice(0, 3);
     return (
         <section className="py-8 sm:py-12 lg:py-16">
-            <Container>
+            <Container className="space-y-4 sm:space-y-6 lg:space-y-10">
                 {/* Eyebrow Header */}
                 <Eyebrow>{'More // You might also like'}</Eyebrow>
 
                 {/* Cards Grid */}
-                <div className="mt-6 sm:mt-8 lg:mt-[min(2.4vw,46px)] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                     {filteredItems.map((item) => (
                         <ResidenceCard key={item.name} item={item} />
                     ))}

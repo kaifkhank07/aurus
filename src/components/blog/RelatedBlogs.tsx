@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { blogsData, JournalArticle } from "@/data/blogs";
+import { blogsData, JournalArticle } from "@/data/blog";
 import { Container, ArrowRight } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 
@@ -17,7 +17,7 @@ export function RelatedBlogs({
   className = "",
 }: RelatedBlogsProps) {
   return (
-    <section className={`py-10 sm:py-14 lg:py-18 ${className}`}>
+    <section className={`py-8 sm:py-12 lg:py-16 ${className}`}>
       <Container>
         <ViewReveal duration={800} startDelay={100}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">

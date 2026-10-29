@@ -4,13 +4,16 @@ import React, { useEffect, useRef } from "react";
 import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { culture } from "@/data/culture";
+import { culture } from "@/data/shared";
 import { ArrowRight, Container, Eyebrow, Figure } from "@/components/ui/Primitives";
 import { Heading } from "../utils/Heading";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
+
+// Duplicate array 1-2 times (3 sets total) for smooth loop / extended horizontal scroll on desktop
+const desktopPosts = [...culture.posts, ...culture.posts];
 
 export function Culture() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -22,7 +25,10 @@ export function Culture() {
     // Prevent mobile URL bar collapse/expand from triggering jumpy recalculations
     ScrollTrigger.config({ ignoreMobileResize: true });
 
-    const ctx = gsap.context(() => {
+    const mm = gsap.matchMedia();
+
+    // Horizontal pinned scroll exclusively for desktop (>= lg)
+    mm.add("(min-width: 1024px)", () => {
       const track = trackRef.current;
       const section = sectionRef.current;
       if (!track || !section) return;
@@ -51,17 +57,18 @@ export function Culture() {
           anticipatePin: 1,
         },
       });
-    }, sectionRef);
+    });
 
-    return () => ctx.revert();
+    return () => mm.revert();
   }, []);
 
   return (
     <section
       id="culture"
       ref={sectionRef}
-      className="relative w-full h-[100svh] min-h-[100svh] py-4 sm:py-6 lg:py-6 text-ink overflow-hidden bg-cream flex flex-col justify-between"
+      className="relative w-full py-8 sm:py-12 lg:py-6 lg:h-[100svh] lg:min-h-[100svh] text-ink bg-cream lg:overflow-hidden flex flex-col lg:justify-between"
     >
+      {/* Section Header */}
       <div className="shrink-0 w-full">
         <Container>
           <Eyebrow
@@ -90,13 +97,26 @@ export function Culture() {
         </Container>
       </div>
 
-      {/* HORIZONTAL SCROLL TRACK */}
-      <div className="w-full flex-1 min-h-0 flex items-center overflow-hidden py-2 sm:py-3">
+      {/* MOBILE VERTICAL GRID (< lg) - matching reference design */}
+      <div className="block lg:hidden w-full mt-6 sm:mt-8">
+        <Container>
+          <div className="grid grid-cols-1 gap-4 sm:gap-5 max-w-[420px] mx-auto">
+            {culture.posts.map((item, index) => (
+              <div key={index} className="w-full">
+                <CultureCard item={item} />
+              </div>
+            ))}
+          </div>
+        </Container>
+      </div>
+
+      {/* DESKTOP HORIZONTAL SCROLL TRACK (>= lg) */}
+      <div className="hidden lg:flex w-full flex-1 min-h-0 items-center overflow-hidden py-2 sm:py-3">
         <div
           ref={trackRef}
           className="flex items-stretch gap-4 sm:gap-6 lg:gap-8 w-max pl-5 sm:pl-8 lg:pl-[6.25vw] pr-5 sm:pr-8 lg:pr-[6.25vw] will-change-transform"
         >
-          {culture.posts.map((item, index) => (
+          {desktopPosts.map((item, index) => (
             <div
               key={index}
               className="w-[260px] xs:w-[280px] sm:w-[320px] md:w-[350px] lg:w-[clamp(280px,46vh,380px)] xl:w-[clamp(300px,48vh,420px)] 2xl:w-[clamp(320px,52vh,420px)] shrink-0"
@@ -112,37 +132,40 @@ export function Culture() {
 
 function CultureCard({ item }: { item: (typeof culture.posts)[number] }) {
   return (
-    <article className="relative h-full rounded-[14px] sm:rounded-[20px] border border-line bg-white p-2.5 sm:p-3.5 lg:p-4 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col justify-between">
-      <div className="relative overflow-hidden rounded-[8px] sm:rounded-[12px] w-full shrink-0">
+    <article className="relative rounded-[16px] sm:rounded-[18px] lg:rounded-[20px] border border-black/[0.08] bg-white p-3 sm:p-3.5 lg:p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition-shadow duration-300 flex flex-col justify-between">
+      {/* Post Media */}
+      <div className="relative overflow-hidden rounded-[10px] sm:rounded-[12px] w-full shrink-0">
         <Figure
           src={item.image}
           alt={item.alt}
-          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 44vw, 76vw"
-          className="aspect-[4/5] w-full max-h-[50vh] rounded-[8px] sm:rounded-[12px] object-cover transition-transform duration-500 hover:scale-105"
+          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+          className="aspect-[5/4] lg:aspect-[4/5] w-full lg:max-h-[50vh] rounded-[10px] sm:rounded-[12px] object-cover transition-transform duration-500 hover:scale-105"
         />
 
         {item.isVideo && (
           <span
             aria-label="Video"
-            className="absolute right-2 top-2 sm:right-2.5 sm:top-2.5 flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-paper/85 text-ink shadow-sm backdrop-blur-sm"
+            className="hidden lg:flex absolute right-2.5 top-2.5 h-7 w-7 items-center justify-center rounded-full bg-paper/85 text-ink shadow-sm backdrop-blur-sm"
           >
-            <svg viewBox="0 0 12 12" className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-current ml-0.5">
+            <svg viewBox="0 0 12 12" className="h-3.5 w-3.5 fill-current ml-0.5">
               <path d="M3 2.5v7l6-3.5-6-3.5Z" />
             </svg>
           </span>
         )}
       </div>
 
-      <div className="px-0.5 pb-0.5 pt-2 sm:pt-3 lg:pt-3.5 flex flex-col flex-1 justify-between min-h-0">
+      {/* Post Details */}
+      <div className="px-0.5 pb-0.5 pt-3 sm:pt-4 lg:pt-4 flex flex-col flex-1 justify-between min-h-0">
         <div>
-          <div className="flex items-center gap-3 sm:gap-4 text-ink">
+          {/* Action Row: Likes, Comments, Share */}
+          <div className="flex items-center gap-3.5 sm:gap-4 text-ink">
             <Metric label="likes" value={item.likes} />
             <Metric label="comments" value={item.comments} />
 
             <svg
               viewBox="0 0 16 16"
               aria-hidden="true"
-              className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-ink"
+              className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-ink shrink-0"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.2"
@@ -151,13 +174,15 @@ function CultureCard({ item }: { item: (typeof culture.posts)[number] }) {
             </svg>
           </div>
 
-          <p className="font-sans font-normal text-[11px] xs:text-[12px] sm:text-[13px] lg:text-[14px] leading-[1.35] sm:leading-[1.4] tracking-[-0.03em] mt-1.5 sm:mt-2.5 whitespace-pre-line text-ink line-clamp-2">
+          {/* Caption */}
+          <p className="font-sans font-normal text-[12px] sm:text-[14px] lg:text-[16px] leading-[1.38] sm:leading-[1.42] tracking-[-0.02em] mt-2.5 sm:mt-3 whitespace-pre-line text-ink line-clamp-3 lg:line-clamp-2">
             <span className="font-semibold text-ink">@{item.handle}</span>{" "}
             {item.caption}
           </p>
         </div>
 
-        <p className="font-mono uppercase text-[9px] xs:text-[10px] sm:text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] mt-1.5 sm:mt-2 text-muted">
+        {/* Timestamp */}
+        <p className="font-mono uppercase text-[9px] xs:text-[10px] sm:text-[11px] lg:text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[1.5px] mt-2.5 sm:mt-3 text-muted">
           {item.timeAgo}
         </p>
       </div>
@@ -178,14 +203,16 @@ function Metric({ label, value }: { label: string; value: number }) {
       <svg
         viewBox="0 0 16 16"
         aria-hidden="true"
-        className="h-3.5 w-3.5"
+        className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-ink shrink-0"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.2"
       >
         {icon}
       </svg>
-      <span className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px]" aria-hidden="true">{value}</span>
+      <span className="font-sans text-[11px] xs:text-[12px] sm:text-[13px] font-medium tracking-normal text-ink leading-none" aria-hidden="true">
+        {value}
+      </span>
     </span>
   );
 }

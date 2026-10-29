@@ -1,6 +1,6 @@
 "use client";
 
-import { upcomingChapters } from "@/data/upcomingChapters";
+import { upcomingChapters } from "@/data/residences";
 import { Container } from "@/components/ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";

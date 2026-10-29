@@ -1,4 +1,3 @@
-
 export interface NotFoundData {
   eyebrow: string;
   code: string;

@@ -2,11 +2,16 @@
 
 import { useState, useEffect, useRef } from "react";
 import gsap from "gsap";
-import { locations } from "@/data/locations";
+import { locations } from "@/data/shared";
 import { Container, Eyebrow, Figure } from "@/components/ui/Primitives";
 import { Heading } from "../utils/Heading";
 
-export function Locations() {
+
+interface LocationProps {
+  showHeading?: boolean;
+}
+
+export function Locations({ showHeading = false }: LocationProps) {
   const [active, setActive] = useState(0);
   const imageRefs = useRef<(HTMLDivElement | null)[]>([]);
   const prevActiveRef = useRef<number>(0);
@@ -76,19 +81,17 @@ export function Locations() {
   }, []);
 
   return (
-    <section className="pb-16 sm:pb-20 lg:pb-[min(4.5vw,86px)]">
-      <Container>
-        <Eyebrow>{locations.eyebrow}</Eyebrow>
+    <section className="py-8 sm:py-12 lg:py-16">
+      <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
+        {showHeading && (<Eyebrow>{locations.eyebrow}</Eyebrow>)}
 
-        <div className="mt-5 sm:mt-7 lg:mt-[min(2.4vw,46px)]">
-          <Heading
-            title1={locations.titleTop + " " + locations.titleBottom}
-            title2={locations.titleAccent}
-            className="uppercase max-w-md 3xl:max-w-5xl"
-          />
-        </div>
+        <Heading
+          title1={locations.titleTop + " " + locations.titleBottom}
+          title2={locations.titleAccent}
+          className="uppercase max-w-md 3xl:max-w-5xl"
+        />
 
-        <div className="grid grid-cols-1 lg:grid-cols-[890fr_793fr] lg:items-stretch lg:gap-[min(3.5vw,67px)] mt-5 sm:mt-7 lg:mt-[min(2.2vw,42px)]">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-[890fr_793fr] lg:items-stretch lg:gap-[min(3.5vw,67px)]">
           {/* City List: on mobile appears below image (order-2), on lg in left column */}
           <div className="order-2 lg:order-none lg:col-start-1 lg:row-start-1 mt-6 sm:mt-8 lg:mt-0">
             <ul>
@@ -108,22 +111,22 @@ export function Locations() {
                     >
                       <span
                         className={`font-sans font-light uppercase text-[clamp(2.125rem,5.2083vw,100px)] leading-[0.9] tracking-[-0.04em] !text-[22px] sm:!text-[28px] lg:!text-[clamp(1.5rem,2.3vw,44px)] !leading-[1.1] inline-block transition-all duration-300 ease-out will-change-transform ${city.comingSoon
-                            ? isSelected
-                              ? "text-muted translate-x-3 sm:translate-x-4 lg:translate-x-5"
-                              : "text-muted/50 group-hover:text-muted group-hover:translate-x-3 sm:group-hover:translate-x-4 lg:group-hover:translate-x-5"
-                            : isSelected
-                              ? "text-ink translate-x-3 sm:translate-x-4 lg:translate-x-5"
-                              : "text-ink/40 group-hover:text-ink group-hover:translate-x-3 sm:group-hover:translate-x-4 lg:group-hover:translate-x-5"
+                          ? isSelected
+                            ? "text-muted translate-x-3 sm:translate-x-4 lg:translate-x-5"
+                            : "text-muted/50 group-hover:text-muted group-hover:translate-x-3 sm:group-hover:translate-x-4 lg:group-hover:translate-x-5"
+                          : isSelected
+                            ? "text-ink translate-x-3 sm:translate-x-4 lg:translate-x-5"
+                            : "text-ink/40 group-hover:text-ink group-hover:translate-x-3 sm:group-hover:translate-x-4 lg:group-hover:translate-x-5"
                           }`}
                       >
                         {city.name}
                       </span>
                       <span
                         className={`font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] shrink-0 transition-colors duration-300 ${city.comingSoon
-                            ? "text-muted/50"
-                            : isSelected
-                              ? "text-ink font-medium"
-                              : "text-muted group-hover:text-ink"
+                          ? "text-muted/50"
+                          : isSelected
+                            ? "text-ink font-medium"
+                            : "text-muted group-hover:text-ink"
                           }`}
                       >
                         {city.meta}

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { blogsData, singleBlogData } from "@/data/blogs";
+import { blogsData, singleBlogData } from "@/data/blog";
 import BlogDetail from "@/components/blog/BlogDetail";
 import RelatedBlogs from "@/components/blog/RelatedBlogs";
 

@@ -5,7 +5,6 @@ import { faqData } from "@/data/faq";
 import { Container } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
-import { MessageCircle } from "lucide-react";
 
 
 export default function Faq() {
@@ -22,21 +21,19 @@ export default function Faq() {
 
     return (
         <section className="py-8 sm:py-12 lg:py-16">
-            <Container>
+            <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
                 {/* Section Heading & Subtitle */}
-                <div>
-                    <Heading
-                        title1="Frequently"
-                        title2="Asked"
-                        className="uppercase max-w-4xl sm:max-w-none sm:text-center"
-                        title1ClassName="text-[38px] sm:text-[42px] md:text-6xl lg:text-7xl xl:text-[56px]"
-                        title2ClassName="text-[38px] sm:text-[42px] md:text-6xl lg:text-7xl xl:text-[56px]"
-                    />
-                </div>
+                <Heading
+                    title1="Frequently"
+                    title2="Asked"
+                    className="uppercase max-w-4xl sm:max-w-none sm:text-center"
+                    title1ClassName="text-[38px] sm:text-[42px] md:text-6xl lg:text-7xl xl:text-[56px]"
+                    title2ClassName="text-[38px] sm:text-[42px] md:text-6xl lg:text-7xl xl:text-[56px]"
+                />
 
                 {/* Main FAQ Layout: Left Category Nav & Right Questions */}
-                <ViewReveal duration={800} startDelay={100}>
-                    <div className="mt-8 sm:mt-10 lg:mt-12 space-y-10 sm:space-y-12 px-6 sm:px-8 lg:px-16">
+                <ViewReveal duration={800}>
+                    <div className="w-full px-6 sm:px-8 lg:px-16 space-y-10 sm:space-y-12">
                         {filteredData.map((cat, catIdx) => (
                             <div
                                 key={cat.id}

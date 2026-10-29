@@ -7,7 +7,7 @@ import { Container } from "@/components/ui/Primitives";
 import {
   staticResidenceDetail,
   type ResidenceDetail as ResidenceDetailType,
-} from "@/data/residenceDetails";
+} from "@/data/residences";
 import { Heading } from "../utils/Heading";
 
 function CheckCircleIcon({ className = "w-4 h-4" }: { className?: string }) {
@@ -82,10 +82,10 @@ export function ResidenceDetail({
   };
 
   return (
-    <section className="py-6 sm:py-10 lg:py-14 bg-cream">
-      <Container>
+    <section className="py-8 sm:py-12 lg:py-16">
+      <Container className="space-y-4 sm:space-y-6 lg:space-y-10">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 sm:pb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <Heading
               title1={data.title}
@@ -133,7 +133,7 @@ export function ResidenceDetail({
         </div>
 
         {/* Details & Sticky Sidebar Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 mt-8 sm:mt-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Left Column: Residence Features and Content */}
           <div className="lg:col-span-2 space-y-8 sm:space-y-10">
             {/* Description */}
@@ -157,7 +157,7 @@ export function ResidenceDetail({
               ))}
             </div>
 
-            {/*  */}
+            {/* Mobile Pricing & Booking Card */}
             <div className="sm:hidden lg:sticky lg:top-28 rounded-[20px] border border-ink/10 bg-white p-6 sm:p-7">
               {/* Price Header */}
               <span className="font-mono uppercase text-[10px] sm:text-[14px] text-[#77736B] font-regular block">

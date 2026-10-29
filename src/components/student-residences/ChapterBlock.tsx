@@ -1,16 +1,15 @@
-import Link from "next/link";
-import { chapter } from "@/data/chapter";
-import { Container, Eyebrow, Figure, PillButton, ArrowRight } from "@/components/ui/Primitives";
+import { chapter } from "@/data/student-residences";
+import { Container, Eyebrow, Figure, PillButton } from "@/components/ui/Primitives";
 import { Heading } from "../utils/Heading";
 import { ViewReveal } from "../animation";
 
 export function ChapterBlock() {
   return (
-    <section className="relative overflow-hidden pt-4 pb-14 sm:pb-20 lg:pt-0 lg:pb-[min(6vw,115px)]">
-      <Container>
+    <section className="py-8 sm:py-12 lg:py-16">
+      <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
         <Eyebrow>{chapter.eyebrow}</Eyebrow>
 
-        <div className="relative mt-6 sm:mt-8 lg:mt-[min(2.4vw,46px)]">
+        <div className="relative">
           {/* Watermark: desktop only */}
           <span
             aria-hidden="true"
@@ -20,7 +19,7 @@ export function ChapterBlock() {
           </span>
 
           {/* Heading and Body layout */}
-          <div className="grid gap-5 sm:gap-6 lg:grid-cols-[1fr_min(21.198vw,407px)] lg:items-start lg:pr-[min(1.72vw,33px)] lg:gap-[2.4vw]">
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-[1fr_min(21.198vw,407px)] lg:items-start lg:pr-[min(1.72vw,33px)] lg:gap-[2.4vw]">
             <Heading
               title1={chapter.titleTop + " " + chapter.titleBottom}
               title2={chapter.titleAccent}
@@ -28,16 +27,19 @@ export function ChapterBlock() {
             />
 
             <div className="lg:pt-2">
-              <p className="font-sans font-normal text-[clamp(1rem,0.9896vw,19px)] leading-[1.3158] tracking-[-0.04em] text-muted">{chapter.body}</p>
-              <PillButton href={chapter.cta.href} variant="dark" className="mt-7">
+              <p className="font-sans font-normal text-[clamp(1rem,0.9896vw,19px)] leading-[1.3158] tracking-[-0.04em] text-muted">
+                {chapter.body}
+              </p>
+
+              <PillButton href={chapter.cta.href} variant="dark" className="w-full flex justify-center lg:w-fit mt-4 sm: mt-6">
                 {chapter.cta.label}
               </PillButton>
             </div>
           </div>
         </div>
 
-        {/* Group 27 Images: Vertically stacked on mobile/tablet, 2-column grid on desktop */}
-        <div className="mt-8 flex flex-col gap-4 sm:gap-5 lg:mt-[min(2.4vw,46px)] lg:grid lg:grid-cols-2 lg:gap-[1.25vw]">
+        {/* Images */}
+        <div className="flex flex-col gap-4 sm:gap-5 lg:grid lg:grid-cols-2 lg:gap-[1.25vw">
           {chapter.images.map((image) => (
             <ViewReveal duration={800} startDelay={100} key={image.alt}>
               <Figure

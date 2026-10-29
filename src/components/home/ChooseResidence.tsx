@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { gsap } from "gsap";
-import { landing } from "@/data/landing";
+import { landing } from "@/data/home";
 import { ArrowRight, Figure } from "@/components/ui/Primitives";
 import { useResidences } from "@/store/useResidences";
 

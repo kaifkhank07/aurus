@@ -1,7 +1,7 @@
 import { ResidenceDetail } from "@/components/residences/ResidenceDetail";
-import { staticResidenceDetail } from "@/data/residenceDetails";
+import { staticResidenceDetail } from "@/data/residences";
 import RelatedResidences from "@/components/residences/RelatedResidences";
-import { exploreResidences } from "@/data/exploreResidences";
+import { exploreResidences } from "@/data/residences";
 
 export function generateStaticParams() {
   return exploreResidences.items.map((item) => ({

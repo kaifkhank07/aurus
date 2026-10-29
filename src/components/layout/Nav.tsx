@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { nav } from "@/data/nav";
+import { nav } from "@/data/layout";
 import { ArrowRight } from "@/components/ui/Primitives";
 import Image from "next/image";
 

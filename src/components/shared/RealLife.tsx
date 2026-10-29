@@ -3,11 +3,15 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import gsap from "gsap";
-import { realLife } from "@/data/realLife";
+import { realLife } from "@/data/shared";
 import { ArrowRight, Figure, Panel } from "@/components/ui/Primitives";
 import { Heading } from "../utils/Heading";
 
-export function RealLife() {
+interface RealLifeProps {
+  havingTopSpace?: boolean;
+}
+
+export function RealLife({ havingTopSpace = false }: RealLifeProps) {
   const marqueeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,12 +46,12 @@ export function RealLife() {
   }, []);
 
   return (
-    <section className="pb-16 sm:pb-20 lg:pb-[min(6vw,115px)]">
+    <section className={`${havingTopSpace ? "pb-8 lg:pt-8" : "py-8 sm:py-12 lg:py-16"} -mt-1 lg:mt-0`}>
       <Panel
         className="bg-ink text-white lg:rounded-[57px]"
-        innerClassName="pt-6 pb-12 sm:pt-10 sm:pb-16 lg:py-[min(4.9vw,95px)] !px-5 sm:!px-8 lg:!px-[min(4.5313vw,87px)]"
+        innerClassName="pt-6 pb-12 sm:pt-10 sm:pb-16 lg:py-[min(4.9vw,95px)] !px-5 sm:!px-8 lg:!px-[min(4.5313vw,87px)] space-y-4 sm:space-y-8 lg:space-y-12"
       >
-        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 lg:gap-10">
+        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 lg:gap-10 ">
           <div className="max-w-[700px]">
             {/* Figma hero-title: Manrope 300 / 100px / 90% / -4%, uppercase */}
             <Heading
@@ -90,7 +94,7 @@ export function RealLife() {
 
         {/* Bottom images strip — smooth auto-scrolling right-to-left */}
         {/* no-scrollbar flex items-start gap-4 sm:gap-6 lg:gap-[min(3.2292vw,62px)] mt-8 sm:mt-10 lg:mt-[min(2.2vw,42px)] overflow-x-auto pb-2 */}
-        <div className="w-full flex items-start gap-4 sm:gap-6 lg:gap-[min(3.2292vw,62px)] mt-8 sm:mt-10 lg:mt-[min(2.2vw,42px)]">
+        <div className="w-full flex items-start gap-4 sm:gap-6 lg:gap-[min(3.2292vw,62px)]">
           <div
             ref={marqueeRef}
             className="flex w-max will-change-transform select-none"

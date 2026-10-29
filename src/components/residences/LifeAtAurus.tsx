@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { lifeAtAurus } from "@/data/lifeAtAurus";
+import { lifeAtAurus } from "@/data/residences";
 import { ArrowRight, Container, Eyebrow, Figure } from "@/components/ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
@@ -9,12 +9,12 @@ import { Heading } from "../utils/Heading";
 export function LifeAtAurus() {
   return (
     <section className="py-8 sm:py-12 lg:py-16">
-      <Container>
+      <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
         {/* Eyebrow Header */}
         <Eyebrow>{lifeAtAurus.eyebrow}</Eyebrow>
 
         {/* Two-Column Layout */}
-        <div className="mt-8 sm:mt-10 lg:mt-14 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-0 xl:gap-0 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-0 xl:gap-0 items-start">
           {/* Left Column: Heading, Description & CTA */}
           <ViewReveal duration={800}>
             <div className="flex flex-col items-start">

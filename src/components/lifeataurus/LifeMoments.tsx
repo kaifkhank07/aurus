@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import gsap from "gsap";
-import { lifePageData } from "@/data";
+import { lifePageData } from "@/data/lifeataurus";
 import { Container, Eyebrow } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 
@@ -38,12 +38,12 @@ export default function LifeMoments() {
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">
-      <Container>
+      <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
         {/* Eyebrow Header */}
         <Eyebrow>{momentsGallery.eyebrow}</Eyebrow>
 
         {/* 8 Moments Photo Cards */}
-        <ViewReveal duration={800} className="mt-8 sm:mt-10 lg:mt-12">
+        <ViewReveal duration={800}>
           {/* Mobile / Tablet: Infinite Loop Scrolling Marquee */}
           <div className="lg:hidden -mx-5 sm:-mx-8 overflow-hidden select-none">
             <div ref={marqueeRef} className="flex w-max will-change-transform">

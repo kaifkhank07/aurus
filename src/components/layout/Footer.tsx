@@ -1,17 +1,17 @@
 import Link from "next/link";
 import Image from "next/image";
-import { footer } from "@/data/footer";
+import { footer } from "@/data/layout";
 import { Panel } from "@/components/ui/Primitives";
 import { ViewReveal } from "../animation";
 
 export function Footer() {
   return (
     // <footer className="pb-3 sm:pb-4 lg:pb-[1.6667vw]">
-    <footer className="lg:pb-[1.6667vw]">
-      <ViewReveal duration={800} startDelay={100}>
+    <footer className="pt-2 sm:py-4 lg:py-6">
+      <ViewReveal duration={800}>
         <Panel
           className="bg-ink text-white rounded-t-[36px] sm:rounded-t-[48px] lg:rounded-[57px]"
-          innerClassName="pt-12 sm:pt-16 lg:pt-[min(5vw,96px)] pb-16 sm:pb-20 lg:pb-[min(6vw,115px)] !px-5 sm:!px-8 lg:!px-[min(4.5313vw,87px)]"
+          innerClassName="pt-6 pb-12 sm:pt-10 sm:pb-16 lg:py-[min(4.9vw,95px)] !px-5 sm:!px-8 lg:!px-[min(4.5313vw,87px)] space-y-4 sm:space-y-8 lg:space-y-12"
         >
           {/* Top: Logo Lockup */}
           <Link href="/" aria-label="Aurus home" className="inline-block group">
@@ -28,15 +28,12 @@ export function Footer() {
           </Link>
 
           {/* Tagline: Italic Serif */}
-          <p className="font-display italic font-normal tracking-[-0.03em] normal-case mt-6 sm:mt-8 lg:mt-10 text-[28px] sm:text-[38px] lg:text-[46px] leading-[1.15] text-white">
+          <p className="font-display italic font-normal tracking-[-0.03em] normal-case text-[28px] sm:text-[38px] lg:text-[46px] leading-[1.15] text-white">
             {footer.tagline}
           </p>
 
-          {/* Thin Divider Line */}
-          <div className="w-full h-px bg-white/15 mt-8 sm:mt-10 lg:mt-12 mb-8 sm:mb-10 lg:mb-12" />
-
           {/* 4-Column Footer Navigation */}
-          <div className="grid grid-cols-1 gap-10 sm:grid-cols-3 lg:grid-cols-5 lg:gap-8 xl:gap-12">
+          <div className="w-full grid grid-cols-1 gap-10 sm:grid-cols-3 lg:grid-cols-5 lg:gap-8 xl:gap-12 py-8 sm:py-10 lg:py-12 border-t border-b border-white/15">
             {/* Column 1: Aurus Headquarters */}
             <div className="col-span-1 sm:col-span-3 lg:col-span-2">
               <h3 className="font-mono uppercase text-[12px] sm:text-[14px] leading-[1.7] tracking-[2px] text-white font-medium mb-4 sm:mb-5 lg:mb-6">
@@ -116,6 +113,18 @@ export function Footer() {
                   wardens 24/7.
                 </p>
               </div>
+            </div>
+          </div>
+
+          <div className="w-full flex justify-between items-center">
+            <p className="font-mono uppercase text-[12px] sm:text-[14px] leading-[1.8] tracking-[1px] text-white/55 font-light">
+              © 2026 Aurus Life · A Colstay Limited brand
+            </p>
+
+            <div className="flex gap-3 sm:gap-6 font-mono uppercase text-[12px] sm:text-[14px] leading-[1.8] tracking-[1.5px] text-white/55 font-light">
+              <Link href="/privacy">Privacy</Link>
+              <Link href="/terms">Terms</Link>
+              <Link href="/refund">Refund</Link>
             </div>
           </div>
         </Panel>

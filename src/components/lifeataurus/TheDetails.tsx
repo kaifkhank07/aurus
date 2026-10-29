@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { lifePageData } from "@/data";
+import { lifePageData } from "@/data/lifeataurus";
 import { Container, Eyebrow } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
@@ -11,12 +11,12 @@ export default function TheDetails() {
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">
-      <Container>
+      <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
         {/* Eyebrow Header */}
         <Eyebrow>{facilities.eyebrow}</Eyebrow>
 
         {/* Content Grid */}
-        <ViewReveal duration={800} className="mt-8 sm:mt-10 lg:mt-12">
+        <ViewReveal duration={800}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-0 items-start">
             {/* Left Column: Heading, Subtitle & Facility Pills */}
             <div className="lg:col-span-8 flex flex-col lg:pr-12">

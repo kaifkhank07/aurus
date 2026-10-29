@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { lifePageData } from "@/data";
+import { lifePageData } from "@/data/lifeataurus";
 import { Container, Eyebrow } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
@@ -11,7 +11,7 @@ export default function CafeAndApp() {
   const { cafe, app } = cafeAndApp;
 
   return (
-    <section className="py-8 sm:py-12 lg:py-20">
+    <section className="py-8 sm:py-12 lg:py-16">
       <Container className="space-y-16 sm:space-y-20 lg:space-y-24">
         {/* Block 1: In-House Cafe (Image Left, Text Right) */}
         <ViewReveal duration={800}>

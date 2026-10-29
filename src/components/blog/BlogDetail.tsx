@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { singleBlogData, BlogDetailData } from "@/data/blogs";
+import { singleBlogData, BlogDetailData } from "@/data/blog";
 import { Container, ArrowRight } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 

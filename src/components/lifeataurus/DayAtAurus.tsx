@@ -1,17 +1,17 @@
 "use client";
 
 import Image from "next/image";
-import { lifePageData } from "@/data";
+import { lifePageData } from "@/data/lifeataurus";
 import { Eyebrow, Panel } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
 
 export default function DayAtAurus() {
   return (
-    <section className="py-8 sm:py-12 lg:py-16">
+    <section className="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-0">
       <Panel
-        className="bg-ink text-white rounded-t-[36px] sm:rounded-t-[48px] lg:rounded-[57px] overflow-hidden"
-        innerClassName="pt-8 pb-12 sm:pt-12 sm:pb-16 lg:py-[min(4.9vw,95px)] !px-5 sm:!px-8 lg:!px-[min(4.5313vw,87px)]"
+        className="bg-ink text-white rounded-[36px] sm:rounded-[48px] lg:rounded-[57px] overflow-hidden"
+        innerClassName="pt-6 pb-12 sm:pt-10 sm:pb-16 lg:py-[min(4.9vw,95px)] !px-5 sm:!px-8 lg:!px-[min(4.5313vw,87px)] space-y-4 sm:space-y-8 lg:space-y-12"
       >
         <ViewReveal duration={800}>
           {/* Eyebrow Header */}

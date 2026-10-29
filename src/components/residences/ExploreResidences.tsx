@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { exploreResidences, type ExploreResidenceItem } from "@/data/exploreResidences";
+import { exploreResidences, type ExploreResidenceItem } from "@/data/residences";
 import { ArrowRight, Container, Figure } from "@/components/ui/Primitives";
 import { Heading } from "../utils/Heading";
 import { ViewReveal } from "../animation";
@@ -91,134 +91,130 @@ export function ExploreResidences() {
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">
-      <Container className="">
+      <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
         {/* Heading & Subtitle */}
-        <ViewReveal duration={800}>
-          <div className="">
-            <Heading
-              title1={exploreResidences.titleTop}
-              title2={exploreResidences.titleAccent}
-              className="uppercase max-w-[36ch] sm:max-w-none"
-            />
-            <p className="mt-4 sm:mt-5 lg:mt-6 max-w-[56ch] lg:max-w-[43ch] font-sans font-normal text-[15px] sm:text-[17px] lg:text-[19px] leading-[1.4] tracking-[-0.03em] text-muted">
-              {exploreResidences.body}
-            </p>
-          </div>
-        </ViewReveal>
+        <div className="">
+          <Heading
+            title1={exploreResidences.titleTop}
+            title2={exploreResidences.titleAccent}
+            className="uppercase max-w-[28ch] sm:max-w-none"
+          />
+          <p className="mt-4 sm:mt-5 lg:mt-6 max-w-[56ch] lg:max-w-[43ch] font-sans font-normal text-[15px] sm:text-[17px] lg:text-[19px] leading-[1.4] tracking-[-0.03em] text-muted">
+            {exploreResidences.body}
+          </p>
+        </div>
 
         {/* Filter Bar */}
-        <ViewReveal duration={800} startDelay={100}>
-          <div className="mt-8 sm:mt-10 lg:mt-12 rounded-[20px] border border-ink/10 bg-[#FAF8F5] p-4 sm:p-5 lg:p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1.3fr_1fr_auto] gap-3.5 sm:gap-4 items-end">
-              {/* Field 1: Search */}
-              <div className="w-full">
-                <label
-                  htmlFor="search-residences"
-                  className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[2px] text-[#88847c] font-medium block mb-2"
-                >
-                  SEARCH
-                </label>
-                <input
-                  id="search-residences"
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by locality, college (NMIMS, Amity, Symbiosis) or chapter..."
-                  className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 text-[13px] text-ink placeholder:text-[#88847c]/70 placeholder:text-[11.5px] sm:placeholder:text-[12.5px] outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
-                />
-              </div>
+        <ViewReveal duration={800}>
+          <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1.3fr_1fr_auto] gap-3.5 sm:gap-4 items-end p-4 sm:p-5 lg:p-6 rounded-[20px] border border-ink/10 bg-[#FAF8F5]">
+            {/* Field 1: Search */}
+            <div className="w-full">
+              <label
+                htmlFor="search-residences"
+                className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[2px] text-[#88847c] font-medium block mb-2"
+              >
+                SEARCH
+              </label>
+              <input
+                id="search-residences"
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by locality, college (NMIMS, Amity, Symbiosis) or chapter..."
+                className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 text-[13px] text-ink placeholder:text-[#88847c]/70 placeholder:text-[11.5px] sm:placeholder:text-[12.5px] outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
+              />
+            </div>
 
-              {/* Field 2: City */}
-              <div className="w-full">
-                <label
-                  htmlFor="filter-city"
-                  className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[2px] text-[#88847c] font-medium block mb-2"
+            {/* Field 2: City */}
+            <div className="w-full">
+              <label
+                htmlFor="filter-city"
+                className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[2px] text-[#88847c] font-medium block mb-2"
+              >
+                CITY
+              </label>
+              <div className="relative w-full">
+                <select
+                  id="filter-city"
+                  value={selectedCity}
+                  onChange={(e) => setSelectedCity(e.target.value)}
+                  className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
                 >
-                  CITY
-                </label>
-                <div className="relative w-full">
-                  <select
-                    id="filter-city"
-                    value={selectedCity}
-                    onChange={(e) => setSelectedCity(e.target.value)}
-                    className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
-                  >
-                    {exploreResidences.cities.map((city) => (
-                      <option key={city} value={city}>
-                        {city}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-ink/60 h-3.5 w-3.5" />
-                </div>
+                  {exploreResidences.cities.map((city) => (
+                    <option key={city} value={city}>
+                      {city}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-ink/60 h-3.5 w-3.5" />
               </div>
+            </div>
 
-              {/* Field 3: Gender Wing */}
-              <div className="w-full">
-                <label
-                  htmlFor="filter-gender"
-                  className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[2px] text-[#88847c] font-medium block mb-2"
+            {/* Field 3: Gender Wing */}
+            <div className="w-full">
+              <label
+                htmlFor="filter-gender"
+                className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[2px] text-[#88847c] font-medium block mb-2"
+              >
+                GENDER WING
+              </label>
+              <div className="relative w-full">
+                <select
+                  id="filter-gender"
+                  value={selectedGender}
+                  onChange={(e) => setSelectedGender(e.target.value)}
+                  className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
                 >
-                  GENDER WING
-                </label>
-                <div className="relative w-full">
-                  <select
-                    id="filter-gender"
-                    value={selectedGender}
-                    onChange={(e) => setSelectedGender(e.target.value)}
-                    className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
-                  >
-                    {exploreResidences.genderWings.map((wing) => (
-                      <option key={wing} value={wing}>
-                        {wing}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-ink/60 h-3.5 w-3.5" />
-                </div>
+                  {exploreResidences.genderWings.map((wing) => (
+                    <option key={wing} value={wing}>
+                      {wing}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-ink/60 h-3.5 w-3.5" />
               </div>
+            </div>
 
-              {/* Field 4: Occupancy Option */}
-              <div className="w-full">
-                <label
-                  htmlFor="filter-occupancy"
-                  className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[2px] text-[#88847c] font-medium block mb-2"
+            {/* Field 4: Occupancy Option */}
+            <div className="w-full">
+              <label
+                htmlFor="filter-occupancy"
+                className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[2px] text-[#88847c] font-medium block mb-2"
+              >
+                OCCUPANCY OPTION
+              </label>
+              <div className="relative w-full">
+                <select
+                  id="filter-occupancy"
+                  value={selectedOccupancy}
+                  onChange={(e) => setSelectedOccupancy(e.target.value)}
+                  className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
                 >
-                  OCCUPANCY OPTION
-                </label>
-                <div className="relative w-full">
-                  <select
-                    id="filter-occupancy"
-                    value={selectedOccupancy}
-                    onChange={(e) => setSelectedOccupancy(e.target.value)}
-                    className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
-                  >
-                    {exploreResidences.occupancies.map((occ) => (
-                      <option key={occ} value={occ}>
-                        {occ}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-ink/60 h-3.5 w-3.5" />
-                </div>
+                  {exploreResidences.occupancies.map((occ) => (
+                    <option key={occ} value={occ}>
+                      {occ}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-ink/60 h-3.5 w-3.5" />
               </div>
+            </div>
 
-              {/* Action: Reset Filters */}
-              <div className="mt-1 md:mt-0 w-full lg:w-auto">
-                <button
-                  type="button"
-                  onClick={resetFilters}
-                  className="flex h-[46px] w-full lg:w-auto items-center justify-center rounded-full border border-ink/30 px-6 font-mono text-[10px] sm:text-[11px] uppercase tracking-[2px] text-ink transition-colors duration-200 hover:bg-ink hover:text-white cursor-pointer whitespace-nowrap"
-                >
-                  RESET FILTERS
-                </button>
-              </div>
+            {/* Action: Reset Filters */}
+            <div className="mt-1 md:mt-0 w-full lg:w-auto">
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="flex h-[46px] w-full lg:w-auto items-center justify-center rounded-full border border-ink/30 px-6 font-mono text-[10px] sm:text-[11px] uppercase tracking-[2px] text-ink transition-colors duration-200 hover:bg-ink hover:text-white cursor-pointer whitespace-nowrap"
+              >
+                RESET FILTERS
+              </button>
             </div>
           </div>
         </ViewReveal>
 
         {/* Counter Summary */}
-        <p className="font-mono uppercase text-[11px] sm:text-[12px] tracking-[2px] text-[#88847c] mt-8 mb-6">
+        <p className="font-mono uppercase text-[11px] sm:text-[12px] tracking-[2px] text-[#88847c] mt-6 mb-4 lg:mt-0 lg:mb-6">
           SHOWING {String(filteredItems.length).padStart(2, "0")} RESIDENCES
         </p>
 

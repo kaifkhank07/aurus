@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { residences } from "@/data/residences";
+import { residences } from "@/data/student-residences";
 import { ArrowRight, Container, Eyebrow, Figure } from "@/components/ui/Primitives";
 import { Heading } from "../utils/Heading";
 
@@ -74,11 +74,11 @@ export function Residences() {
   };
 
   return (
-    <section className="pb-[min(8.4vw,162px)]">
-      <Container>
+    <section className="py-8 sm:py-12 lg:py-16 space-y-4 sm:space-y-8 lg:space-y-12">
+      <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
         <Eyebrow>{residences.eyebrow}</Eyebrow>
 
-        <div className="flex flex-wrap items-start justify-between gap-8 mt-6 sm:mt-8 lg:mt-[min(2.4vw,46px)]">
+        <div className="flex flex-wrap items-start justify-between gap-4 sm:gap-6 lg:gap-[2.4vw]">
           <Heading
             title1={residences.titleTop}
             title2={residences.titleAccent}
@@ -106,11 +106,11 @@ export function Residences() {
       </Container>
 
       {/* Track bleeds past the container on the right, as in the Figma */}
-      <div>
+      <div className="">
         <ul
           ref={trackRef}
           onScroll={sync}
-          className="no-scrollbar mt-[min(4.7vw,20px)] flex gap-4 overflow-x-auto pb-2 lg:gap-[min(1.5625vw,30px)]"
+          className="no-scrollbar flex gap-4 overflow-x-auto lg:gap-[min(1.5625vw,30px)]"
         >
           {residences.items.map((item, index) => (
             <li

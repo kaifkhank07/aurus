@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { aboutData } from "@/data";
+import { aboutData } from "@/data/about";
 import { Container, Eyebrow } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";

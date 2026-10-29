@@ -1,13 +1,14 @@
-import { Amenities } from "@/components/student-residences/Amenities";
-import { ChapterBlock } from "@/components/student-residences/ChapterBlock";
-import { Culture } from "@/components/student-residences/Culture";
 import { Hero } from "@/components/student-residences/Hero";
 import { Intro } from "@/components/student-residences/Intro";
-import { Locations } from "@/components/student-residences/Locations";
-import { RealLife } from "@/components/student-residences/RealLife";
+import { ChapterBlock } from "@/components/student-residences/ChapterBlock";
 import { Residences } from "@/components/student-residences/Residences";
-import { Journey } from "@/components/ui/Journey";
-import { Testimonial } from "@/components/ui/Testimonial";
+import { Locations } from "@/components/shared/Locations";
+import { Amenities } from "@/components/student-residences/Amenities";
+import { RealLife } from "@/components/shared/RealLife";
+import { Culture } from "@/components/shared/Culture";
+import { Testimonial } from "@/components/shared/Testimonial";
+import { Journey } from "@/components/shared/Journey";
+
 
 export default function StudentResidencesPage() {
     return (
@@ -16,9 +17,9 @@ export default function StudentResidencesPage() {
             <Intro />
             <ChapterBlock />
             <Residences />
-            <Locations />
+            <Locations showHeading={true} />
             <Amenities />
-            <RealLife />
+            <RealLife havingTopSpace={true} />
             <Culture />
             <Testimonial />
             <Journey />

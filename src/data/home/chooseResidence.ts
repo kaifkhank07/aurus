@@ -31,3 +31,5 @@ export const landing = {
     email: { label: "info@auruslife.com", href: "mailto:info@auruslife.com" },
   },
 };
+
+export const chooseResidenceData = landing;

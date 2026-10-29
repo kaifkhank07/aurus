@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { lifePageData } from "@/data";
+import { lifePageData } from "@/data/lifeataurus";
 import { Container } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
@@ -9,7 +9,7 @@ import { Heading } from "../utils/Heading";
 export default function LifeHero() {
   return (
     <section className="py-8 sm:py-12 lg:py-16">
-      <Container>
+      <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
         {/* Title & Description */}
         <Heading
           as="h1"
@@ -18,13 +18,13 @@ export default function LifeHero() {
           className="uppercase max-w-xl"
         />
 
-        <p className="mt-4 sm:mt-5 lg:mt-6 max-w-[48ch] font-sans font-regular text-[15px] sm:text-[17px] lg:text-[19px] leading-[1.45] tracking-[-0.025em] text-muted">
+        <p className="font-sans font-regular text-[15px] sm:text-[17px] lg:text-[19px] leading-[1.45] tracking-[-0.025em] text-muted">
           {lifePageData.hero.body}
         </p>
 
         {/* 3-Photo Gallery Grid (Big Left, 2 Stacked Right on Desktop) */}
         <ViewReveal duration={800}>
-          <div className="mt-8 sm:mt-10 lg:mt-14 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
             {/* Left Column: Large Celebration Photo */}
             <div className="lg:col-span-7 relative aspect-[14/11] sm:aspect-[4/3] lg:aspect-auto lg:h-full min-h-[260px] sm:min-h-[380px] w-full overflow-hidden  bg-ink/5">
               <Image

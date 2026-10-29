@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Container, Eyebrow } from "@/components/ui/Primitives";
 import { Heading } from "@/components/utils/Heading";
 import { ViewReveal } from "@/components/animation";
-import { notFoundData } from "@/data/notFound";
+import { notFoundData } from "@/data/not-found";
 
 export default function NotFoundContent() {
   return (

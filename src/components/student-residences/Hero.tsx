@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import gsap from "gsap";
-import { hero } from "@/data/hero";
+import { hero } from "@/data/student-residences";
 import { Figure, ArrowRight } from "@/components/ui/Primitives";
 import { PillButton } from "@/components/ui/Primitives";
 import { Navbar } from "../layout/Navbar";
@@ -195,7 +195,7 @@ export function Hero() {
   // import { useEffect, useRef } from "react";
   // import Link from "next/link";
   // import gsap from "gsap";
-  // import { hero } from "@/data/hero";
+  // import { hero } from "@/data/student-residences";
   // import { Figure, ArrowRight } from "@/components/ui/Primitives";
   // import { PillButton } from "@/components/ui/Primitives";
   // import { Navbar } from "../layout/Navbar";

@@ -1,25 +1,30 @@
 import Link from "next/link";
-import { journey } from "@/data/journey";
+import { journey } from "@/data";
 import { ArrowRight, Container } from "@/components/ui/Primitives";
 import { Heading } from "../utils/Heading";
 
 export function Journey() {
   return (
-    <section className="relative overflow-hidden py-8 sm:py-12 lg:py-16 pb-16 sm:pb-20 lg:pb-[min(6vw,115px)]">
-      <Container className="relative text-center">
-        <p className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] text-muted lg:text-ink">{journey.eyebrow}</p>
+    // <section className="relative border overflow-hidden py-8 sm:py-12 lg:py-16 pb-16 sm:pb-20 lg:pb-[min(6vw,115px)]">
+    <section className="py-8 sm:py-12 lg:py-16 lg:pb-20">
+      <Container className="relative text-center space-y-3 sm:space-y-5 lg:space-y-8">
+
+        <p className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] text-muted lg:text-ink">
+          {journey.eyebrow}
+        </p>
+
         <Heading
           title1={journey.titleTop}
           title2={journey.titleAccent}
           className="uppercase"
         />
 
-        <p className="font-sans font-normal text-[clamp(1rem,0.9896vw,19px)] leading-[1.3158] tracking-[-0.04em] mx-auto mt-4 sm:mt-5 lg:mt-[min(1.3vw,25px)] max-w-[380px] sm:max-w-[440px] lg:max-w-[529px] text-muted !text-[13.5px] sm:!text-[15px] lg:!text-[19px] !leading-[1.5] lg:!leading-[1.32]">
+        <p className="font-sans font-normal text-[clamp(1rem,0.9896vw,19px)] leading-[1.3158] tracking-[-0.04em] mx-auto max-w-[380px] sm:max-w-[440px] lg:max-w-[529px] text-muted !text-[13.5px] sm:!text-[15px] lg:!text-[19px] !leading-[1.5] lg:!leading-[1.32]">
           {journey.body}
         </p>
 
         {/* Mobile: stacked full-width pill buttons */}
-        <div className="mt-8 sm:mt-10 flex w-full max-w-[380px] sm:max-w-[420px] mx-auto flex-col gap-3 sm:gap-3.5 lg:hidden">
+        <div className="flex w-full max-w-[380px] sm:max-w-[420px] mx-auto flex-col gap-3 sm:gap-3.5 lg:hidden">
           {journey.actions.map((action) => (
             <Link
               key={action.href}
@@ -35,7 +40,7 @@ export function Journey() {
         </div>
 
         {/* Desktop: circular buttons with ghost watermark background */}
-        <div className="relative mt-[min(2.4vw,46px)] hidden lg:flex items-center justify-center">
+        <div className="relative hidden lg:flex items-center justify-center">
           {/* Ghost wordmark behind the CTAs */}
           <span
             aria-hidden="true"
