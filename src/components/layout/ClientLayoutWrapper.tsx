@@ -21,9 +21,9 @@ function LayoutNav() {
 function LayoutFooter() {
   const pathname = usePathname();
   if (pathname?.startsWith("/admin")) return null;
-  const isNotOnlyHomepage = pathname !== "/";
+  // const isNotOnlyHomepage = pathname !== "/";
 
-  if (!isNotOnlyHomepage) return null;
+  // if (!isNotOnlyHomepage) return null;
   return <Footer />;
 }
 

@@ -6,7 +6,7 @@ export const hero = {
   cities: "Mumbai · Noida · Ahmedabad · Pune · Jalandhar",
   actions: [
     { label: "Explore Residences", href: "/residences" },
-    { label: "Discover Aurus", href: "/about" },
+    { label: "Discover Aurus", href: "#intro" },
   ],
   image: "/images/image01.jpg",
 };

@@ -11,7 +11,7 @@ export function Story() {
     <section className="py-8 sm:py-12 lg:py-16">
       <Container>
         <ViewReveal duration={800} className="">
-          <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10rounded-[20px] sm:rounded-[18px] lg:rounded-[20px] bg-white border border-ink/[0.08] p-6 sm:p-8 lg:p-10">
+          <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 rounded-[20px] sm:rounded-[18px] lg:rounded-[20px] bg-white border border-ink/[0.08] p-6 sm:p-8 lg:p-10">
             {/* Left Column: Heading & Paragraphs */}
             <div className="flex flex-col lg:pt-8">
               <Heading

@@ -6,6 +6,6 @@ export const journey = {
   watermark: "AURUS",
   actions: [
     { label: "Explore Residences", href: "/residences", solid: false },
-    { label: "Book a Visit", href: "/contact", solid: true },
+    { label: "Book a Visit", href: "#", solid: true },
   ],
 };

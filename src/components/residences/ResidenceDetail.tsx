@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
 import { Container } from "@/components/ui/Primitives";
 import {
@@ -9,6 +8,7 @@ import {
   type ResidenceDetail as ResidenceDetailType,
 } from "@/data/residences";
 import { Heading } from "../utils/Heading";
+import { ScheduleVisitModal } from "./ScheduleVisitModal";
 
 function CheckCircleIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -70,16 +70,6 @@ export function ResidenceDetail({
 }: ResidenceDetailProps) {
   const [activeHeroImage, setActiveHeroImage] = useState(data.mainImage);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const handleScheduleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitted(true);
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setIsModalOpen(false);
-    }, 2000);
-  };
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">
@@ -119,7 +109,11 @@ export function ResidenceDetail({
           </div>
 
           {data.galleryImages.slice(0, 2).map((img, idx) => (
-            <div key={idx} className="relative aspect-[16/10] sm:aspect-[1.5/1] rounded-[18px] sm:rounded-[22px] overflow-hidden bg-neutral-200 group">
+            <div
+              key={idx}
+              onClick={() => setActiveHeroImage(img)}
+              className="relative aspect-[16/10] sm:aspect-[1.5/1] rounded-[18px] sm:rounded-[22px] overflow-hidden bg-neutral-200 group cursor-pointer"
+            >
               <Image
                 src={img}
                 alt={`${data.title} main interior view`}
@@ -375,133 +369,12 @@ export function ResidenceDetail({
       </Container>
 
       {/* Schedule a Visit Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="relative w-full max-w-md rounded-[24px] bg-[#FAF8F4] p-6 sm:p-8 shadow-2xl border border-ink/10">
-            <button
-              type="button"
-              onClick={() => setIsModalOpen(false)}
-              className="absolute right-5 top-5 text-ink/60 hover:text-ink cursor-pointer p-1"
-              aria-label="Close modal"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="w-5 h-5 stroke-current"
-                fill="none"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-
-            {isSubmitted ? (
-              <div className="py-8 text-center space-y-3">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-ink text-white">
-                  <CheckCircleIcon className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-xl font-light text-ink">
-                  Visit Request Received
-                </h3>
-                <p className="text-xs text-muted leading-relaxed">
-                  Our residence manager will reach out within 2 hours to confirm
-                  your slot.
-                </p>
-              </div>
-            ) : (
-              <div>
-                <span className="font-mono uppercase text-[10px] tracking-[2px] text-[#88847C] block mb-1">
-                  TOUR AURUS
-                </span>
-                <h3 className="text-2xl font-light text-ink mb-2">
-                  Schedule a Visit
-                </h3>
-                <p className="text-xs text-muted mb-6">
-                  Experience {data.title} in person. Choose a date and our
-                  concierge team will guide you.
-                </p>
-
-                <form onSubmit={handleScheduleSubmit} className="space-y-4">
-                  <div>
-                    <label
-                      htmlFor="fullName"
-                      className="block font-mono text-[10px] uppercase tracking-[1.5px] text-[#88847C] mb-1"
-                    >
-                      Full Name
-                    </label>
-                    <input
-                      id="fullName"
-                      type="text"
-                      required
-                      placeholder="Jane Doe"
-                      className="w-full rounded-xl border border-ink/15 bg-white px-3.5 py-2.5 text-xs text-ink outline-none focus:border-ink transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="phone"
-                      className="block font-mono text-[10px] uppercase tracking-[1.5px] text-[#88847C] mb-1"
-                    >
-                      Phone Number
-                    </label>
-                    <input
-                      id="phone"
-                      type="tel"
-                      required
-                      placeholder="+91 98765 43210"
-                      className="w-full rounded-xl border border-ink/15 bg-white px-3.5 py-2.5 text-xs text-ink outline-none focus:border-ink transition-colors"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label
-                        htmlFor="visitDate"
-                        className="block font-mono text-[10px] uppercase tracking-[1.5px] text-[#88847C] mb-1"
-                      >
-                        Preferred Date
-                      </label>
-                      <input
-                        id="visitDate"
-                        type="date"
-                        required
-                        className="w-full rounded-xl border border-ink/15 bg-white px-3 py-2.5 text-xs text-ink outline-none focus:border-ink transition-colors"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="visitTime"
-                        className="block font-mono text-[10px] uppercase tracking-[1.5px] text-[#88847C] mb-1"
-                      >
-                        Time Slot
-                      </label>
-                      <select
-                        id="visitTime"
-                        className="w-full rounded-xl border border-ink/15 bg-white px-3 py-2.5 text-xs text-ink outline-none focus:border-ink transition-colors"
-                      >
-                        <option>Morning (10 AM - 1 PM)</option>
-                        <option>Afternoon (1 PM - 4 PM)</option>
-                        <option>Evening (4 PM - 7 PM)</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full mt-2 rounded-full bg-ink py-3 font-mono text-[11px] uppercase tracking-[2px] font-medium text-white hover:bg-ink/85 transition cursor-pointer"
-                  >
-                    Confirm Visit Slot
-                  </button>
-                </form>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <ScheduleVisitModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        residenceTitle={data.title}
+        residenceLocation={data.location?.label || data.location?.address || data.title}
+      />
     </section>
   );
 }

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Panel } from "@/components/ui/Primitives";
+import { Eyebrow, Panel } from "@/components/ui/Primitives";
 import { ViewReveal } from "@/components/animation";
 import { developersData } from "@/data/developers";
 
@@ -42,43 +42,39 @@ export function SubmitProjectForm() {
   };
 
   return (
-    <section id="submit-property" className="py-12 sm:py-16 lg:py-24">
+    <section id="submit-property" className="px-4 sm:px-6 lg:px-0 py-8 sm:py-12 lg:py-16">
       <Panel
         className="bg-ink text-white rounded-[28px] sm:rounded-[40px] lg:rounded-[57px] shadow-2xl"
-        innerClassName="py-12 sm:py-16 lg:py-20 !px-6 sm:!px-10 lg:!px-[min(4.5313vw,87px)]"
+        innerClassName="pt-6 pb-12 sm:pt-10 sm:pb-16 lg:py-[min(4.9vw,95px)] !px-5 sm:!px-8 lg:!px-[min(4.5313vw,87px)] space-y-4 sm:space-y-8 lg:space-y-12"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-          {/* Left Column: Heading & Information */}
-          <div className="lg:col-span-5 flex flex-col justify-center">
-            <span className="font-mono text-[11px] sm:text-[12px] tracking-[2px] uppercase text-white/60 mb-3 block">
-              {submitProject.eyebrow}
-            </span>
+        <Eyebrow dark={true}>{submitProject.eyebrow}</Eyebrow>
 
-            <h2 className="font-sans font-light uppercase text-3xl sm:text-4xl md:text-5xl lg:text-[52px] leading-[1.05] text-white">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
+          {/* Left Column: Heading & Information */}
+          <div className="lg:col-span-5 flex flex-col justify-start gap-4 sm:gap-6 lg:gap-8">
+            <h2 className="font-sans font-light uppercase text-3xl sm:text-4xl md:text-5xl lg:text-[72px] leading-[1.05] text-white">
               {submitProject.title}
             </h2>
 
-            <p className="mt-5 sm:mt-6 font-sans font-normal text-[14px] sm:text-[15px] lg:text-[16px] leading-[1.6] text-white/70 max-w-md">
+            <p className="font-sans font-normal text-[14px] sm:text-[15px] lg:text-[16px] leading-[1.6] text-white/50 max-w-lg">
               {submitProject.body}
             </p>
 
-            <div className="mt-8 pt-6 border-t border-white/15">
-              <span className="font-sans text-[13px] sm:text-[14px] text-white/70">
-                Or write to:{" "}
-                <a
-                  href={`mailto:${submitProject.email}`}
-                  className="text-white underline underline-offset-4 decoration-white/40 hover:decoration-white font-mono text-[13px] tracking-[1px] transition-colors"
-                >
-                  {submitProject.email}
-                </a>
-              </span>
-            </div>
+            <span className="font-sans font-normal text-[14px] sm:text-[15px] lg:text-[16px] leading-[1.6] text-white/50">
+              Or write to:{" "}
+              <a
+                href={`mailto:${submitProject.email}`}
+                className="underline underline-offset-4 decoration-white/50 hover:text-white hover:decoration-white transition-colors"
+              >
+                {submitProject.email}
+              </a>
+            </span>
           </div>
 
           {/* Right Column: Submission Form Card */}
           <div className="lg:col-span-7">
             <ViewReveal duration={800} startDelay={100}>
-              <div className="rounded-[22px] sm:rounded-[28px] bg-white text-ink p-6 sm:p-8 lg:p-10 shadow-2xl">
+              <div className="rounded-[10px] sm:rounded-[20px] bg-white text-ink p-6 sm:p-8 lg:p-10 shadow-2xl">
                 {isSubmitted ? (
                   <div className="py-12 text-center flex flex-col items-center justify-center">
                     <div className="w-14 h-14 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-4">
@@ -309,7 +305,7 @@ export function SubmitProjectForm() {
           </div>
         </div>
       </Panel>
-    </section>
+    </section >
   );
 }
 

@@ -175,7 +175,7 @@ export const storiesData: StoriesPageData = {
         excerpt:
           "Finding student accommodation in Mumbai can be chaotic. Here is what to look for: distance, safety protocols, dining options, and quiet study spaces.",
         ctaText: "READ GUIDE",
-        href: "/stories/guide-luxury-pgs-nmims-mithibai",
+        href: "/blog/guide-luxury-pgs-nmims-mithibai",
       },
       {
         id: "journal-2",
@@ -189,7 +189,7 @@ export const storiesData: StoriesPageData = {
         excerpt:
           "Sector 126 and Knowledge Park in Noida are booming. Explore why modern students demand hospitality-driven living spaces.",
         ctaText: "READ GUIDE",
-        href: "/stories/gen-z-noida-hostels-lifestyle-residences",
+        href: "/blog/gen-z-noida-hostels-lifestyle-residences",
       },
       {
         id: "journal-3",
@@ -203,7 +203,7 @@ export const storiesData: StoriesPageData = {
         excerpt:
           "Since Aurus includes premium bedding, towels, and daily housekeeping, your packing list gets cut in half!",
         ctaText: "READ GUIDE",
-        href: "/stories/minimalist-packing-list-first-month",
+        href: "/blog/minimalist-packing-list-first-month",
       },
     ],
   },

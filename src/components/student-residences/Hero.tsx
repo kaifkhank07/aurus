@@ -9,10 +9,12 @@ import { PillButton } from "@/components/ui/Primitives";
 import { Navbar } from "../layout/Navbar";
 import { Nav } from "../layout/Nav";
 import { HeroHeading } from "../utils/HeroHeading";
+import { useScrollNavigation } from "../utils/Scroll";
 
 export function Hero() {
   const mobileImageRef = useRef<HTMLImageElement>(null);
   const desktopImageRef = useRef<HTMLImageElement>(null);
+  const { handleScroll } = useScrollNavigation();
 
   useEffect(() => {
     // Respect prefers-reduced-motion: disable animations
@@ -113,15 +115,17 @@ export function Hero() {
             <div className="mt-4 sm:mt-6 flex flex-col gap-2.5 sm:gap-3.5 w-full">
               {hero.actions.map((action, index) => {
                 const isPrimary = index === 0;
+                const isDiscover = action.label === "Discover Aurus";
+
                 return (
                   <Link
                     key={action.href}
                     href={action.href}
-                    className={`font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] flex h-[44px] sm:h-[50px] w-full items-center justify-center gap-2.5 rounded-full text-[12px] sm:text-[13px] tracking-[2px] uppercase transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-ink/40 active:scale-[0.99] ${
-                      isPrimary
-                        ? "border border-ink bg-ink text-paper hover:bg-neutral-800"
-                        : "border border-ink bg-transparent text-ink hover:bg-ink hover:text-paper"
-                    }`}
+                    onClick={(e) => handleScroll(e, action.href)}
+                    className={`font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] flex h-[44px] sm:h-[50px] w-full items-center justify-center gap-2.5 rounded-full text-[12px] sm:text-[13px] tracking-[2px] uppercase transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-ink/40 active:scale-[0.99] ${isPrimary
+                      ? "border border-ink bg-ink text-paper hover:bg-neutral-800"
+                      : "border border-ink bg-transparent text-ink hover:bg-ink hover:text-paper"
+                      }`}
                   >
                     <span>{action.label}</span>
                     <ArrowRight className="h-3.5 w-3.5" />
@@ -176,11 +180,25 @@ export function Hero() {
             </p>
 
             <div className="mt-[clamp(16px,2.8vh,min(2.6vw,50px))] flex flex-wrap gap-4">
-              {hero.actions.map((action) => (
-                <PillButton key={action.href} href={action.href} variant="light">
-                  {action.label}
-                </PillButton>
-              ))}
+              {hero.actions.map((action) => {
+                const isDiscover = action.label === "Discover Aurus";
+
+                return isDiscover ? (
+                  <button
+                    key={action.href}
+                    type="button"
+                    onClick={(e) => handleScroll(e, action.href)}
+                  >
+                    <PillButton href="#" variant="light">
+                      {action.label}
+                    </PillButton>
+                  </button>
+                ) : (
+                  <PillButton key={action.href} href={action.href} variant="light">
+                    {action.label}
+                  </PillButton>
+                );
+              })}
             </div>
           </div>
         </div>

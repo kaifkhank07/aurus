@@ -96,16 +96,14 @@ export function IdealAssets() {
   const { idealAssets } = developersData;
 
   return (
-    <section id="what-we-look-for" className="py-12 sm:py-16 lg:py-24 border-t border-ink/10">
-      <Container>
-        {/* Eyebrow */}
-        <Eyebrow>{idealAssets.eyebrow}</Eyebrow>
+    <section id="what-we-look-for" className="py-8 sm:py-12 lg:py-16">
+      <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
 
         {/* 2-Column Content */}
-        <div className="mt-8 sm:mt-12 lg:mt-16 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14">
           {/* Left Column: Cafe Image */}
           <ViewReveal duration={800} className="lg:col-span-5">
-            <div className="relative aspect-[4/3] sm:aspect-[16/11] lg:aspect-[4/3] w-full overflow-hidden rounded-[20px] sm:rounded-[28px] bg-ink/5 shadow-md">
+            <div className="relative h-full aspect-[4/3] sm:aspect-[16/11] lg:aspect-[4/3] w-full overflow-hidden rounded-[10px] sm:rounded-[16px] bg-ink/5 shadow-md">
               <Image
                 src={idealAssets.image.src}
                 alt={idealAssets.image.alt}
@@ -117,7 +115,10 @@ export function IdealAssets() {
           </ViewReveal>
 
           {/* Right Column: Heading & Checklist */}
-          <div className="lg:col-span-7 flex flex-col justify-center">
+          <div className="lg:col-span-7 flex flex-col justify-center gap-4 sm:gap-5 lg:gap-6">
+            {/* Eyebrow */}
+            <Eyebrow rule={false}>{idealAssets.eyebrow}</Eyebrow>
+
             <Heading
               as="h2"
               title1={idealAssets.titleTop}
@@ -127,12 +128,12 @@ export function IdealAssets() {
               title2ClassName="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[68px] leading-[0.95]"
             />
 
-            <p className="mt-4 sm:mt-5 font-sans font-normal text-[15px] sm:text-[16px] leading-[1.6] text-muted max-w-xl">
+            <p className="font-sans font-normal text-[15px] sm:text-[16px] leading-[1.6] text-muted max-w-xl">
               {idealAssets.body}
             </p>
 
             {/* Checklist */}
-            <ViewReveal duration={800} startDelay={150} className="mt-6 sm:mt-8">
+            <ViewReveal duration={800} startDelay={150}>
               <div className="border-t border-ink/10">
                 {idealAssets.criteria.map((item, idx) => (
                   <div

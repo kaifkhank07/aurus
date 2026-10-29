@@ -1,17 +1,19 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { storiesData } from "@/data/stories";
 import { Container, ArrowRight } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
+import ScheduleVisitModal from "../residences/ScheduleVisitModal";
 
 
 export function AurusJournal() {
   const data = storiesData.journalSection;
   const bannerData = storiesData.communityBanner;
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">
@@ -90,15 +92,23 @@ export function AurusJournal() {
             />
 
             {/* Right Column: CTA Pill Button */}
-            <Link
-              href={bannerData.cta.href}
-              className="font-mono uppercase text-[11px] sm:text-[12px] tracking-[2px] font-medium inline-flex items-center justify-center rounded-full bg-ink text-paper px-7 sm:px-9 py-3.5 sm:py-4 transition-all duration-300 hover:bg-neutral-800 hover:shadow-sm active:scale-[0.99] w-full sm:w-auto text-center"
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="font-mono uppercase text-[11px] sm:text-[12px] tracking-[2px] font-medium inline-flex items-center justify-center rounded-full bg-ink text-paper px-7 sm:px-9 py-3.5 sm:py-4 transition-all duration-300 hover:bg-neutral-800 hover:shadow-sm active:scale-[0.99] w-full sm:w-auto text-center cursor-pointer"
             >
               {bannerData.cta.label}
-            </Link>
+            </button>
           </div>
         </ViewReveal>
       </Container>
+
+      {/* Schedule a Visit Modal */}
+      <ScheduleVisitModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      // residenceTitle={data.title}
+      // residenceLocation={data.location?.label || data.location?.address || data.title}
+      />
     </section>
   );
 }

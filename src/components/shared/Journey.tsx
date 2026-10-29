@@ -1,9 +1,15 @@
+"use client"
+
 import Link from "next/link";
 import { journey } from "@/data";
 import { ArrowRight, Container } from "@/components/ui/Primitives";
 import { Heading } from "../utils/Heading";
+import ScheduleVisitModal from "../residences/ScheduleVisitModal";
+import { useState } from "react";
 
 export function Journey() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     // <section className="relative border overflow-hidden py-8 sm:py-12 lg:py-16 pb-16 sm:pb-20 lg:pb-[min(6vw,115px)]">
     <section className="py-8 sm:py-12 lg:py-16 lg:pb-20">
@@ -25,18 +31,37 @@ export function Journey() {
 
         {/* Mobile: stacked full-width pill buttons */}
         <div className="flex w-full max-w-[380px] sm:max-w-[420px] mx-auto flex-col gap-3 sm:gap-3.5 lg:hidden">
-          {journey.actions.map((action) => (
-            <Link
-              key={action.href}
-              href={action.href}
-              className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] flex h-[48px] sm:h-[52px] w-full items-center justify-center rounded-full border border-ink/35 text-ink tracking-[2px] text-[11px] sm:text-[12px] transition-colors duration-300 hover:bg-ink hover:text-cream"
-            >
-              <span className="inline-flex items-center gap-2">
-                {action.label}
-                <ArrowRight />
-              </span>
-            </Link>
-          ))}
+          {journey.actions.map((action) => {
+            const isBooking = action.label === "Book a Visit";
+
+            const className =
+              "font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] flex h-[48px] sm:h-[52px] w-full items-center justify-center rounded-full border border-ink/35 text-ink tracking-[2px] text-[11px] sm:text-[12px] transition-colors duration-300 hover:bg-ink hover:text-cream";
+
+            return isBooking ? (
+              <button
+                key={action.href}
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className={className}
+              >
+                <span className="inline-flex items-center gap-2">
+                  {action.label}
+                  <ArrowRight />
+                </span>
+              </button>
+            ) : (
+              <Link
+                key={action.href}
+                href={action.href}
+                className={className}
+              >
+                <span className="inline-flex items-center gap-2">
+                  {action.label}
+                  <ArrowRight />
+                </span>
+              </Link>
+            );
+          })}
         </div>
 
         {/* Desktop: circular buttons with ghost watermark background */}
@@ -50,24 +75,51 @@ export function Journey() {
           </span>
 
           <div className="flex items-center gap-[min(2.7vw,52px)]">
-            {journey.actions.map((action) => (
-              <Link
-                key={action.href}
-                href={action.href}
-                className={`font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] flex aspect-square w-[10.2vw] min-w-[120px] items-center justify-center rounded-full p-4 text-center leading-relaxed transition-colors duration-300 ${action.solid
-                  ? "bg-ink text-cream hover:bg-ink/85"
-                  : "border border-ink/35 text-ink hover:bg-ink hover:text-cream"
-                  }`}
-              >
-                <span className="inline-flex items-center gap-1 px-3">
-                  {action.label}
-                  <ArrowRight />
-                </span>
-              </Link>
-            ))}
+            {journey.actions.map((action) => {
+              const isBooking = action.label === "Book a Visit";
+
+              const className = `font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] flex aspect-square w-[10.2vw] min-w-[120px] items-center justify-center rounded-full p-4 text-center leading-relaxed transition-colors duration-300 cursor-pointer ${action.solid
+                ? "bg-ink text-cream hover:bg-ink/85"
+                : "border border-ink/35 text-ink hover:bg-ink hover:text-cream"
+                }`;
+
+              return isBooking ? (
+                <button
+                  key={action.href}
+                  type="button"
+                  onClick={() => setIsModalOpen(true)}
+                  className={className}
+                >
+                  <span className="inline-flex items-center gap-1 px-3">
+                    {action.label}
+                    <ArrowRight />
+                  </span>
+                </button>
+              ) : (
+                <Link
+                  key={action.href}
+                  href={action.href}
+                  className={className}
+                >
+                  <span className="inline-flex items-center gap-1 px-3">
+                    {action.label}
+                    <ArrowRight />
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </Container>
+
+
+      {/* Schedule a Visit Modal */}
+      <ScheduleVisitModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      // residenceTitle={data.title}
+      // residenceLocation={data.location?.label || data.location?.address || data.title}
+      />
     </section>
   );
 }

@@ -1,6 +1,6 @@
 export const culture = {
   eyebrow: "07 // Real Resident Moments",
-  handleLink: { label: "#auruslife", href: "https://www.instagram.com/aurus_luxuryresidences/" },
+  handleLink: { label: "#auruslife", href: "/life-at-aurus" },
   titleTop: "Culture &",
   titleAccent: "Community.",
   // Static for now — swap for the Instagram Graph API when a token is in place.

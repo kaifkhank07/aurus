@@ -5,30 +5,30 @@ import { Container, Eyebrow } from "@/components/ui/Primitives";
 import { Heading } from "@/components/utils/Heading";
 import { ViewReveal } from "@/components/animation";
 import { developersData } from "@/data/developers";
+import { useScrollNavigation } from "../utils/Scroll";
 
 export function PartnershipModels() {
   const { partnershipModels } = developersData;
+  const { handleScroll } = useScrollNavigation();
 
   return (
-    <section id="partnership-models" className="py-12 sm:py-16 lg:py-24">
-      <Container>
+    <section id="partnership-models" className="py-8 sm:py-12 lg:py-16">
+      <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
         {/* Eyebrow */}
         <Eyebrow>{partnershipModels.eyebrow}</Eyebrow>
 
         {/* Heading */}
-        <div className="mt-8 sm:mt-12 lg:mt-16">
-          <Heading
-            as="h2"
-            title1={partnershipModels.titleTop}
-            title2={partnershipModels.titleAccent}
-            className="uppercase"
-            title1ClassName="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[68px] leading-[0.95]"
-            title2ClassName="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[68px] leading-[0.95]"
-          />
-        </div>
+        <Heading
+          as="h2"
+          title1={partnershipModels.titleTop}
+          title2={partnershipModels.titleAccent}
+          className="uppercase"
+          title1ClassName="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[68px] leading-[0.95]"
+          title2ClassName="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[68px] leading-[0.95]"
+        />
 
         {/* 6 Models Grid */}
-        <ViewReveal duration={800} startDelay={150} className="mt-10 sm:mt-14 lg:mt-16">
+        <ViewReveal duration={800} startDelay={150}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
             {partnershipModels.models.map((model, idx) => {
               if (model.isCta) {
@@ -52,6 +52,7 @@ export function PartnershipModels() {
                     <div className="mt-6 pt-4 border-t border-white/15">
                       <Link
                         href={model.ctaHref || "#submit-property"}
+                        onClick={(e) => handleScroll(e, model.ctaHref || "#submit-property")}
                         className="font-mono text-[11px] sm:text-[12px] tracking-[2px] uppercase text-white inline-flex items-center gap-2 group-hover:translate-x-1 transition-transform duration-300 underline underline-offset-4 decoration-white/40 hover:decoration-white"
                       >
                         <span>{model.ctaText}</span>

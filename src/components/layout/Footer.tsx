@@ -7,7 +7,7 @@ import { ViewReveal } from "../animation";
 export function Footer() {
   return (
     // <footer className="pb-3 sm:pb-4 lg:pb-[1.6667vw]">
-    <footer className="pt-2 sm:py-4 lg:py-6">
+    <footer className="pt-2 sm:pt-4 lg:py-6">
       <ViewReveal duration={800}>
         <Panel
           className="bg-ink text-white rounded-t-[36px] sm:rounded-t-[48px] lg:rounded-[57px]"
@@ -116,7 +116,7 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="w-full flex justify-between items-center">
+          <div className="w-full flex flex-col lg:flex-row gap-4 justify-between items-center">
             <p className="font-mono uppercase text-[12px] sm:text-[14px] leading-[1.8] tracking-[1px] text-white/55 font-light">
               © 2026 Aurus Life · A Colstay Limited brand
             </p>

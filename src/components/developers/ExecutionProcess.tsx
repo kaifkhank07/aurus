@@ -9,25 +9,23 @@ export function ExecutionProcess() {
   const { executionProcess } = developersData;
 
   return (
-    <section className="py-12 sm:py-16 lg:py-24 border-t border-ink/10">
-      <Container>
+    <section className="py-8 sm:py-12 lg:py-16">
+      <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
         {/* Eyebrow */}
         <Eyebrow>{executionProcess.eyebrow}</Eyebrow>
 
         {/* Heading */}
-        <div className="mt-8 sm:mt-12 lg:mt-16">
-          <Heading
-            as="h2"
-            title1={executionProcess.titleTop}
-            title2={executionProcess.titleAccent}
-            className="uppercase"
-            title1ClassName="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[68px] leading-[0.95]"
-            title2ClassName="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[68px] leading-[0.95]"
-          />
-        </div>
+        <Heading
+          as="h2"
+          title1={executionProcess.titleTop}
+          title2={executionProcess.titleAccent}
+          className="uppercase"
+          title1ClassName="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[68px] leading-[0.95]"
+          title2ClassName="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[68px] leading-[0.95]"
+        />
 
         {/* 5 Process Rows */}
-        <ViewReveal duration={800} startDelay={150} className="mt-10 sm:mt-14 lg:mt-16">
+        <ViewReveal duration={800} startDelay={150}>
           <div className="border-t border-ink/15">
             {executionProcess.steps.map((step) => (
               <div
@@ -50,7 +48,7 @@ export function ExecutionProcess() {
 
                 {/* Step Description */}
                 <div className="flex-1">
-                  <p className="font-sans text-[13px] sm:text-[14px] lg:text-[15px] text-muted leading-[1.6]">
+                  <p className="font-sans text-[13px] sm:text-[14px] lg:text-[15px] text-balck/60 leading-[1.6]">
                     {step.description}
                   </p>
                 </div>

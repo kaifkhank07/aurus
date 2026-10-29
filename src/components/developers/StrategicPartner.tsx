@@ -10,12 +10,12 @@ export function StrategicPartner() {
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">
-      <Container>
+      <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
         {/* Eyebrow */}
         <Eyebrow>{strategicPartner.eyebrow}</Eyebrow>
 
         {/* Heading & Intro Paragraph */}
-        <div className="mt-8 sm:mt-12 lg:mt-16 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16">
           <div className="">
             <Heading
               as="h2"
@@ -35,7 +35,7 @@ export function StrategicPartner() {
         </div>
 
         {/* 4 Stats Row */}
-        <ViewReveal duration={800} startDelay={150} className="mt-12 sm:mt-16 lg:mt-20">
+        <ViewReveal duration={800} startDelay={150}>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 lg:divide-x divide-ink/15 border-t border-ink/15 pt-8 sm:pt-10">
             {strategicPartner.stats.map((stat, idx) => {
               const isLongText = stat.number.length > 5;

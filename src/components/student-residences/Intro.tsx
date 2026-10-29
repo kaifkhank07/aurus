@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { intro } from "@/data/student-residences";
-import { Container, Eyebrow, ArrowRight } from "@/components/ui/Primitives";
+import { Container, Eyebrow } from "@/components/ui/Primitives";
 import NumberRoller from "../animation/NumberRoller";
 import ViewReveal from "../animation/ViewReveal";
 
@@ -9,7 +9,7 @@ export function Intro() {
   return (
     // <section className="pt-10 pb-12 sm:pt-14 sm:pb-16 lg:pt-[min(5.2vw,100px)] lg:pb-[min(7.5vw,144px)] border">
     //   <Container>
-    <section className="py-8 sm:py-12 lg:py-16">
+    <section id="intro" className="py-8 sm:py-12 lg:py-16">
       <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
         <ViewReveal duration={800}>
           <p className="font-sans font-normal text-[clamp(1.375rem,2.1875vw,42px)] leading-[1.4286] tracking-[-0.04em] max-w-[1683px]">

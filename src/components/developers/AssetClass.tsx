@@ -75,28 +75,26 @@ export function AssetClass() {
   const { assetClass } = developersData;
 
   return (
-    <section className="py-8 sm:py-12 lg:py-16">
+    <section className="px-4 sm:px-6 lg:px-0 py-8 sm:py-12 lg:py-16">
       <Panel
         className="bg-ink text-white rounded-[28px] sm:rounded-[40px] lg:rounded-[57px] shadow-2xl"
-        innerClassName="py-10 sm:py-14 lg:py-20 !px-6 sm:!px-10 lg:!px-[min(4.5313vw,87px)]"
+        innerClassName="pt-6 pb-12 sm:pt-10 sm:pb-16 lg:py-[min(4.9vw,95px)] !px-5 sm:!px-8 lg:!px-[min(4.5313vw,87px)] space-y-4 sm:space-y-8 lg:space-y-12"
       >
         {/* Eyebrow */}
         <Eyebrow dark>{assetClass.eyebrow}</Eyebrow>
 
         {/* Heading */}
-        <div className="mt-8 sm:mt-12 lg:mt-16">
-          <Heading
-            as="h2"
-            title1={assetClass.titleTop}
-            title2={assetClass.titleAccent}
-            className="uppercase"
-            title1ClassName="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[68px] leading-[0.95]"
-            title2ClassName="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[68px] leading-[0.95]"
-          />
-        </div>
+        <Heading
+          as="h2"
+          title1={assetClass.titleTop}
+          title2={assetClass.titleAccent}
+          className="uppercase"
+          title1ClassName="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[68px] leading-[0.95]"
+          title2ClassName="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[68px] leading-[0.95]"
+        />
 
         {/* 2x2 Feature Grid */}
-        <ViewReveal duration={800} startDelay={150} className="mt-12 sm:mt-16 lg:mt-20">
+        <ViewReveal duration={800} startDelay={150}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-10 sm:gap-y-12 lg:gap-y-14 gap-x-12 lg:gap-x-16">
             {assetClass.items.map((item, idx) => {
               const isBottomRow = idx >= 2;
