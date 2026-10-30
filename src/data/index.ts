@@ -10,3 +10,5 @@ export * from "./contact";
 export * from "./faq";
 export * from "./stories";
 export * from "./not-found";
+
+export * from "./assets/assets";

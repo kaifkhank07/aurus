@@ -1,4 +1,13 @@
-export const journey = {
+export interface journeyData {
+  eyebrow: string;
+  titleTop: string;
+  titleAccent: string;
+  body: string;
+  watermark: string;
+  actions: { label: string; href: string; solid: boolean }[];
+}
+
+export const journey: journeyData = {
   eyebrow: "09 // Your Next Chapter",
   titleTop: "Start your",
   titleAccent: "Journey.",

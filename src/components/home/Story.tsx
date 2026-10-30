@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Container } from "@/components/ui/Primitives";
 import { Heading } from "@/components/utils/Heading";
 import { ViewReveal } from "@/components/animation";
-import { aboutData } from "@/data/about";
+import { storyAboutData } from "@/data/home/storyAbout";
 
 export function Story() {
   return (
@@ -15,16 +15,16 @@ export function Story() {
             {/* Left Column: Heading & Paragraphs */}
             <div className="flex flex-col lg:pt-8">
               <Heading
-                title1={aboutData.story.titleTop}
-                title2={aboutData.story.titleAccent}
+                title1={storyAboutData.titleTop}
+                title2={storyAboutData.titleAccent}
                 className="uppercase"
                 title1ClassName="text-[38px] sm:text-[42px] md:text-6xl lg:text-7xl xl:text-[56px]"
                 title2ClassName="text-[38px] sm:text-[42px] md:text-6xl lg:text-7xl xl:text-[56px]"
               />
 
               <div className="mt-5 sm:mt-7 lg:mt-8 space-y-4 sm:space-y-4.5 lg:space-y-5">
-                {aboutData.story.paragraphs.map((paragraph, index) => (
-                  <p key={index} className="font-sans font-regular text-[15px] sm:text-[17px] lg:text-[19px] leading-[1.45] tracking-[-0.025em] text-muted">{paragraph}</p>
+                {storyAboutData.paragraphs.map((paragraph, index) => (
+                  <p key={index} className="font-sans font-regular text-[15px] sm:text-[17px] lg:text-[19px] leading-tight tracking-[-0.025em] text-muted">{paragraph}</p>
                 ))}
               </div>
             </div>
@@ -33,8 +33,8 @@ export function Story() {
             <div className="mt-6 sm:mt-8 lg:mt-0 w-full">
               <div className="relative aspect-[16/11] sm:aspect-[16/10] lg:aspect-[16/11] xl:aspect-[4/3] w-full overflow-hidden rounded-[16px] sm:rounded-[8px] lg:rounded-[10px] bg-ink/5">
                 <Image
-                  src={aboutData.story.image}
-                  alt={aboutData.story.alt}
+                  src={storyAboutData.image}
+                  alt={storyAboutData.alt}
                   fill
                   sizes="(min-width: 1280px) 42vw, (min-width: 1024px) 46vw, 100vw"
                   priority

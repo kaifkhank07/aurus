@@ -1,9 +1,32 @@
-export const culture = {
+"use client"
+import { useAssets } from "../assets/assets";
+
+export interface IPosts {
+  handle: string,
+  caption: string,
+  likes: number,
+  comments: number,
+  timeAgo: string,
+  isVideo: boolean,
+  image: string,
+  alt: string,
+}
+
+export interface cultureData {
+  eyebrow: string;
+  handleLink: { label: string, href: string };
+  titleTop: string;
+  titleAccent: string;
+  posts: IPosts[];
+}
+
+const assets = useAssets();
+
+export const culture: cultureData = {
   eyebrow: "07 // Real Resident Moments",
   handleLink: { label: "#auruslife", href: "/life-at-aurus" },
   titleTop: "Culture &",
   titleAccent: "Community.",
-  // Static for now — swap for the Instagram Graph API when a token is in place.
   posts: [
     {
       handle: "aurus_luxuryresidences",
@@ -13,7 +36,7 @@ export const culture = {
       comments: 150,
       timeAgo: "1 hour ago",
       isVideo: false,
-      image: "/images/image19.png",
+      image: assets.culture1,
       alt: "The Art of Mischief event poster",
     },
     {
@@ -23,7 +46,7 @@ export const culture = {
       comments: 150,
       timeAgo: "4 days ago",
       isVideo: true,
-      image: "/images/image20.png",
+      image: assets.culture2,
       alt: "The Wait Is Over teaser still",
     },
     {
@@ -34,7 +57,7 @@ export const culture = {
       comments: 150,
       timeAgo: "4 days ago",
       isVideo: false,
-      image: "/images/image21.png",
+      image: assets.culture3,
       alt: "Founder speaking to camera",
     },
     {
@@ -44,50 +67,8 @@ export const culture = {
       comments: 150,
       timeAgo: "7 days ago",
       isVideo: false,
-      image: "/images/image22.png",
+      image: assets.culture4,
       alt: "Festival celebration at an Aurus residence",
     },
-    // {
-    //   handle: "aurus_luxuryresidences",
-    //   caption:
-    //     "Step behind the curtains as Arjun, a professional illusionist and showman, takes you into a world......",
-    //   likes: 569,
-    //   comments: 150,
-    //   timeAgo: "1 hour ago",
-    //   isVideo: false,
-    //   image: "/images/image19.png",
-    //   alt: "The Art of Mischief event poster",
-    // },
-    // {
-    //   handle: "aurus_luxuryresidences",
-    //   caption: "THE GAME IS ON.\nThe jersey. The team. The pride.",
-    //   likes: 560,
-    //   comments: 150,
-    //   timeAgo: "4 days ago",
-    //   isVideo: true,
-    //   image: "/images/image20.png",
-    //   alt: "The Wait Is Over teaser still",
-    // },
-    // {
-    //   handle: "aurus_luxuryresidences",
-    //   caption:
-    //     "Hi, I'm Bharat, and I run the biggest luxury residencies for college students in India.",
-    //   likes: 500,
-    //   comments: 150,
-    //   timeAgo: "4 days ago",
-    //   isVideo: false,
-    //   image: "/images/image21.png",
-    //   alt: "Founder speaking to camera",
-    // },
-    // {
-    //   handle: "aurus_luxuryresidences",
-    //   caption: "Ganesh Chaturthi at Aurus",
-    //   likes: 500,
-    //   comments: 150,
-    //   timeAgo: "7 days ago",
-    //   isVideo: false,
-    //   image: "/images/image22.png",
-    //   alt: "Festival celebration at an Aurus residence",
-    // },
   ],
 };

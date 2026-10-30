@@ -61,12 +61,12 @@ export function RealLife({ havingTopSpace = false }: RealLifeProps) {
             />
 
             {/* Figma: 456px wide, Manrope 19px */}
-            <p className="font-sans font-normal text-[clamp(1rem,0.9896vw,19px)] leading-[1.3158] tracking-[-0.04em] mt-5 sm:mt-6 lg:mt-[min(2.1vw,40px)] max-w-[456px] text-white/85 sm:text-white tracking-normal">
+            <p className="font-sans font-regular text-[clamp(1rem,0.9896vw,19px)] leading-[1.3158] tracking-[-0.04em] mt-5 sm:mt-6 lg:mt-[min(2.1vw,40px)] max-w-[456px] text-white/85 sm:text-white tracking-normal">
               {realLife.body}
             </p>
 
             {/* Fine print note in mono uppercase */}
-            <p className="font-mono text-[10px] sm:text-[11px] lg:text-[12px] tracking-[1.5px] uppercase text-white/50 leading-relaxed mt-4 sm:mt-5 lg:mt-[min(1.6vw,30px)] max-w-[624px]">
+            <p className="font-mono font-regular text-[clamp(1rem,0.9896vw,19px)] tracking-[1.5px] uppercase text-white/85 leading-relaxed mt-4 sm:mt-5 lg:mt-[min(1.6vw,30px)] max-w-2xl">
               {realLife.note}
             </p>
 
