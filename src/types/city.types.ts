@@ -50,3 +50,13 @@ export interface PaginatedCitiesResult {
   items: SafeCity[];
   pagination: PaginationMeta;
 }
+
+export interface PublicResidenceCity {
+  _id: string;
+  name: string;
+  slug: string;
+  state?: string;
+  country?: string;
+  count?: number;
+}
+

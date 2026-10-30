@@ -45,8 +45,4 @@ next-env.d.ts
 # ignore
 ignore/*
 
-# Admin 
-ADMIN_FRONTEND_README.md
-ADMIN_BACKEND_README.md
-
 

@@ -244,7 +244,7 @@ export function ExploreResidences() {
   );
 }
 
-function ResidenceCard({ item }: { item: ExploreResidenceItem }) {
+export function ResidenceCard({ item }: { item: ExploreResidenceItem }) {
   return (
     <Link
       href={item.href}

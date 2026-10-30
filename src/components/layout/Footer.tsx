@@ -1,10 +1,22 @@
+"use client";
+
+import { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { footer } from "@/data/layout";
 import { Panel } from "@/components/ui/Primitives";
 import { ViewReveal } from "../animation";
+import { usePublicOptions } from "@/store/usePublicOptions";
 
 export function Footer() {
+  const { residenceCities, isFetched, fetchResidenceCities } = usePublicOptions();
+
+  useEffect(() => {
+    if (!isFetched) {
+      fetchResidenceCities();
+    }
+  }, [isFetched, fetchResidenceCities]);
+
   return (
     // <footer className="pb-3 sm:pb-4 lg:pb-[1.6667vw]">
     <footer className="pt-2 sm:pt-4 lg:py-6">
@@ -88,17 +100,16 @@ export function Footer() {
                 OUR RESIDENCES
               </h3>
               <ul className="flex flex-col gap-2 font-mono uppercase text-[12px] sm:text-[14px] leading-[1.8] tracking-[1.5px]">
-                {footer.columns[2].type === "links" &&
-                  footer.columns[2].links.map((link) => (
-                    <li key={link.href}>
-                      <Link
-                        href={link.href}
-                        className="text-white/55 hover:text-white transition-colors duration-200 block"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
+                {residenceCities.map((city) => (
+                  <li key={city._id}>
+                    <Link
+                      href={`/residences/${city.slug}`}
+                      className="text-white/55 hover:text-white transition-colors duration-200 block"
+                    >
+                      {`Residences in ${city.name}`}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
 
@@ -132,3 +143,5 @@ export function Footer() {
     </footer>
   );
 }
+
+export default Footer;
