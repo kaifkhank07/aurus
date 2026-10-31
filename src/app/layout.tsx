@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Manrope, Instrument_Serif, Space_Mono } from "next/font/google";
 import "./globals.css";
 import ClientLayoutWrapper from "@/components/layout/ClientLayoutWrapper";
+import MaintenancePage from "@/components/layout/MaintenancePage";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -33,15 +34,19 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const maintenanceMode = process.env.MAINTENANCE_MODE;
+
   return (
     <html
       lang="en"
       className={`${manrope.variable} ${instrument.variable} ${spaceMono.variable}`}
     >
       <body className="font-sans antialiased">
-        <ClientLayoutWrapper>
-          {children}
-        </ClientLayoutWrapper>
+        {maintenanceMode ? (
+          <MaintenancePage />
+        ) : (
+          <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
+        )}
       </body>
     </html>
   );

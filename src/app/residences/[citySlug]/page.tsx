@@ -1,8 +1,11 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
+import connectToDatabase from "@/lib/mongodb";
+import { Hostel } from "@/models/hostel.model";
 import { ResidenceDetail } from "@/components/residences/ResidenceDetail";
 import RelatedResidences from "@/components/residences/RelatedResidences";
 import {
+  getCitiesWithResidences,
   getCityBySlug,
   getResidencesByCityId,
   mapHostelsToExploreItems,
@@ -10,12 +13,33 @@ import {
 import { getHostelBySlug, getRelatedHostels } from "@/lib/residences/detail";
 import { CityResidenceContent } from "@/components/residences/city/CityResidenceContent";
 
-export const instant = false;
-
 interface PageProps {
   params: Promise<{
     citySlug: string;
   }>;
+}
+
+export async function generateStaticParams() {
+  try {
+    await connectToDatabase();
+    const [cities, hostels] = await Promise.all([
+      getCitiesWithResidences(),
+      Hostel.find({ isActive: true }).select("slug").lean(),
+    ]);
+
+    const slugs = new Set<string>();
+    cities.forEach((c) => {
+      if (c.slug) slugs.add(c.slug.toLowerCase().trim());
+    });
+    hostels.forEach((h: { slug?: string }) => {
+      if (h.slug) slugs.add(h.slug.toLowerCase().trim());
+    });
+
+    return Array.from(slugs).map((citySlug) => ({ citySlug }));
+  } catch (error) {
+    console.warn("[generateStaticParams] Could not pre-generate residence slugs:", error);
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
