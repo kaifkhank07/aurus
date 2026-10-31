@@ -30,6 +30,7 @@ export interface SafeHostelLocation {
 
 export interface SafeHostel {
   id: string;
+  _id?: string;
   title: string;
   slug: string;
   subtitle?: string;
@@ -106,3 +107,22 @@ export interface PaginatedHostelsResult {
   items: SafeHostel[];
   pagination: PaginationMeta;
 }
+
+export interface PublicHostelQueryParams {
+  citySlug?: string;
+  cityId?: string;
+  search?: string;
+  tenantType?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface PublicHostelsResult {
+  items: SafeHostel[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  pagination?: PaginationMeta;
+}
+

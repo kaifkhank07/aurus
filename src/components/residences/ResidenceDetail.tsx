@@ -1,10 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Container } from "@/components/ui/Primitives";
 import {
-  staticResidenceDetail,
   type ResidenceDetail as ResidenceDetailType,
 } from "@/data/residences";
 import { Heading } from "../utils/Heading";
@@ -62,14 +61,17 @@ function PhoneIcon({ className = "w-4 h-4" }: { className?: string }) {
 }
 
 export interface ResidenceDetailProps {
-  data?: ResidenceDetailType;
+  data: ResidenceDetailType;
 }
 
-export function ResidenceDetail({
-  data = staticResidenceDetail,
-}: ResidenceDetailProps) {
+export function ResidenceDetail({ data }: ResidenceDetailProps) {
   const [activeHeroImage, setActiveHeroImage] = useState(data.mainImage);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Keep active hero image in sync when viewing different residences
+  useEffect(() => {
+    setActiveHeroImage(data.mainImage);
+  }, [data.mainImage]);
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">
@@ -373,7 +375,7 @@ export function ResidenceDetail({
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         residenceTitle={data.title}
-        residenceLocation={data.location?.label || data.location?.address || data.title}
+        residenceLocation={data.location?.address || data.location?.label || data.title}
       />
     </section>
   );

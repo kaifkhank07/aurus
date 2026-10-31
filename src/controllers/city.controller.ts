@@ -20,7 +20,7 @@ import {
   cityQuerySchema,
   objectIdSchema,
 } from "@/validations/city.validation";
-import { SafeCity, PaginatedCitiesResult } from "@/types/city.types";
+import { SafeCity, PaginatedCitiesResult, PublicCity } from "@/types/city.types";
 import { createLogger } from "@/lib/logger";
 import { safeDeleteS3File, uploadS3File, parseRequestBody } from "@/lib/s3";
 import { getMediaUrl } from "@/lib/media";
@@ -457,3 +457,92 @@ export async function deleteCity(
     return handleError(error, operation);
   }
 }
+
+/**
+ * GET /api/cities
+ * Public API to retrieve active cities with active hostel counts.
+ * Supports:
+ * - ?search=... (filter by city, state, country)
+ * - ?hasHostels=true or ?onlyWithHostels=true (only cities with >= 1 active hostels)
+ */
+export async function listPublic(request: NextRequest): Promise<NextResponse> {
+  const operation = "listPublic";
+  try {
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get("search")?.trim();
+    const hasHostels =
+      searchParams.get("hasHostels") === "true" ||
+      searchParams.get("onlyWithHostels") === "true";
+
+    await connectToDatabase();
+
+    const filter: Record<string, unknown> = { isActive: true };
+
+    if (search) {
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      filter.$or = [
+        { city: { $regex: escaped, $options: "i" } },
+        { state: { $regex: escaped, $options: "i" } },
+        { country: { $regex: escaped, $options: "i" } },
+      ];
+    }
+
+    const [cities, counts] = await Promise.all([
+      City.find(filter)
+        .sort({ sortOrder: 1, city: 1 })
+        .lean<ICityDocument[]>(),
+      Hostel.aggregate([
+        { $match: { isActive: true } },
+        { $group: { _id: "$location.city", count: { $sum: 1 } } },
+      ]),
+    ]);
+
+    const countMap = new Map<string, number>();
+    counts.forEach((item: { _id: unknown; count: number }) => {
+      if (item._id) {
+        countMap.set(String(item._id), item.count);
+      }
+    });
+
+    let items: PublicCity[] = cities.map((c) => {
+      const hostelCount = countMap.get(c._id.toString()) || 0;
+      return {
+        id: c._id.toString(),
+        _id: c._id.toString(),
+        country: c.country,
+        state: c.state,
+        city: c.city,
+        name: c.city,
+        slug: c.slug,
+        image: c.image && c.image.publickey
+          ? {
+              url: c.image.url || getMediaUrl(c.image.publickey) || "",
+              publickey: c.image.publickey,
+            }
+          : undefined,
+        sortOrder: c.sortOrder ?? 0,
+        isActive: c.isActive ?? true,
+        activeHostelsCount: hostelCount,
+        count: hostelCount,
+        metadata: c.metadata
+          ? {
+              title: c.metadata.title,
+              description: c.metadata.description,
+              keywords: c.metadata.keywords,
+            }
+          : undefined,
+        createdAt: c.createdAt ? new Date(c.createdAt).toISOString() : new Date().toISOString(),
+        updatedAt: c.updatedAt ? new Date(c.updatedAt).toISOString() : new Date().toISOString(),
+      };
+    });
+
+    if (hasHostels) {
+      items = items.filter((c) => c.activeHostelsCount > 0);
+    }
+
+    return apiSuccess(items, "Public cities retrieved successfully.");
+  } catch (error) {
+    return handleError(error, operation);
+  }
+}
+

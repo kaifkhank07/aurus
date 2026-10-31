@@ -31,6 +31,12 @@ export interface OccupancyQueryParams {
   sortOrderDir?: "asc" | "desc";
 }
 
+export interface PublicOccupancyQueryParams {
+  search?: string;
+  sortBy?: "name" | "createdAt";
+  sortOrderDir?: "asc" | "desc";
+}
+
 export interface PaginatedOccupanciesResult {
   items: SafeOccupancy[];
   pagination: PaginationMeta;

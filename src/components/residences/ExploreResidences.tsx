@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { exploreResidences, type ExploreResidenceItem } from "@/data/residences";
 import { ArrowRight, Container, Figure } from "@/components/ui/Primitives";
 import { Heading } from "../utils/Heading";
 import { ViewReveal } from "../animation";
+import { useHostelAndEnquiryStore } from "@/store/useHostelAndEnquiryStore";
+import { useMasterStore } from "@/store/useMasterStore";
 
 function ChevronDown({ className = "" }: { className?: string }) {
   return (
@@ -22,6 +24,30 @@ function ChevronDown({ className = "" }: { className?: string }) {
   );
 }
 
+/**
+ * Formats tenantType array into user-facing occupancy badge string.
+ */
+function formatOccupancyBadge(tenantType: string[] = []): string {
+  if (!Array.isArray(tenantType) || tenantType.length === 0) {
+    return "Co-ed Living";
+  }
+  const normalized = tenantType.map((t) => String(t).toLowerCase());
+  if (
+    normalized.includes("co-ed") ||
+    normalized.includes("coed") ||
+    (normalized.includes("girls") && normalized.includes("boys"))
+  ) {
+    return "Co-ed Living";
+  }
+  if (normalized.includes("girls")) {
+    return "Girls Only";
+  }
+  if (normalized.includes("boys")) {
+    return "Boys Only";
+  }
+  return "Co-ed Living";
+}
+
 export function ExploreResidences() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCity, setSelectedCity] = useState("All Cities");
@@ -29,6 +55,152 @@ export function ExploreResidences() {
     "All Wings (Girls / Boys / Co-ed)"
   );
   const [selectedOccupancy, setSelectedOccupancy] = useState("All Occupancies");
+  const [hasFetched, setHasFetched] = useState(false);
+
+  // Store data hooks
+  const {
+    publicHostels,
+    isLoadingPublicHostels,
+    publicHostelsError,
+    fetchPublicHostels,
+  } = useHostelAndEnquiryStore();
+
+  const {
+    publicCities,
+    publicOccupancies,
+    fetchPublicCities,
+    fetchPublicOccupancies,
+  } = useMasterStore();
+
+  // Fetch public data on mount
+  useEffect(() => {
+    fetchPublicHostels().finally(() => setHasFetched(true));
+    fetchPublicCities();
+    fetchPublicOccupancies();
+  }, [fetchPublicHostels, fetchPublicCities, fetchPublicOccupancies]);
+
+  // Dynamic City options
+  const cityOptions = useMemo(() => {
+    const set = new Set<string>();
+    publicCities.forEach((c) => {
+      if (c.isActive !== false) {
+        const name = c.name || c.city;
+        if (name) set.add(name);
+      }
+    });
+    publicHostels.forEach((h) => {
+      const cityName =
+        typeof h.location?.city === "object" && h.location?.city !== null
+          ? (h.location.city as { city?: string; name?: string }).city ||
+          (h.location.city as { city?: string; name?: string }).name
+          : typeof h.location?.city === "string"
+            ? h.location.city
+            : undefined;
+      if (cityName) set.add(cityName);
+    });
+    return ["All Cities", ...Array.from(set)];
+  }, [publicCities, publicHostels]);
+
+  // Dynamic Gender Wing options
+  const genderWingOptions = useMemo(() => {
+    const wings = new Set<string>(["Girls Only", "Boys Only", "Co-ed Living"]);
+    publicHostels.forEach((h) => {
+      const badge = formatOccupancyBadge(h.tenantType);
+      if (badge) wings.add(badge);
+    });
+    return ["All Wings (Girls / Boys / Co-ed)", ...Array.from(wings)];
+  }, [publicHostels]);
+
+  // Dynamic Occupancy options from master store
+  const occupancyOptions = useMemo(() => {
+    const list = publicOccupancies
+      .filter((occ) => occ.isActive !== false)
+      .map((occ) => occ.name)
+      .filter(Boolean);
+    return ["All Occupancies", ...Array.from(new Set(list))];
+  }, [publicOccupancies]);
+
+  // Map public hostels to ExploreResidenceItem format
+  const dynamicItems: ExploreResidenceItem[] = useMemo(() => {
+    return publicHostels.map((hostel) => {
+      // 1. City Name
+      let cityName = "";
+      if (typeof hostel.location?.city === "object" && hostel.location?.city !== null) {
+        cityName =
+          (hostel.location.city as { city?: string; name?: string }).city ||
+          (hostel.location.city as { city?: string; name?: string }).name ||
+          "";
+      } else if (typeof hostel.location?.city === "string") {
+        cityName = hostel.location.city;
+      }
+
+      // 2. Locality Name
+      let localityName = "";
+      if (typeof hostel.location?.locality === "object" && hostel.location?.locality !== null) {
+        localityName = (hostel.location.locality as { name?: string }).name || "";
+      } else if (typeof hostel.location?.locality === "string") {
+        localityName = hostel.location.locality;
+      }
+
+      // 3. Locality display text
+      const localityText =
+        localityName && cityName
+          ? `${localityName} · ${cityName}`
+          : localityName || cityName || "Prime Location";
+
+      // 4. Room occupancy matching from master store
+      let matchedOccupancy = "";
+      if (publicOccupancies && publicOccupancies.length > 0) {
+        for (const occ of publicOccupancies) {
+          const occNameLower = occ.name.toLowerCase();
+          if (
+            hostel.title?.toLowerCase().includes(occNameLower) ||
+            hostel.subtitle?.toLowerCase().includes(occNameLower) ||
+            hostel.description?.toLowerCase().includes(occNameLower)
+          ) {
+            matchedOccupancy = occ.name;
+            break;
+          }
+        }
+      }
+      const roomOccupancy =
+        matchedOccupancy || publicOccupancies[0]?.name || "Single Occupancy";
+
+      // 5. Image
+      const image =
+        hostel.frontImage?.url ||
+        hostel.galleryImages?.[0]?.url ||
+        hostel.firstImage?.url ||
+        "/images/image03.png";
+
+      // 6. Colleges / Keywords
+      const colleges = Array.isArray(hostel.metadata?.keywords)
+        ? hostel.metadata.keywords
+        : [];
+
+      return {
+        id: hostel.id || (hostel._id ? String(hostel._id) : hostel.slug),
+        _id: hostel._id ? String(hostel._id) : hostel.id,
+        slug: hostel.slug,
+        name: hostel.title || "Residence",
+        occupancy: formatOccupancyBadge(hostel.tenantType),
+        roomOccupancy,
+        city: cityName,
+        featured: true,
+        locality: localityText,
+        distance:
+          hostel.subtitle ||
+          hostel.location?.address ||
+          (cityName ? `Prime location in ${cityName}` : "Prime location"),
+        priceFrom: hostel.rent
+          ? `₹${Number(hostel.rent).toLocaleString("en-IN")}`
+          : "₹50,000",
+        href: `/residences/${hostel.slug || hostel.id}`,
+        image,
+        colleges,
+      };
+    });
+  }, [publicHostels, publicOccupancies]);
 
   const resetFilters = () => {
     setSearchQuery("");
@@ -38,14 +210,14 @@ export function ExploreResidences() {
   };
 
   const filteredItems = useMemo(() => {
-    return exploreResidences.items.filter((item) => {
+    return dynamicItems.filter((item) => {
       // Search text filter
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim();
-        const matchesName = item.name.toLowerCase().includes(query);
-        const matchesLocality = item.locality.toLowerCase().includes(query);
-        const matchesDistance = item.distance.toLowerCase().includes(query);
-        const matchesCity = item.city.toLowerCase().includes(query);
+        const matchesName = (item.name || "").toLowerCase().includes(query);
+        const matchesLocality = (item.locality || "").toLowerCase().includes(query);
+        const matchesDistance = (item.distance || "").toLowerCase().includes(query);
+        const matchesCity = (item.city || "").toLowerCase().includes(query);
         const matchesColleges = item.colleges?.some((college) =>
           college.toLowerCase().includes(query)
         );
@@ -63,10 +235,10 @@ export function ExploreResidences() {
 
       // City filter
       if (selectedCity !== "All Cities") {
-        if (
-          item.city.toLowerCase() !== selectedCity.toLowerCase() &&
-          !item.locality.toLowerCase().includes(selectedCity.toLowerCase())
-        ) {
+        const selCity = selectedCity.toLowerCase();
+        const itemCity = (item.city || "").toLowerCase();
+        const itemLocality = (item.locality || "").toLowerCase();
+        if (itemCity !== selCity && !itemLocality.includes(selCity)) {
           return false;
         }
       }
@@ -80,14 +252,24 @@ export function ExploreResidences() {
 
       // Occupancy Option filter
       if (selectedOccupancy !== "All Occupancies") {
-        if (item.roomOccupancy !== selectedOccupancy) {
+        const occLower = selectedOccupancy.toLowerCase();
+        const itemOccLower = (item.roomOccupancy || "").toLowerCase();
+        const matchesOcc =
+          itemOccLower === occLower ||
+          itemOccLower.includes(occLower) ||
+          occLower.includes(itemOccLower) ||
+          (item.name || "").toLowerCase().includes(occLower) ||
+          (item.distance || "").toLowerCase().includes(occLower);
+        if (!matchesOcc) {
           return false;
         }
       }
 
       return true;
     });
-  }, [searchQuery, selectedCity, selectedGender, selectedOccupancy]);
+  }, [dynamicItems, searchQuery, selectedCity, selectedGender, selectedOccupancy]);
+
+  const isLoading = isLoadingPublicHostels || (!hasFetched && publicHostels.length === 0);
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">
@@ -140,7 +322,7 @@ export function ExploreResidences() {
                   onChange={(e) => setSelectedCity(e.target.value)}
                   className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
                 >
-                  {exploreResidences.cities.map((city) => (
+                  {cityOptions.map((city) => (
                     <option key={city} value={city}>
                       {city}
                     </option>
@@ -165,7 +347,7 @@ export function ExploreResidences() {
                   onChange={(e) => setSelectedGender(e.target.value)}
                   className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
                 >
-                  {exploreResidences.genderWings.map((wing) => (
+                  {genderWingOptions.map((wing) => (
                     <option key={wing} value={wing}>
                       {wing}
                     </option>
@@ -190,7 +372,7 @@ export function ExploreResidences() {
                   onChange={(e) => setSelectedOccupancy(e.target.value)}
                   className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
                 >
-                  {exploreResidences.occupancies.map((occ) => (
+                  {occupancyOptions.map((occ) => (
                     <option key={occ} value={occ}>
                       {occ}
                     </option>
@@ -215,14 +397,38 @@ export function ExploreResidences() {
 
         {/* Counter Summary */}
         <p className="font-mono uppercase text-[11px] sm:text-[12px] tracking-[2px] text-[#88847c] mt-6 mb-4 lg:mt-0 lg:mb-6">
-          SHOWING {String(filteredItems.length).padStart(2, "0")} RESIDENCES
+          {isLoading
+            ? "LOADING RESIDENCES..."
+            : `SHOWING ${String(filteredItems.length).padStart(2, "0")} RESIDENCES`}
         </p>
 
         {/* Cards Grid */}
-        {filteredItems.length > 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center rounded-[20px] border border-ink/10 bg-[#faf8f4] py-16 px-6 text-center">
+            <p className="font-sans text-[16px] text-muted">
+              Loading residences...
+            </p>
+          </div>
+        ) : publicHostelsError ? (
+          <div className="flex flex-col items-center justify-center rounded-[20px] border border-ink/10 bg-[#faf8f4] py-16 px-6 text-center">
+            <p className="font-sans text-[16px] text-muted">
+              {publicHostelsError}
+            </p>
+            <button
+              type="button"
+              onClick={() => fetchPublicHostels({ limit: 100 }, true)}
+              className="mt-4 font-mono text-[11px] uppercase tracking-[2px] text-ink border-b border-ink/40 pb-0.5 hover:border-ink transition-colors cursor-pointer"
+            >
+              Try again
+            </button>
+          </div>
+        ) : filteredItems.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             {filteredItems.map((item) => (
-              <ResidenceCard key={item.name} item={item} />
+              <ResidenceCard
+                key={item.id || item._id || item.slug || item.name}
+                item={item}
+              />
             ))}
           </div>
         ) : (
@@ -265,11 +471,11 @@ export function ResidenceCard({ item }: { item: ExploreResidenceItem }) {
         </span>
 
         {/* Featured Badge */}
-        {item.featured && (
+        {/* {item.featured && (
           <span className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] absolute right-4 top-4 rounded-full bg-[#d8c89b] px-3 py-1.5 text-[9px] tracking-[0.18em] text-ink shadow-sm">
             Featured
           </span>
-        )}
+        )} */}
       </div>
 
       {/* Residence Details */}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { type ExploreResidenceItem, exploreResidences } from "@/data/residences";
+import { type ExploreResidenceItem } from "@/data/residences";
 import { Container } from "@/components/ui/Primitives";
 import { ViewReveal } from "@/components/animation";
 import { ResidenceCard } from "@/components/residences/ExploreResidences";
@@ -46,6 +46,27 @@ export function CityResidenceContent({
     setSelectedGender("All Wings (Girls / Boys / Co-ed)");
     setSelectedOccupancy("All Occupancies");
   };
+
+  const genderWingOptions = useMemo(() => {
+    const wings = new Set<string>(["Girls Only", "Boys Only", "Co-ed Living"]);
+    initialItems.forEach((item) => {
+      if (item.occupancy) wings.add(item.occupancy);
+    });
+    return ["All Wings (Girls / Boys / Co-ed)", ...Array.from(wings)];
+  }, [initialItems]);
+
+  const occupancyOptions = useMemo(() => {
+    const list = new Set<string>();
+    initialItems.forEach((item) => {
+      if (item.roomOccupancy) list.add(item.roomOccupancy);
+    });
+    if (list.size === 0) {
+      list.add("Single Occupancy");
+      list.add("Double Sharing");
+      list.add("Triple Sharing");
+    }
+    return ["All Occupancies", ...Array.from(list)];
+  }, [initialItems]);
 
   const filteredItems = useMemo(() => {
     return initialItems.filter((item) => {
@@ -95,7 +116,7 @@ export function CityResidenceContent({
       <CityHero city={city} />
 
       {/* Dynamic City Introduction */}
-      <CityIntroduction city={city} />
+      {/* <CityIntroduction city={city} /> */}
 
       {/* Dynamic Filter Bar & Residences Grid */}
       <section className="py-8 sm:py-12 lg:py-16">
@@ -136,7 +157,7 @@ export function CityResidenceContent({
                     onChange={(e) => setSelectedGender(e.target.value)}
                     className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
                   >
-                    {exploreResidences.genderWings.map((wing) => (
+                    {genderWingOptions.map((wing) => (
                       <option key={wing} value={wing}>
                         {wing}
                       </option>
@@ -161,7 +182,7 @@ export function CityResidenceContent({
                     onChange={(e) => setSelectedOccupancy(e.target.value)}
                     className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
                   >
-                    {exploreResidences.occupancies.map((occ) => (
+                    {occupancyOptions.map((occ) => (
                       <option key={occ} value={occ}>
                         {occ}
                       </option>
@@ -193,7 +214,7 @@ export function CityResidenceContent({
           {filteredItems.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {filteredItems.map((item) => (
-                <ResidenceCard key={item.name} item={item} />
+                <ResidenceCard key={item.id || item._id || item.slug || item.name} item={item} />
               ))}
             </div>
           ) : (

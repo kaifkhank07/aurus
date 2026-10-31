@@ -60,3 +60,17 @@ export interface PublicResidenceCity {
   count?: number;
 }
 
+export interface PublicCity extends SafeCity {
+  _id?: string;
+  name?: string;
+  activeHostelsCount: number;
+  count: number;
+}
+
+export interface PublicCityQueryParams {
+  search?: string;
+  hasHostels?: boolean;
+  onlyWithHostels?: boolean;
+}
+
+

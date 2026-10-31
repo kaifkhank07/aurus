@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import axios from "axios";
 import { adminApiClient } from "@/lib/admin-api";
+import { publicApiClient } from "@/lib/public-api";
 import { ApiResponse, PaginationMeta } from "@/types/general.types";
 import {
   SafeHostel,
@@ -8,6 +9,8 @@ import {
   UpdateHostelInput,
   HostelQueryParams,
   PaginatedHostelsResult,
+  PublicHostelQueryParams,
+  PublicHostelsResult,
 } from "@/types/hostel.types";
 import {
   SafeBookedVisit,
@@ -61,6 +64,12 @@ export interface HostelAndEnquiryState {
   isLoadingHostels: boolean;
   hostelsError: string | null;
 
+  // ── Public Hostel / Residence Module State ──
+  publicHostels: SafeHostel[];
+  publicHostelsPagination: PaginationMeta | null;
+  isLoadingPublicHostels: boolean;
+  publicHostelsError: string | null;
+
   // ── Booked Visit Module State ──
   bookedVisits: SafeBookedVisit[];
   bookedVisitsPagination: PaginationMeta | null;
@@ -98,6 +107,12 @@ export interface HostelAndEnquiryState {
   deleteHostel: (
     id: string
   ) => Promise<{ success: boolean; message?: string }>;
+
+  // ── Public Hostel Actions ──
+  fetchPublicHostels: (
+    params?: Partial<PublicHostelQueryParams>,
+    force?: boolean
+  ) => Promise<{ success: boolean; data?: PublicHostelsResult; message?: string }>;
 
   // ── Booked Visit Actions ──
   fetchBookedVisits: (
@@ -153,12 +168,17 @@ function getInFlight<T>(key: string, fn: () => Promise<T>): Promise<T> {
   return promise;
 }
 
-export const useHostelAndEnquiryStore = create<HostelAndEnquiryState>((set) => ({
+export const useHostelAndEnquiryStore = create<HostelAndEnquiryState>((set, get) => ({
   // Initial States
   hostels: [],
   hostelsPagination: null,
   isLoadingHostels: false,
   hostelsError: null,
+
+  publicHostels: [],
+  publicHostelsPagination: null,
+  isLoadingPublicHostels: false,
+  publicHostelsError: null,
 
   bookedVisits: [],
   bookedVisitsPagination: null,
@@ -177,6 +197,7 @@ export const useHostelAndEnquiryStore = create<HostelAndEnquiryState>((set) => (
     set({
       error: null,
       hostelsError: null,
+      publicHostelsError: null,
       bookedVisitsError: null,
       enquiriesError: null,
     }),
@@ -223,6 +244,77 @@ export const useHostelAndEnquiryStore = create<HostelAndEnquiryState>((set) => (
     });
   },
 
+  fetchPublicHostels: async (params = {}, force = false) => {
+    const key = `public_hostels_${JSON.stringify(params)}`;
+    if (!force && inFlightRequests.has(key)) {
+      return inFlightRequests.get(key) as Promise<{
+        success: boolean;
+        data?: PublicHostelsResult;
+        message?: string;
+      }>;
+    }
+
+    set({ isLoadingPublicHostels: true, publicHostelsError: null });
+
+    return getInFlight(key, async () => {
+      try {
+        const res = await publicApiClient.get<
+          ApiResponse<{
+            items: SafeHostel[];
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+          }>
+        >("/api/residences", { params });
+
+        if (res.data.success && res.data.data) {
+          const rawData = res.data.data;
+          // Normalize items so both id and _id are available
+          const items = (rawData.items || []).map((item: any) => ({
+            ...item,
+            id: item.id || (item._id ? String(item._id) : ""),
+            _id: item._id ? String(item._id) : item.id,
+          }));
+
+          const pagination: PaginationMeta = {
+            total: rawData.total ?? items.length,
+            page: rawData.page ?? 1,
+            limit: rawData.limit ?? (items.length || 20),
+            totalPages: rawData.totalPages ?? 1,
+            hasNextPage: (rawData.page ?? 1) < (rawData.totalPages ?? 1),
+            hasPrevPage: (rawData.page ?? 1) > 1,
+          };
+
+          set({
+            publicHostels: items,
+            publicHostelsPagination: pagination,
+            isLoadingPublicHostels: false,
+            publicHostelsError: null,
+          });
+
+          return {
+            success: true,
+            data: {
+              ...rawData,
+              items,
+              pagination,
+            },
+            message: res.data.message,
+          };
+        }
+
+        const msg = res.data.message || "Failed to load public residences.";
+        set({ isLoadingPublicHostels: false, publicHostelsError: msg });
+        return { success: false, message: msg };
+      } catch (err) {
+        const msg = extractErrorMessage(err, "Failed to load public residences from server.");
+        set({ isLoadingPublicHostels: false, publicHostelsError: msg });
+        return { success: false, message: msg };
+      }
+    });
+  },
+
   getHostelById: async (id: string) => {
     try {
       const res = await adminApiClient.get<ApiResponse<{ hostel: SafeHostel }>>(`/hostels/${id}`);
@@ -250,9 +342,9 @@ export const useHostelAndEnquiryStore = create<HostelAndEnquiryState>((set) => (
           hostels: [created, ...state.hostels],
           hostelsPagination: state.hostelsPagination
             ? {
-                ...state.hostelsPagination,
-                total: state.hostelsPagination.total + 1,
-              }
+              ...state.hostelsPagination,
+              total: state.hostelsPagination.total + 1,
+            }
             : null,
           isMutating: false,
           error: null,
@@ -310,9 +402,9 @@ export const useHostelAndEnquiryStore = create<HostelAndEnquiryState>((set) => (
           hostels: state.hostels.filter((h) => h.id !== id),
           hostelsPagination: state.hostelsPagination
             ? {
-                ...state.hostelsPagination,
-                total: Math.max(0, state.hostelsPagination.total - 1),
-              }
+              ...state.hostelsPagination,
+              total: Math.max(0, state.hostelsPagination.total - 1),
+            }
             : null,
           isMutating: false,
           error: null,
@@ -402,9 +494,9 @@ export const useHostelAndEnquiryStore = create<HostelAndEnquiryState>((set) => (
           bookedVisits: [created, ...state.bookedVisits],
           bookedVisitsPagination: state.bookedVisitsPagination
             ? {
-                ...state.bookedVisitsPagination,
-                total: state.bookedVisitsPagination.total + 1,
-              }
+              ...state.bookedVisitsPagination,
+              total: state.bookedVisitsPagination.total + 1,
+            }
             : null,
           isMutating: false,
           error: null,
@@ -462,9 +554,9 @@ export const useHostelAndEnquiryStore = create<HostelAndEnquiryState>((set) => (
           bookedVisits: state.bookedVisits.filter((v) => v.id !== id),
           bookedVisitsPagination: state.bookedVisitsPagination
             ? {
-                ...state.bookedVisitsPagination,
-                total: Math.max(0, state.bookedVisitsPagination.total - 1),
-              }
+              ...state.bookedVisitsPagination,
+              total: Math.max(0, state.bookedVisitsPagination.total - 1),
+            }
             : null,
           isMutating: false,
           error: null,
@@ -554,9 +646,9 @@ export const useHostelAndEnquiryStore = create<HostelAndEnquiryState>((set) => (
           enquiries: [created, ...state.enquiries],
           enquiriesPagination: state.enquiriesPagination
             ? {
-                ...state.enquiriesPagination,
-                total: state.enquiriesPagination.total + 1,
-              }
+              ...state.enquiriesPagination,
+              total: state.enquiriesPagination.total + 1,
+            }
             : null,
           isMutating: false,
           error: null,
@@ -614,9 +706,9 @@ export const useHostelAndEnquiryStore = create<HostelAndEnquiryState>((set) => (
           enquiries: state.enquiries.filter((e) => e.id !== id),
           enquiriesPagination: state.enquiriesPagination
             ? {
-                ...state.enquiriesPagination,
-                total: Math.max(0, state.enquiriesPagination.total - 1),
-              }
+              ...state.enquiriesPagination,
+              total: Math.max(0, state.enquiriesPagination.total - 1),
+            }
             : null,
           isMutating: false,
           error: null,

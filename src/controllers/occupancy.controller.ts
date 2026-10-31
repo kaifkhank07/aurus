@@ -34,8 +34,8 @@ function formatSafeOccupancy(doc: IOccupancyDocument): SafeOccupancy {
         }
       : undefined,
     isActive: doc.isActive ?? true,
-    createdAt: doc.createdAt ? doc.createdAt.toISOString() : new Date().toISOString(),
-    updatedAt: doc.updatedAt ? doc.updatedAt.toISOString() : new Date().toISOString(),
+    createdAt: doc.createdAt ? (doc.createdAt instanceof Date ? doc.createdAt.toISOString() : new Date(doc.createdAt).toISOString()) : new Date().toISOString(),
+    updatedAt: doc.updatedAt ? (doc.updatedAt instanceof Date ? doc.updatedAt.toISOString() : new Date(doc.updatedAt).toISOString()) : new Date().toISOString(),
   };
 }
 
@@ -362,3 +362,50 @@ export async function deleteOccupancy(
     return handleError(error, operation);
   }
 }
+
+/**
+ * GET /api/occupancies
+ * Retrieves active occupancies for public consumption.
+ * Only returns occupancies where isActive: true.
+ * Returns standard SafeOccupancy objects with no additional fields.
+ */
+export async function listPublic(request: NextRequest): Promise<NextResponse> {
+  const operation = "listPublic";
+  try {
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get("search")?.trim();
+    const sortBy = searchParams.get("sortBy")?.trim() === "createdAt" ? "createdAt" : "name";
+    const sortOrderDir = searchParams.get("sortOrderDir")?.trim() === "desc" ? -1 : 1;
+
+    logger.info("Listing public occupancies started", {
+      operation,
+      search,
+      sortBy,
+      sortOrderDir,
+    });
+
+    await connectToDatabase();
+
+    const filter: Record<string, unknown> = { isActive: true };
+
+    if (search) {
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      filter.name = { $regex: escaped, $options: "i" };
+    }
+
+    const sortOptions: Record<string, 1 | -1> = {};
+    sortOptions[sortBy] = sortOrderDir;
+
+    const occupancies = await Occupancy.find(filter)
+      .collation({ locale: "en", strength: 2 })
+      .sort(sortOptions)
+      .exec();
+
+    const items: SafeOccupancy[] = occupancies.map(formatSafeOccupancy);
+
+    return apiSuccess(items, "Public occupancies retrieved successfully.");
+  } catch (error) {
+    return handleError(error, operation);
+  }
+}
+

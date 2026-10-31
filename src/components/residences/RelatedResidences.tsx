@@ -1,9 +1,16 @@
-import { ExploreResidenceItem, exploreResidences } from "@/data/residences";
+import { ExploreResidenceItem } from "@/data/residences";
 import { ArrowRight, Container, Eyebrow, Figure } from "../ui/Primitives";
 import Link from "next/link";
 
-export default function RelatedResidences() {
-    const filteredItems = exploreResidences.items.slice(0, 3);
+interface RelatedResidencesProps {
+  items?: ExploreResidenceItem[];
+}
+
+export default function RelatedResidences({ items = [] }: RelatedResidencesProps) {
+    if (!items || items.length === 0) {
+        return null;
+    }
+    const filteredItems = items.slice(0, 3);
     return (
         <section className="py-8 sm:py-12 lg:py-16">
             <Container className="space-y-4 sm:space-y-6 lg:space-y-10">
@@ -13,14 +20,13 @@ export default function RelatedResidences() {
                 {/* Cards Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                     {filteredItems.map((item) => (
-                        <ResidenceCard key={item.name} item={item} />
+                        <ResidenceCard key={item.id || item._id || item.slug || item.name} item={item} />
                     ))}
                 </div>
             </Container>
         </section>
     );
 }
-
 
 function ResidenceCard({ item }: { item: ExploreResidenceItem }) {
     return (

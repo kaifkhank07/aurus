@@ -1,4 +1,4 @@
-export type Residence = {
+export type IResidence = {
   name: string;
   occupancy: "Girls Only" | "Boys Only" | "Co-ed Living";
   featured: boolean;
@@ -9,7 +9,16 @@ export type Residence = {
   image: string | null;
 };
 
-export const residences = {
+
+export interface ResidenceData {
+  eyebrow: string;
+  titleTop: string;
+  titleAccent: string;
+  body: string;
+  items: IResidence[];
+}
+
+export const residences: ResidenceData = {
   eyebrow: "04 // Residences",
   titleTop: "Find your",
   titleAccent: "Aurus",
@@ -115,5 +124,5 @@ export const residences = {
       href: "/residences/chapter-v",
       image: "/images/image07.jpg",
     },
-  ] satisfies Residence[],
+  ],
 };

@@ -1,9 +1,12 @@
 import { create } from "zustand";
 import axios from "axios";
 import { adminApiClient } from "@/lib/admin-api";
+import { publicApiClient } from "@/lib/public-api";
 import { ApiResponse, PaginationMeta } from "@/types/general.types";
 import {
   SafeCity,
+  PublicCity,
+  PublicCityQueryParams,
   CreateCityInput,
   UpdateCityInput,
   CityQueryParams,
@@ -25,6 +28,7 @@ import {
 } from "@/types/institute.types";
 import {
   SafeOccupancy,
+  PublicOccupancyQueryParams,
   CreateOccupancyInput,
   UpdateOccupancyInput,
   OccupancyQueryParams,
@@ -75,6 +79,11 @@ export interface MasterState {
   isLoadingCities: boolean;
   citiesError: string | null;
 
+  // ── Public City Module State ──
+  publicCities: PublicCity[];
+  isLoadingPublicCities: boolean;
+  publicCitiesError: string | null;
+
   // ── Locality Module State ──
   localities: SafeLocality[];
   localitiesPagination: PaginationMeta | null;
@@ -92,6 +101,11 @@ export interface MasterState {
   occupanciesPagination: PaginationMeta | null;
   isLoadingOccupancies: boolean;
   occupanciesError: string | null;
+
+  // ── Public Occupancy Module State ──
+  publicOccupancies: SafeOccupancy[];
+  isLoadingPublicOccupancies: boolean;
+  publicOccupanciesError: string | null;
 
   // ── Amenity Module State ──
   amenities: SafeAmenity[];
@@ -111,6 +125,10 @@ export interface MasterState {
     params?: Partial<CityQueryParams>,
     force?: boolean
   ) => Promise<{ success: boolean; data?: PaginatedCitiesResult; message?: string }>;
+  fetchPublicCities: (
+    params?: Partial<PublicCityQueryParams>,
+    force?: boolean
+  ) => Promise<{ success: boolean; data?: PublicCity[]; message?: string }>;
   getCityById: (
     id: string
   ) => Promise<{ success: boolean; data?: SafeCity; message?: string }>;
@@ -168,6 +186,10 @@ export interface MasterState {
     params?: Partial<OccupancyQueryParams>,
     force?: boolean
   ) => Promise<{ success: boolean; data?: PaginatedOccupanciesResult; message?: string }>;
+  fetchPublicOccupancies: (
+    params?: Partial<PublicOccupancyQueryParams>,
+    force?: boolean
+  ) => Promise<{ success: boolean; data?: SafeOccupancy[]; message?: string }>;
   getOccupancyById: (
     id: string
   ) => Promise<{ success: boolean; data?: SafeOccupancy; message?: string }>;
@@ -224,6 +246,10 @@ export const useMasterStore = create<MasterState>((set) => ({
   isLoadingCities: false,
   citiesError: null,
 
+  publicCities: [],
+  isLoadingPublicCities: false,
+  publicCitiesError: null,
+
   localities: [],
   localitiesPagination: null,
   isLoadingLocalities: false,
@@ -239,6 +265,10 @@ export const useMasterStore = create<MasterState>((set) => ({
   isLoadingOccupancies: false,
   occupanciesError: null,
 
+  publicOccupancies: [],
+  isLoadingPublicOccupancies: false,
+  publicOccupanciesError: null,
+
   amenities: [],
   amenitiesPagination: null,
   isLoadingAmenities: false,
@@ -251,9 +281,11 @@ export const useMasterStore = create<MasterState>((set) => ({
     set({
       error: null,
       citiesError: null,
+      publicCitiesError: null,
       localitiesError: null,
       institutesError: null,
       occupanciesError: null,
+      publicOccupanciesError: null,
       amenitiesError: null,
     }),
 
@@ -294,6 +326,45 @@ export const useMasterStore = create<MasterState>((set) => ({
       } catch (err) {
         const msg = extractErrorMessage(err, "Failed to load cities from server.");
         set({ isLoadingCities: false, citiesError: msg });
+        return { success: false, message: msg };
+      }
+    });
+  },
+
+  fetchPublicCities: async (params = {}, force = false) => {
+    const key = `public_cities_${JSON.stringify(params)}`;
+    if (!force && inFlightRequests.has(key)) {
+      return inFlightRequests.get(key) as Promise<{
+        success: boolean;
+        data?: PublicCity[];
+        message?: string;
+      }>;
+    }
+
+    set({ isLoadingPublicCities: true, publicCitiesError: null });
+
+    return getInFlight(key, async () => {
+      try {
+        const res = await publicApiClient.get<ApiResponse<PublicCity[]>>("/api/cities", {
+          params,
+        });
+
+        if (res.data.success && Array.isArray(res.data.data)) {
+          const items = res.data.data;
+          set({
+            publicCities: items,
+            isLoadingPublicCities: false,
+            publicCitiesError: null,
+          });
+          return { success: true, data: items, message: res.data.message };
+        }
+
+        const msg = res.data.message || "Failed to load public cities.";
+        set({ isLoadingPublicCities: false, publicCitiesError: msg });
+        return { success: false, message: msg };
+      } catch (err) {
+        const msg = extractErrorMessage(err, "Failed to load public cities from server.");
+        set({ isLoadingPublicCities: false, publicCitiesError: msg });
         return { success: false, message: msg };
       }
     });
@@ -745,6 +816,45 @@ export const useMasterStore = create<MasterState>((set) => ({
       } catch (err) {
         const msg = extractErrorMessage(err, "Failed to load occupancies from server.");
         set({ isLoadingOccupancies: false, occupanciesError: msg });
+        return { success: false, message: msg };
+      }
+    });
+  },
+
+  fetchPublicOccupancies: async (params = {}, force = false) => {
+    const key = `public_occupancies_${JSON.stringify(params)}`;
+    if (!force && inFlightRequests.has(key)) {
+      return inFlightRequests.get(key) as Promise<{
+        success: boolean;
+        data?: SafeOccupancy[];
+        message?: string;
+      }>;
+    }
+
+    set({ isLoadingPublicOccupancies: true, publicOccupanciesError: null });
+
+    return getInFlight(key, async () => {
+      try {
+        const res = await publicApiClient.get<ApiResponse<SafeOccupancy[]>>("/api/occupancies", {
+          params,
+        });
+
+        if (res.data.success && Array.isArray(res.data.data)) {
+          const items = res.data.data;
+          set({
+            publicOccupancies: items,
+            isLoadingPublicOccupancies: false,
+            publicOccupanciesError: null,
+          });
+          return { success: true, data: items, message: res.data.message };
+        }
+
+        const msg = res.data.message || "Failed to load public occupancies.";
+        set({ isLoadingPublicOccupancies: false, publicOccupanciesError: msg });
+        return { success: false, message: msg };
+      } catch (err) {
+        const msg = extractErrorMessage(err, "Failed to load public occupancies from server.");
+        set({ isLoadingPublicOccupancies: false, publicOccupanciesError: msg });
         return { success: false, message: msg };
       }
     });

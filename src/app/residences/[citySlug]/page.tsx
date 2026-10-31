@@ -1,16 +1,14 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ResidenceDetail } from "@/components/residences/ResidenceDetail";
-import { staticResidenceDetail, exploreResidences } from "@/data/residences";
 import RelatedResidences from "@/components/residences/RelatedResidences";
 import {
   getCityBySlug,
   getResidencesByCityId,
   mapHostelsToExploreItems,
 } from "@/lib/residences/city";
+import { getHostelBySlug, getRelatedHostels } from "@/lib/residences/detail";
 import { CityResidenceContent } from "@/components/residences/city/CityResidenceContent";
-import connectToDatabase from "@/lib/mongodb";
-import { Hostel } from "@/models/hostel.model";
 
 export const instant = false;
 
@@ -55,17 +53,46 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  // 2. Fallback check for single residence detail
-  const staticResidence = exploreResidences.items.find(
-    (item) => item.href.replace("/residences/", "").toLowerCase() === normalizedSlug
-  );
+  // 2. Dynamic single residence detail metadata
+  const hostelData = await getHostelBySlug(normalizedSlug);
 
-  if (staticResidence) {
+  if (hostelData) {
+    const raw = hostelData.raw;
+    const detail = hostelData.residenceDetail;
+
+    const title =
+      raw.metadata?.title ||
+      `${detail.title}${detail.subtitle ? " " + detail.subtitle : ""} | Aurus Student Residences`;
+    const description =
+      raw.metadata?.description ||
+      raw.subtitle ||
+      detail.description?.slice(0, 160) ||
+      `Experience luxury student living at ${detail.title} with Aurus.`;
+    const keywords =
+      raw.metadata?.keywords && raw.metadata.keywords.length > 0
+        ? raw.metadata.keywords
+        : [
+            detail.title,
+            "student residences",
+            "luxury hostel",
+            "student accommodation",
+            detail.locationBadge,
+          ];
+    const imageUrl = detail.mainImage || "/images/image03.png";
+
     return {
-      title: `${staticResidence.name} | Aurus Student Residences`,
-      description: `Discover ${staticResidence.name} located in ${staticResidence.locality}.`,
+      title,
+      description,
+      keywords,
       alternates: {
-        canonical: `/residences/${normalizedSlug}`,
+        canonical: `/residences/${raw.slug || normalizedSlug}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/residences/${raw.slug || normalizedSlug}`,
+        type: "website",
+        images: [{ url: imageUrl }],
       },
     };
   }
@@ -79,7 +106,7 @@ export default async function ResidenceSlugPage({ params }: PageProps) {
   const { citySlug } = await params;
   const normalizedSlug = (citySlug || "").toLowerCase().trim();
 
-  // 1. Check if citySlug matches an active city with published residences
+  // 1. Check if slug matches an active city with published residences
   const city = await getCityBySlug(normalizedSlug);
 
   if (city) {
@@ -95,33 +122,23 @@ export default async function ResidenceSlugPage({ params }: PageProps) {
     return <CityResidenceContent city={city} initialItems={exploreItems} />;
   }
 
-  // 2. Check if slug matches a static single residence
-  const staticResidence = exploreResidences.items.find(
-    (item) => item.href.replace("/residences/", "").toLowerCase() === normalizedSlug
-  );
+  // 2. Check if slug matches an active individual residence in MongoDB
+  const hostelData = await getHostelBySlug(normalizedSlug);
 
-  if (staticResidence) {
+  if (hostelData) {
+    const relatedItems = await getRelatedHostels(
+      hostelData.raw._id?.toString() || hostelData.raw.slug,
+      hostelData.raw.location?.city?._id || hostelData.raw.location?.city
+    );
+
     return (
       <main>
-        <ResidenceDetail data={staticResidenceDetail} />
-        <RelatedResidences />
+        <ResidenceDetail data={hostelData.residenceDetail} />
+        <RelatedResidences items={relatedItems} />
       </main>
     );
   }
 
-  // 3. Check if slug matches an individual hostel in MongoDB
-  await connectToDatabase();
-  const hostel = await Hostel.findOne({ slug: normalizedSlug, isActive: true }).lean();
-
-  if (hostel) {
-    return (
-      <main>
-        <ResidenceDetail data={staticResidenceDetail} />
-        <RelatedResidences />
-      </main>
-    );
-  }
-
-  // 4. Neither valid city with residences nor valid individual residence -> 404
+  // 3. Neither valid city with residences nor valid individual residence -> 404
   notFound();
 }

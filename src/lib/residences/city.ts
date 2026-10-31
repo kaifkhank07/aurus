@@ -171,26 +171,40 @@ function formatOccupancyBadge(tenantType: string[] = []): "Girls Only" | "Boys O
 export function mapHostelsToExploreItems(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   hostels: any[],
-  cityName: string
+  cityName?: string
 ): ExploreResidenceItem[] {
   return hostels.map((hostel) => {
+    const city =
+      cityName ||
+      (typeof hostel.location?.city === "object"
+        ? hostel.location.city?.city || hostel.location.city?.name
+        : hostel.location?.city) ||
+      "";
+
     const localityName =
       hostel.location?.locality?.name ||
       (typeof hostel.location?.locality === "string" ? hostel.location?.locality : "");
-    const localityText = localityName ? `${localityName} · ${cityName}` : cityName;
+    const localityText =
+      localityName && city ? `${localityName} · ${city}` : localityName || city || "Prime Location";
 
     return {
+      id: hostel._id ? String(hostel._id) : hostel.slug,
+      _id: hostel._id ? String(hostel._id) : hostel.slug,
+      slug: hostel.slug,
       name: hostel.title,
       occupancy: formatOccupancyBadge(hostel.tenantType),
       roomOccupancy: "Single Occupancy",
-      city: cityName,
+      city,
       featured: true,
       locality: localityText,
-      distance: hostel.subtitle || hostel.location?.address || `Prime location in ${cityName}`,
+      distance:
+        hostel.subtitle ||
+        hostel.location?.address ||
+        (city ? `Prime location in ${city}` : "Prime location"),
       priceFrom: `₹${Number(hostel.rent || 0).toLocaleString("en-IN")}`,
       href: `/residences/${hostel.slug}`,
       image: hostel.frontImage?.url || "/images/image03.png",
-      colleges: [],
+      colleges: Array.isArray(hostel.metadata?.keywords) ? hostel.metadata.keywords : [],
     };
   });
 }
