@@ -3,6 +3,10 @@
 import React, { useState } from "react";
 import { SafeHostel } from "@/types/hostel.types";
 import { SafeAmenity } from "@/types/amenity.types";
+import { SafeOccupancy } from "@/types/occupancy.types";
+import { SafeRoom } from "@/types/room.types";
+import { SafeService } from "@/types/service.types";
+import { SafeInstitute } from "@/types/institute.types";
 import { Chip, Btn } from "../ui/AdminUI";
 import Icon from "../ui/AdminIcons";
 import { getMediaUrl } from "@/lib/media";
@@ -28,8 +32,6 @@ export default function HostelDetails({
   if (!open || !hostel) return null;
 
   const frontImageUrl = getMediaUrl(hostel.frontImage?.url || hostel.frontImage?.publickey);
-  const firstImageUrl = getMediaUrl(hostel.firstImage?.url || hostel.firstImage?.publickey);
-  const secondImageUrl = getMediaUrl(hostel.secondImage?.url || hostel.secondImage?.publickey);
   const brochureUrl = getMediaUrl(hostel.brochure?.url || hostel.brochure?.publickey);
 
   const galleryUrls = (hostel.galleryImages || [])
@@ -38,8 +40,6 @@ export default function HostelDetails({
 
   const allPhotos = [
     ...(frontImageUrl ? [{ url: frontImageUrl, label: "Front Cover" }] : []),
-    ...(firstImageUrl ? [{ url: firstImageUrl, label: "Room View 1" }] : []),
-    ...(secondImageUrl ? [{ url: secondImageUrl, label: "Room View 2" }] : []),
     ...galleryUrls.map((u, i) => ({ url: u, label: `Gallery ${i + 1}` })),
   ];
 
@@ -61,11 +61,23 @@ export default function HostelDetails({
       ? (hostel.location.locality as { name?: string }).name || ""
       : String(hostel.location?.locality || "—");
 
+  const rentAmount =
+    typeof hostel.rent === "object" && hostel.rent !== null
+      ? hostel.rent.amount
+      : Number(hostel.rent || 0);
+
   const formattedRent = new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
     maximumFractionDigits: 0,
-  }).format(hostel.rent);
+  }).format(rentAmount);
+
+  const rentFreqLabel =
+    typeof hostel.rent?.frequency === "object" && hostel.rent?.frequency !== null
+      ? hostel.rent.frequency.name
+      : typeof hostel.rent?.frequency === "string"
+      ? hostel.rent.frequency
+      : "month";
 
   const createdFormatted = hostel.createdAt
     ? new Date(hostel.createdAt).toLocaleDateString("en-US", {
@@ -74,6 +86,10 @@ export default function HostelDetails({
         year: "numeric",
       })
     : "—";
+
+  const tenantTypeLabel = Array.isArray(hostel.tenantType)
+    ? (hostel.tenantType as string[]).join(", ")
+    : String(hostel.tenantType || "co-ed");
 
   return (
     <div
@@ -120,14 +136,14 @@ export default function HostelDetails({
                 <Chip tone={hostel.isActive ? "mint" : "rose"} dot>
                   {hostel.isActive ? "Active Listing" : "Inactive"}
                 </Chip>
-                {hostel.tenantType.map((t) => (
-                  <span
-                    key={t}
-                    className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 backdrop-blur-xs text-white uppercase tracking-wider"
-                  >
-                    {t}
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 backdrop-blur-xs text-white uppercase tracking-wider">
+                  {tenantTypeLabel}
+                </span>
+                {hostel.rating?.star !== undefined && hostel.rating.star > 0 && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/80 backdrop-blur-xs text-white">
+                    ★ {hostel.rating.star} ({hostel.rating.userCount || 0} reviews)
                   </span>
-                ))}
+                )}
               </div>
               <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight truncate drop-shadow-md">
                 {hostel.title}
@@ -138,7 +154,7 @@ export default function HostelDetails({
               <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Starts From</div>
               <div className="text-lg sm:text-xl font-extrabold text-orange-400">
                 {formattedRent}
-                <span className="text-xs text-slate-300 font-normal"> / {hostel.rentFrequency === "monthly" ? "mo" : "yr"}</span>
+                <span className="text-xs text-slate-300 font-normal"> / {rentFreqLabel}</span>
               </div>
             </div>
           </div>
@@ -151,7 +167,7 @@ export default function HostelDetails({
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-bold text-slate-500">Public Slug:</span>
               <span className="font-mono text-slate-800 bg-white px-2 py-0.5 rounded-md border border-slate-200">
-                /hostels/{hostel.slug}
+                /residences/{hostel.slug}
               </span>
               <button
                 type="button"
@@ -234,6 +250,116 @@ export default function HostelDetails({
             <p className="text-xs text-slate-600 leading-relaxed">
               {hostel.location?.address}
             </p>
+          </div>
+
+          {/* Occupancies & Rooms */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Icon name="users" size={12} /> Occupancy Options ({hostel.occupancy?.length || 0})
+              </span>
+              {hostel.occupancy && hostel.occupancy.length > 0 ? (
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {hostel.occupancy.map((occ, idx) => {
+                    const name =
+                      typeof occ === "object" && occ !== null
+                        ? (occ as SafeOccupancy).name
+                        : String(occ);
+                    return (
+                      <span
+                        key={idx}
+                        className="px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-800"
+                      >
+                        {name}
+                      </span>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400 italic">No occupancies selected.</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Icon name="door" size={12} /> Room Configurations ({hostel.room?.length || 0})
+              </span>
+              {hostel.room && hostel.room.length > 0 ? (
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {hostel.room.map((r, idx) => {
+                    const name =
+                      typeof r === "object" && r !== null
+                        ? (r as SafeRoom).name
+                        : String(r);
+                    return (
+                      <span
+                        key={idx}
+                        className="px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-800"
+                      >
+                        {name}
+                      </span>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400 italic">No rooms configured.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Services & Nearby Institutes */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Icon name="flow" size={12} /> Services Provided ({hostel.services?.length || 0})
+              </span>
+              {hostel.services && hostel.services.length > 0 ? (
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {hostel.services.map((serv, idx) => {
+                    const name =
+                      typeof serv === "object" && serv !== null
+                        ? (serv as SafeService).name
+                        : String(serv);
+                    return (
+                      <span
+                        key={idx}
+                        className="px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-800"
+                      >
+                        {name}
+                      </span>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400 italic">No services listed.</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Icon name="graduation" size={12} /> Nearby Institutes ({hostel.institute?.length || 0})
+              </span>
+              {hostel.institute && hostel.institute.length > 0 ? (
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {hostel.institute.map((inst, idx) => {
+                    const name =
+                      typeof inst === "object" && inst !== null
+                        ? (inst as SafeInstitute).name
+                        : String(inst);
+                    return (
+                      <span
+                        key={idx}
+                        className="px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-800"
+                      >
+                        {name}
+                      </span>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400 italic">No nearby institutes selected.</p>
+              )}
+            </div>
           </div>
 
           {/* Included Amenities */}
@@ -340,4 +466,3 @@ export default function HostelDetails({
     </div>
   );
 }
-

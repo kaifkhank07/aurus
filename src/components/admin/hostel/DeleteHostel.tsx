@@ -48,11 +48,21 @@ export default function DeleteHostel({ open, hostel, onClose, onSuccess }: Delet
       ? (hostel.location.locality as { name?: string }).name || ""
       : String(hostel.location?.locality || "—");
 
+  const rentAmount =
+    typeof hostel.rent === "object" && hostel.rent !== null
+      ? hostel.rent.amount
+      : Number(hostel.rent || 0);
+
   const formattedRent = new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
     maximumFractionDigits: 0,
-  }).format(hostel.rent);
+  }).format(rentAmount);
+
+  const freqLabel =
+    typeof hostel.rent?.frequency === "object" && hostel.rent?.frequency !== null
+      ? hostel.rent.frequency.name
+      : "month";
 
   return (
     <div
@@ -117,7 +127,7 @@ export default function DeleteHostel({ open, hostel, onClose, onSuccess }: Delet
                 {localityName}, {cityName}
               </p>
               <div className="text-[11px] text-orange-600 font-bold mt-0.5">
-                {formattedRent} / {hostel.rentFrequency}
+                {formattedRent} / {freqLabel}
               </div>
             </div>
           </div>

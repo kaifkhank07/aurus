@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { objectIdSchema } from "./admin.validation";
 import { cityImageSchema as imageSchema, cityMetadataSchema } from "./city.validation";
-import { TENANT_TYPES, RENT_FREQUENCIES } from "@/types/hostel.types";
+import { TENANT_TYPES } from "@/types/hostel.types";
 
 export { objectIdSchema };
 
@@ -56,6 +56,48 @@ const updateLocationSchema = z
     { message: "Coordinates must include both longitude and latitude, or omit both." }
   );
 
+export const hostelRentSchema = z.object({
+  amount: z.number().min(0, { message: "Rent amount must be a non-negative number." }),
+  frequency: objectIdSchema,
+});
+
+export const updateHostelRentSchema = z.object({
+  amount: z.number().min(0, { message: "Rent amount must be a non-negative number." }).optional(),
+  frequency: objectIdSchema.optional(),
+});
+
+export const hostelRatingSchema = z.object({
+  star: z
+    .number()
+    .min(0, { message: "Star rating must be >= 0." })
+    .max(5, { message: "Star rating cannot exceed 5." })
+    .default(0),
+  userCount: z
+    .number()
+    .int()
+    .min(0, { message: "User count must be a non-negative integer." })
+    .default(0),
+});
+
+export const updateHostelRatingSchema = z.object({
+  star: z
+    .number()
+    .min(0, { message: "Star rating must be >= 0." })
+    .max(5, { message: "Star rating cannot exceed 5." })
+    .optional(),
+  userCount: z
+    .number()
+    .int()
+    .min(0, { message: "User count must be a non-negative integer." })
+    .optional(),
+});
+
+const objectIdArraySchema = z
+  .array(objectIdSchema)
+  .optional()
+  .default([])
+  .transform((val) => Array.from(new Set(val)));
+
 export const createHostelSchema = z
   .object({
     title: z
@@ -64,24 +106,19 @@ export const createHostelSchema = z
       .min(1, { message: "Hostel title is required." })
       .max(200, { message: "Title cannot exceed 200 characters." }),
     subtitle: z.string().trim().max(300, { message: "Subtitle cannot exceed 300 characters." }).optional(),
-    tenantType: z
-      .array(z.enum(TENANT_TYPES, { message: "Invalid tenant type." }))
-      .min(1, { message: "At least one tenant type is required." })
-      .transform((val) => Array.from(new Set(val))),
+    tenantType: z.enum(TENANT_TYPES, {
+      message: "Tenant type must be 'girls', 'boys', or 'co-ed'.",
+    }),
     isActive: z.boolean().optional().default(true),
     frontImage: imageSchema,
     galleryImages: z.array(imageSchema).optional().default([]),
-    firstImage: imageSchema.optional(),
-    secondImage: imageSchema.optional(),
-    rent: z.number().min(0, { message: "Rent must be a non-negative number." }),
-    rentFrequency: z.enum(RENT_FREQUENCIES, {
-      message: "Rent frequency must be 'monthly' or 'yearly'.",
-    }),
-    amenities: z
-      .array(objectIdSchema)
-      .optional()
-      .default([])
-      .transform((val) => Array.from(new Set(val))),
+    rent: hostelRentSchema,
+    amenities: objectIdArraySchema,
+    occupancy: objectIdArraySchema,
+    room: objectIdArraySchema,
+    services: objectIdArraySchema,
+    institute: objectIdArraySchema,
+    rating: hostelRatingSchema.optional().default(() => ({ star: 0, userCount: 0 })),
     description: z
       .string()
       .trim()
@@ -96,22 +133,32 @@ export const updateHostelSchema = z
   .object({
     title: z.string().trim().min(1).max(200).optional(),
     subtitle: z.string().trim().max(300).optional(),
-    tenantType: z
-      .array(z.enum(TENANT_TYPES))
-      .min(1)
-      .transform((val) => Array.from(new Set(val)))
-      .optional(),
+    tenantType: z.enum(TENANT_TYPES).optional(),
     isActive: z.boolean().optional(),
     frontImage: imageSchema.optional(),
     galleryImages: z.array(imageSchema).optional(),
-    firstImage: imageSchema.optional().nullable(),
-    secondImage: imageSchema.optional().nullable(),
-    rent: z.number().min(0).optional(),
-    rentFrequency: z.enum(RENT_FREQUENCIES).optional(),
+    rent: updateHostelRentSchema.optional(),
     amenities: z
       .array(objectIdSchema)
       .transform((val) => Array.from(new Set(val)))
       .optional(),
+    occupancy: z
+      .array(objectIdSchema)
+      .transform((val) => Array.from(new Set(val)))
+      .optional(),
+    room: z
+      .array(objectIdSchema)
+      .transform((val) => Array.from(new Set(val)))
+      .optional(),
+    services: z
+      .array(objectIdSchema)
+      .transform((val) => Array.from(new Set(val)))
+      .optional(),
+    institute: z
+      .array(objectIdSchema)
+      .transform((val) => Array.from(new Set(val)))
+      .optional(),
+    rating: updateHostelRatingSchema.optional(),
     description: z.string().trim().min(1).optional(),
     location: updateLocationSchema.optional(),
     brochure: imageSchema.optional().nullable(),
@@ -145,7 +192,11 @@ export const hostelQuerySchema = z.object({
   locality: z.string().trim().optional(),
   tenantType: z.enum(TENANT_TYPES).optional(),
   amenity: z.string().trim().optional(),
-  rentFrequency: z.enum(RENT_FREQUENCIES).optional(),
+  occupancy: z.string().trim().optional(),
+  room: z.string().trim().optional(),
+  service: z.string().trim().optional(),
+  institute: z.string().trim().optional(),
+  rentFrequency: z.string().trim().optional(),
   minRent: z
     .string()
     .optional()
@@ -165,6 +216,6 @@ export const hostelQuerySchema = z.object({
       if (val === "false") return false;
       return undefined;
     }),
-  sortBy: z.enum(["rent", "title", "createdAt"]).optional(),
+  sortBy: z.enum(["rent", "title", "createdAt", "star"]).optional(),
   sortOrderDir: z.enum(["asc", "desc"]).optional(),
 });

@@ -6,18 +6,13 @@ import { Hostel } from "@/models/hostel.model";
 import { Occupancy } from "@/models/occupancy.model";
 import { City } from "@/models/city.model";
 
-function formatOccupancyBadge(tenantType: string[] = []): string {
-  if (!Array.isArray(tenantType) || tenantType.length === 0) {
+function formatOccupancyBadge(tenantType?: string | string[]): string {
+  if (!tenantType) {
     return "Co-ed Living";
   }
-  const normalized = tenantType.map((t) => String(t).toLowerCase());
-  if (
-    normalized.includes("co-ed") ||
-    normalized.includes("coed") ||
-    (normalized.includes("girls") && normalized.includes("boys"))
-  ) {
-    return "Co-ed Living";
-  }
+  const normalized = Array.isArray(tenantType)
+    ? tenantType.map((t) => String(t).toLowerCase())
+    : [String(tenantType).toLowerCase()];
   if (normalized.includes("girls")) {
     return "Girls Only";
   }

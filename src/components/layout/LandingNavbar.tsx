@@ -4,9 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { nav } from "@/data/layout";
-import { ArrowRight, Container } from "@/components/ui/Primitives";
-import Image from "next/image";
-
+import { ArrowRight } from "@/components/ui/Primitives";
 
 export interface NavbarProps {
     variant?: "auto" | "light" | "dark";
@@ -17,59 +15,53 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
     const [open, setOpen] = useState(false);
     const pathname = usePathname();
 
-    const isLight = variant === "light";
     const isDark = variant === "dark";
 
-    // When mobile menu is open, header background becomes cream to match the shutter seamlessly
-    const headerBg = open
-        ? "bg-cream text-ink"
-        : "bg-cream text-ink";
+    // When mobile menu is open, header background becomes cream to match seamlessly
+    const headerBg = "bg-cream text-ink";
 
-    // If explicitly dark variant, allow dark overlay; for auto and light, render the cream navbar matching the design reference
+    // Header container classes
     const headerClasses = isDark
-        ? `absolute inset-x-0 top-0 z-50 transition-colors duration-300 ${open ? "bg-cream text-ink border-b-transparent shadow-none" : "text-white"
-        }`
+        ? `relative w-full z-50 transition-colors duration-300 ${open ? "bg-cream text-ink" : "text-white"}`
         : `relative w-full z-50 transition-colors duration-300 ${headerBg}`;
-
-    // Logo: dark logo on cream background (default/light/auto), inverted only if closed dark overlay
-    const logoClasses =
-        isDark && !open
-            ? "w-[120px] sm:w-[135px] lg:w-[155px] h-auto object-contain grayscale invert"
-            : "w-[120px] sm:w-[135px] lg:w-[155px] h-auto object-contain";
 
     // Mobile CTA styles
     const mobileCtaClasses = open
-        ? "text-ink hover:bg-ink hover:text-paper"
+        ? "text-ink border-ink hover:bg-ink hover:text-paper"
         : isDark
-            ? "text-white hover:bg-cream hover:text-ink"
-            : "text-ink hover:bg-ink hover:text-paper";
+            ? "text-white border-white/80 hover:bg-cream hover:text-ink"
+            : "text-ink border-ink/80 hover:bg-ink hover:text-paper";
 
     // Desktop CTA styles
     const desktopCtaClasses = isDark
-        ? "text-white hover:bg-white hover:text-ink"
-        : "text-ink hover:bg-ink hover:text-paper";
+        ? "text-white border-white/80 hover:bg-white hover:text-ink"
+        : "text-ink border-ink/80 hover:bg-ink hover:text-paper";
 
     const hamburgerBarColor = open ? "bg-ink" : isDark ? "bg-white" : "bg-ink";
 
     return (
         <header className={`${headerClasses} ${className}`}>
-            <Container className="relative z-50 flex items-center justify-between py-3.5 sm:py-4 lg:py-5">
-                {/* Brand Logo */}
+            <div className="relative z-50 flex w-full items-center justify-between px-2 sm:px-4 lg:px-6 py-3 sm:py-3.5 lg:h-[72px]">
+                {/* Brand Wordmark (Left) */}
+                <div className="flex items-center shrink-0">
+                    <Link
+                        href="/"
+                        aria-label="Aurus home"
+                        className="group flex items-center select-none"
+                    >
+                        <span
+                            className={`font-display text-[26px] sm:text-[30px] lg:text-[34px] tracking-[0.06em] leading-none transition-opacity ${
+                                isDark ? "text-white" : "text-ink group-hover:opacity-80"
+                            }`}
+                        >
+                            AURUS
+                        </span>
+                    </Link>
+                </div>
 
-                <Link href="/" aria-label="Aurus home" className="flex items-center shrink-0">
-                    <Image
-                        src="/images/logo.png"
-                        alt="Aurus Luxury Student Residences"
-                        width={155}
-                        height={42}
-                        priority
-                        className={logoClasses}
-                    />
-                </Link>
-
-                {/* Desktop Navigation Links */}
+                {/* Desktop Navigation Links (Center) */}
                 <nav
-                    className="hidden items-center gap-8 lg:gap-10 xl:gap-12 lg:flex"
+                    className="hidden items-center gap-7 lg:gap-9 xl:gap-11 lg:flex"
                     aria-label="Primary"
                 >
                     {nav.links.map((link) => {
@@ -82,9 +74,9 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className={`font-mono uppercase text-[12px] lg:text-[13px] leading-[1.7857] tracking-[2px] transition-opacity hover:opacity-70 ${isDark ? "text-white" : "text-ink"
-                                    } ${isActive ? "underline underline-offset-8 decoration-1" : ""
-                                    }`}
+                                className={`font-mono uppercase text-[11px] lg:text-[12px] xl:text-[13px] leading-none tracking-[2px] transition-opacity hover:opacity-70 ${
+                                    isDark ? "text-white" : "text-ink"
+                                } ${isActive ? "underline underline-offset-8 decoration-1" : ""}`}
                             >
                                 {link.label}
                             </Link>
@@ -92,11 +84,11 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
                     })}
                 </nav>
 
-                {/* Desktop CTA (Pill Button with Arrow) */}
+                {/* Desktop CTA (Pill Button with Arrow - Right) */}
                 <div className="hidden lg:flex items-center justify-end shrink-0">
                     <Link
                         href={nav.cta.href}
-                        className={`font-mono uppercase text-[11px] lg:text-[12px] leading-none tracking-[2px] inline-flex items-center gap-2 rounded-full border px-6 py-2.5 lg:px-7 lg:py-3 transition-colors duration-200 ${desktopCtaClasses}`}
+                        className={`font-mono uppercase text-[11px] lg:text-[12px] leading-none tracking-[2px] inline-flex items-center gap-2 rounded-full border px-5 py-2.5 lg:px-6 lg:py-2.5 transition-colors duration-200 ${desktopCtaClasses}`}
                     >
                         <span className="uppercase">{nav.cta.label}</span>
                         <ArrowRight className="h-3 w-3" />
@@ -105,10 +97,9 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
 
                 {/* Mobile & Tablet Controls: ENQUIRE Button + 2-Line Hamburger */}
                 <div className="flex items-center gap-2.5 sm:gap-3.5 lg:hidden">
-                    {/* Mobile Enquire Button */}
                     <Link
                         href={nav.cta.href}
-                        className={`font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-[12px] font-space-mono tracking-[1.5px] uppercase transition-colors duration-200 active:scale-95 ${mobileCtaClasses}`}
+                        className={`font-mono uppercase text-[11px] sm:text-[12px] leading-none tracking-[1.5px] inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 sm:px-4 sm:py-2 transition-colors duration-200 active:scale-95 ${mobileCtaClasses}`}
                     >
                         <span>{nav.cta.label}</span>
                         <ArrowRight className="h-3 w-3" />
@@ -125,49 +116,45 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
                     >
                         <span className="relative flex h-[8px] w-[22px] flex-col justify-between">
                             <span
-                                className={`block h-[1.5px] w-full rounded-full transition-all duration-300 ease-in-out ${hamburgerBarColor} ${open ? "translate-y-[3.25px] rotate-45" : ""
-                                    }`}
+                                className={`block h-[1.5px] w-full rounded-full transition-all duration-300 ease-in-out ${hamburgerBarColor} ${
+                                    open ? "translate-y-[3.25px] rotate-45" : ""
+                                }`}
                             />
                             <span
-                                className={`block h-[1.5px] w-full rounded-full transition-all duration-300 ease-in-out ${hamburgerBarColor} ${open ? "-translate-y-[3.25px] -rotate-45" : ""
-                                    }`}
+                                className={`block h-[1.5px] w-full rounded-full transition-all duration-300 ease-in-out ${hamburgerBarColor} ${
+                                    open ? "-translate-y-[3.25px] -rotate-45" : ""
+                                }`}
                             />
                         </span>
                     </button>
                 </div>
-            </Container>
+            </div>
 
-            {/* Dimmed page backdrop */}
+            {/* Dimmed page backdrop for mobile menu */}
             <div
                 aria-hidden="true"
                 onClick={() => setOpen(false)}
-                className={`fixed inset-0 z-[60] bg-black/45 transition-opacity duration-300 lg:hidden ${open
-                    ? "opacity-100 pointer-events-auto"
-                    : "opacity-0 pointer-events-none"
-                    }`}
+                className={`fixed inset-0 z-[60] bg-black/45 transition-opacity duration-300 lg:hidden ${
+                    open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                }`}
             />
 
             {/* Mobile & tablet side menu */}
             <aside
                 id="mobile-nav-menu"
                 aria-hidden={!open}
-                className={`fixed inset-y-0 right-0 z-[70] flex w-[82vw] max-w-[420px] flex-col bg-black px-5 pb-7 pt-6 text-white transition-transform duration-300 ease-out sm:px-8 lg:hidden ${open ? "translate-x-0" : "translate-x-full"
-                    }`}
+                className={`fixed inset-y-0 right-0 z-[70] flex w-[82vw] max-w-[420px] flex-col bg-black px-5 pb-7 pt-6 text-white transition-transform duration-300 ease-out sm:px-8 lg:hidden ${
+                    open ? "translate-x-0" : "translate-x-full"
+                }`}
             >
                 <div className="mt-8 mb-7 flex items-center justify-between">
                     <Link
                         href="/"
                         aria-label="Aurus home"
                         onClick={() => setOpen(false)}
+                        className="font-display text-[26px] tracking-[0.06em] text-white leading-none select-none"
                     >
-                        <Image
-                            src="/images/logo.png"
-                            alt="Aurus Luxury Student Residences"
-                            width={155}
-                            height={42}
-                            priority
-                            className="h-auto w-[105px] object-contain grayscale invert"
-                        />
+                        AURUS
                     </Link>
 
                     <button
@@ -208,10 +195,16 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
                         <ArrowRight className="h-3 w-3" />
                     </Link>
 
-                    <a href="tel:+9118005720709" className="mt-3 text-right font-sans font-light text-white/80 text-[16px] tracking-[1px] transition-opacity hover:opacity-60">
+                    <a
+                        href="tel:+9118005720709"
+                        className="mt-3 text-right font-sans font-light text-white/80 text-[16px] tracking-[1px] transition-opacity hover:opacity-60"
+                    >
                         Toll-free: 1800-572-0709
                     </a>
-                    <a href="mailto:info@auruslife.com" className="text-right font-sans font-light text-white/80 text-[16px] tracking-[1px] transition-opacity hover:opacity-60">
+                    <a
+                        href="mailto:info@auruslife.com"
+                        className="text-right font-sans font-light text-white/80 text-[16px] tracking-[1px] transition-opacity hover:opacity-60"
+                    >
                         info@auruslife.com
                     </a>
                 </div>

@@ -6,6 +6,11 @@ import { Hostel, IHostelDocument } from "@/models/hostel.model";
 import { City, ICityDocument } from "@/models/city.model";
 import { Locality, ILocalityDocument } from "@/models/locality.model";
 import { Amenity, IAmenityDocument } from "@/models/amenity.model";
+import { Occupancy, IOccupancyDocument } from "@/models/occupancy.model";
+import { Room, IRoomDocument } from "@/models/room.model";
+import { Service, IServiceDocument } from "@/models/service.model";
+import { Institute, IInstituteDocument } from "@/models/institute.model";
+import { RentFrequency, IRentFrequencyDocument } from "@/models/rent-frequency.model";
 import { authenticateAdmin } from "@/middleware/admin-auth";
 import { generateUniqueSlug } from "@/lib/slug";
 import {
@@ -21,10 +26,15 @@ import {
   hostelQuerySchema,
   objectIdSchema,
 } from "@/validations/hostel.validation";
-import { SafeHostel, PaginatedHostelsResult, SafeHostelLocation } from "@/types/hostel.types";
+import { SafeHostel, PaginatedHostelsResult, SafeHostelLocation, SafeHostelRent } from "@/types/hostel.types";
 import { SafeCity } from "@/types/city.types";
 import { SafeLocality } from "@/types/locality.types";
 import { SafeAmenity } from "@/types/amenity.types";
+import { SafeOccupancy } from "@/types/occupancy.types";
+import { SafeRoom } from "@/types/room.types";
+import { SafeService } from "@/types/service.types";
+import { SafeInstitute } from "@/types/institute.types";
+import { SafeRentFrequency } from "@/types/rent-frequency.types";
 import { createLogger } from "@/lib/logger";
 import { safeDeleteS3File, uploadS3File, uploadMultipleS3Files, parseRequestBody } from "@/lib/s3";
 import { getMediaUrl } from "@/lib/media";
@@ -114,6 +124,116 @@ function formatSafeHostel(doc: IHostelDocument): SafeHostel {
     return String(rawAmenity);
   });
 
+  // Format occupancy
+  const formattedOccupancy: (string | SafeOccupancy)[] = (doc.occupancy || []).map((item) => {
+    const raw = item as unknown;
+    if (raw && typeof raw === "object" && "_id" in raw) {
+      const occDoc = raw as unknown as IOccupancyDocument;
+      return {
+        id: occDoc._id.toString(),
+        name: occDoc.name,
+        image: occDoc.image && occDoc.image.publickey
+          ? {
+              url: occDoc.image.url || getMediaUrl(occDoc.image.publickey) || "",
+              publickey: occDoc.image.publickey,
+            }
+          : undefined,
+        isActive: occDoc.isActive ?? true,
+        createdAt: occDoc.createdAt ? occDoc.createdAt.toISOString() : new Date().toISOString(),
+        updatedAt: occDoc.updatedAt ? occDoc.updatedAt.toISOString() : new Date().toISOString(),
+      };
+    }
+    return String(raw);
+  });
+
+  // Format room
+  const formattedRoom: (string | SafeRoom)[] = (doc.room || []).map((item) => {
+    const raw = item as unknown;
+    if (raw && typeof raw === "object" && "_id" in raw) {
+      const roomDoc = raw as unknown as IRoomDocument;
+      return {
+        id: roomDoc._id.toString(),
+        name: roomDoc.name,
+        image: roomDoc.image && roomDoc.image.publickey
+          ? {
+              url: roomDoc.image.url || getMediaUrl(roomDoc.image.publickey) || "",
+              publickey: roomDoc.image.publickey,
+            }
+          : undefined,
+        isActive: roomDoc.isActive ?? true,
+        createdAt: roomDoc.createdAt ? roomDoc.createdAt.toISOString() : new Date().toISOString(),
+        updatedAt: roomDoc.updatedAt ? roomDoc.updatedAt.toISOString() : new Date().toISOString(),
+      };
+    }
+    return String(raw);
+  });
+
+  // Format services
+  const formattedServices: (string | SafeService)[] = (doc.services || []).map((item) => {
+    const raw = item as unknown;
+    if (raw && typeof raw === "object" && "_id" in raw) {
+      const servDoc = raw as unknown as IServiceDocument;
+      return {
+        id: servDoc._id.toString(),
+        name: servDoc.name,
+        image: servDoc.image && servDoc.image.publickey
+          ? {
+              url: servDoc.image.url || getMediaUrl(servDoc.image.publickey) || "",
+              publickey: servDoc.image.publickey,
+            }
+          : undefined,
+        isActive: servDoc.isActive ?? true,
+        createdAt: servDoc.createdAt ? servDoc.createdAt.toISOString() : new Date().toISOString(),
+        updatedAt: servDoc.updatedAt ? servDoc.updatedAt.toISOString() : new Date().toISOString(),
+      };
+    }
+    return String(raw);
+  });
+
+  // Format institute
+  const formattedInstitute: (string | SafeInstitute)[] = (doc.institute || []).map((item) => {
+    const raw = item as unknown;
+    if (raw && typeof raw === "object" && "_id" in raw) {
+      const instDoc = raw as unknown as IInstituteDocument;
+      return {
+        id: instDoc._id.toString(),
+        name: instDoc.name,
+        slug: instDoc.slug,
+        isActive: instDoc.isActive ?? true,
+        city: instDoc.city ? String(instDoc.city) : "",
+        createdAt: instDoc.createdAt ? instDoc.createdAt.toISOString() : new Date().toISOString(),
+        updatedAt: instDoc.updatedAt ? instDoc.updatedAt.toISOString() : new Date().toISOString(),
+      };
+    }
+    return String(raw);
+  });
+
+  // Format rent & rent frequency
+  let formattedFrequency: string | SafeRentFrequency;
+  const rawFreq = doc.rent?.frequency as unknown;
+  if (rawFreq && typeof rawFreq === "object" && "_id" in rawFreq) {
+    const freqDoc = rawFreq as unknown as IRentFrequencyDocument;
+    formattedFrequency = {
+      id: freqDoc._id.toString(),
+      name: freqDoc.name,
+      isActive: freqDoc.isActive ?? true,
+      createdAt: freqDoc.createdAt ? freqDoc.createdAt.toISOString() : new Date().toISOString(),
+      updatedAt: freqDoc.updatedAt ? freqDoc.updatedAt.toISOString() : new Date().toISOString(),
+    };
+  } else {
+    formattedFrequency = rawFreq ? String(rawFreq) : "";
+  }
+
+  const safeRent: SafeHostelRent = {
+    amount:
+      typeof doc.rent?.amount === "number"
+        ? doc.rent.amount
+        : typeof (doc as unknown as { rent?: number }).rent === "number"
+        ? ((doc as unknown as { rent?: number }).rent as number)
+        : 0,
+    frequency: formattedFrequency,
+  };
+
   return {
     id: doc._id.toString(),
     title: doc.title,
@@ -129,15 +249,16 @@ function formatSafeHostel(doc: IHostelDocument): SafeHostel {
       url: img.url || getMediaUrl(img.publickey) || "",
       publickey: img.publickey,
     })),
-    firstImage: doc.firstImage && doc.firstImage.publickey
-      ? { url: doc.firstImage.url || getMediaUrl(doc.firstImage.publickey) || "", publickey: doc.firstImage.publickey }
-      : undefined,
-    secondImage: doc.secondImage && doc.secondImage.publickey
-      ? { url: doc.secondImage.url || getMediaUrl(doc.secondImage.publickey) || "", publickey: doc.secondImage.publickey }
-      : undefined,
-    rent: doc.rent,
-    rentFrequency: doc.rentFrequency,
+    rent: safeRent,
     amenities: formattedAmenities,
+    occupancy: formattedOccupancy,
+    room: formattedRoom,
+    services: formattedServices,
+    institute: formattedInstitute,
+    rating: {
+      star: doc.rating?.star ?? 0,
+      userCount: doc.rating?.userCount ?? 0,
+    },
     description: doc.description,
     location: safeLocation,
     brochure: doc.brochure && doc.brochure.publickey
@@ -226,6 +347,10 @@ export async function list(request: NextRequest): Promise<NextResponse> {
       locality,
       tenantType,
       amenity,
+      occupancy,
+      room,
+      service,
+      institute,
       rentFrequency,
       minRent,
       maxRent,
@@ -277,15 +402,46 @@ export async function list(request: NextRequest): Promise<NextResponse> {
       filter.amenities = new mongoose.Types.ObjectId(amenity);
     }
 
+    if (occupancy) {
+      if (!mongoose.Types.ObjectId.isValid(occupancy)) {
+        throw new AppError("Invalid Occupancy ID in filter.", 400);
+      }
+      filter.occupancy = new mongoose.Types.ObjectId(occupancy);
+    }
+
+    if (room) {
+      if (!mongoose.Types.ObjectId.isValid(room)) {
+        throw new AppError("Invalid Room ID in filter.", 400);
+      }
+      filter.room = new mongoose.Types.ObjectId(room);
+    }
+
+    if (service) {
+      if (!mongoose.Types.ObjectId.isValid(service)) {
+        throw new AppError("Invalid Service ID in filter.", 400);
+      }
+      filter.services = new mongoose.Types.ObjectId(service);
+    }
+
+    if (institute) {
+      if (!mongoose.Types.ObjectId.isValid(institute)) {
+        throw new AppError("Invalid Institute ID in filter.", 400);
+      }
+      filter.institute = new mongoose.Types.ObjectId(institute);
+    }
+
     if (rentFrequency) {
-      filter.rentFrequency = rentFrequency;
+      if (!mongoose.Types.ObjectId.isValid(rentFrequency)) {
+        throw new AppError("Invalid Rent Frequency ID in filter.", 400);
+      }
+      filter["rent.frequency"] = new mongoose.Types.ObjectId(rentFrequency);
     }
 
     if (minRent !== undefined || maxRent !== undefined) {
       const rentFilter: Record<string, number> = {};
       if (minRent !== undefined) rentFilter.$gte = minRent;
       if (maxRent !== undefined) rentFilter.$lte = maxRent;
-      filter.rent = rentFilter;
+      filter["rent.amount"] = rentFilter;
     }
 
     if (search) {
@@ -301,7 +457,9 @@ export async function list(request: NextRequest): Promise<NextResponse> {
     const dir = sortOrderDir === "desc" ? -1 : 1;
 
     if (sortBy === "rent") {
-      sortOptions.rent = dir;
+      sortOptions["rent.amount"] = dir;
+    } else if (sortBy === "star") {
+      sortOptions["rating.star"] = dir;
     } else if (sortBy === "title") {
       sortOptions.title = dir;
     } else {
@@ -316,6 +474,11 @@ export async function list(request: NextRequest): Promise<NextResponse> {
         .populate("location.city")
         .populate("location.locality")
         .populate("amenities")
+        .populate("occupancy")
+        .populate("room")
+        .populate("services")
+        .populate("institute")
+        .populate("rent.frequency")
         .sort(sortOptions)
         .skip(skip)
         .limit(limit)
@@ -344,6 +507,21 @@ export async function list(request: NextRequest): Promise<NextResponse> {
 }
 
 /**
+ * Helper to safely parse JSON or object fields from parsed FormData or JSON
+ */
+function normalizeObjectField<T>(field: unknown): T | undefined {
+  if (field === undefined || field === null) return undefined;
+  if (typeof field === "string") {
+    try {
+      return JSON.parse(field) as T;
+    } catch {
+      return undefined;
+    }
+  }
+  return field as T;
+}
+
+/**
  * POST /api/admin/hostels
  * Creates a new Hostel with backend-managed slug and relationship verification
  */
@@ -357,14 +535,28 @@ export async function create(request: NextRequest): Promise<NextResponse> {
       throw new AppError("Request body is required.", 400);
     }
 
+    // Parse stringified JSON fields from FormData
+    if (typeof body.rent === "string") body.rent = normalizeObjectField(body.rent);
+    if (typeof body.rating === "string") body.rating = normalizeObjectField(body.rating);
+    if (typeof body.amenities === "string") body.amenities = normalizeObjectField(body.amenities);
+    if (typeof body.occupancy === "string") body.occupancy = normalizeObjectField(body.occupancy);
+    if (typeof body.room === "string") body.room = normalizeObjectField(body.room);
+    if (typeof body.services === "string") body.services = normalizeObjectField(body.services);
+    if (typeof body.institute === "string") body.institute = normalizeObjectField(body.institute);
+    if (typeof body.location === "string") body.location = normalizeObjectField(body.location);
+    if (typeof body.metadata === "string") body.metadata = normalizeObjectField(body.metadata);
+
+    // Support rentAmount and rentFrequency flat parameters if passed
+    if (!body.rent && (body.rentAmount !== undefined || body.rentFrequency !== undefined)) {
+      body.rent = {
+        amount: Number(body.rentAmount || 0),
+        frequency: String(body.rentFrequency || ""),
+      };
+    }
+
+    // Upload media files to S3
     if (body.frontImage) {
       body.frontImage = await uploadS3File(body.frontImage, "hostels");
-    }
-    if (body.firstImage) {
-      body.firstImage = await uploadS3File(body.firstImage, "hostels");
-    }
-    if (body.secondImage) {
-      body.secondImage = await uploadS3File(body.secondImage, "hostels");
     }
     if (body.brochure) {
       body.brochure = await uploadS3File(body.brochure, "hostels");
@@ -399,13 +591,59 @@ export async function create(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Verify all Amenities exist if provided
+    // Verify Rent Frequency exists
+    const rentFreqDoc = await RentFrequency.findById(validated.rent.frequency);
+    if (!rentFreqDoc) {
+      throw new AppError("Referenced rent frequency does not exist.", 404);
+    }
+
+    // Verify Amenities exist
     if (validated.amenities && validated.amenities.length > 0) {
       const existingAmenityCount = await Amenity.countDocuments({
         _id: { $in: validated.amenities },
       });
       if (existingAmenityCount !== validated.amenities.length) {
         throw new AppError("One or more referenced amenities do not exist.", 404);
+      }
+    }
+
+    // Verify Occupancies exist
+    if (validated.occupancy && validated.occupancy.length > 0) {
+      const count = await Occupancy.countDocuments({
+        _id: { $in: validated.occupancy },
+      });
+      if (count !== validated.occupancy.length) {
+        throw new AppError("One or more referenced occupancies do not exist.", 404);
+      }
+    }
+
+    // Verify Rooms exist
+    if (validated.room && validated.room.length > 0) {
+      const count = await Room.countDocuments({
+        _id: { $in: validated.room },
+      });
+      if (count !== validated.room.length) {
+        throw new AppError("One or more referenced rooms do not exist.", 404);
+      }
+    }
+
+    // Verify Services exist
+    if (validated.services && validated.services.length > 0) {
+      const count = await Service.countDocuments({
+        _id: { $in: validated.services },
+      });
+      if (count !== validated.services.length) {
+        throw new AppError("One or more referenced services do not exist.", 404);
+      }
+    }
+
+    // Verify Institutes exist
+    if (validated.institute && validated.institute.length > 0) {
+      const count = await Institute.countDocuments({
+        _id: { $in: validated.institute },
+      });
+      if (count !== validated.institute.length) {
+        throw new AppError("One or more referenced institutes do not exist.", 404);
       }
     }
 
@@ -420,11 +658,16 @@ export async function create(request: NextRequest): Promise<NextResponse> {
       isActive: validated.isActive ?? true,
       frontImage: validated.frontImage,
       galleryImages: validated.galleryImages ?? [],
-      firstImage: validated.firstImage,
-      secondImage: validated.secondImage,
-      rent: validated.rent,
-      rentFrequency: validated.rentFrequency,
+      rent: {
+        amount: validated.rent.amount,
+        frequency: new mongoose.Types.ObjectId(validated.rent.frequency),
+      },
       amenities: (validated.amenities || []).map((id) => new mongoose.Types.ObjectId(id)),
+      occupancy: (validated.occupancy || []).map((id) => new mongoose.Types.ObjectId(id)),
+      room: (validated.room || []).map((id) => new mongoose.Types.ObjectId(id)),
+      services: (validated.services || []).map((id) => new mongoose.Types.ObjectId(id)),
+      institute: (validated.institute || []).map((id) => new mongoose.Types.ObjectId(id)),
+      rating: validated.rating ?? { star: 0, userCount: 0 },
       description: validated.description.trim(),
       location: {
         city: new mongoose.Types.ObjectId(validated.location.city),
@@ -439,7 +682,16 @@ export async function create(request: NextRequest): Promise<NextResponse> {
     });
 
     await newHostel.save();
-    await newHostel.populate(["location.city", "location.locality", "amenities"]);
+    await newHostel.populate([
+      "location.city",
+      "location.locality",
+      "amenities",
+      "occupancy",
+      "room",
+      "services",
+      "institute",
+      "rent.frequency",
+    ]);
 
     logger.info("Hostel created successfully", { operation, id: newHostel._id.toString(), slug });
     return apiSuccess(
@@ -470,7 +722,12 @@ export async function getById(
     const hostel = await Hostel.findById(targetId)
       .populate("location.city")
       .populate("location.locality")
-      .populate("amenities");
+      .populate("amenities")
+      .populate("occupancy")
+      .populate("room")
+      .populate("services")
+      .populate("institute")
+      .populate("rent.frequency");
 
     if (!hostel) {
       throw new AppError("Hostel not found.", 404);
@@ -503,14 +760,27 @@ export async function update(
       throw new AppError("Request body is required.", 400);
     }
 
+    // Parse stringified JSON fields from FormData
+    if (typeof body.rent === "string") body.rent = normalizeObjectField(body.rent);
+    if (typeof body.rating === "string") body.rating = normalizeObjectField(body.rating);
+    if (typeof body.amenities === "string") body.amenities = normalizeObjectField(body.amenities);
+    if (typeof body.occupancy === "string") body.occupancy = normalizeObjectField(body.occupancy);
+    if (typeof body.room === "string") body.room = normalizeObjectField(body.room);
+    if (typeof body.services === "string") body.services = normalizeObjectField(body.services);
+    if (typeof body.institute === "string") body.institute = normalizeObjectField(body.institute);
+    if (typeof body.location === "string") body.location = normalizeObjectField(body.location);
+    if (typeof body.metadata === "string") body.metadata = normalizeObjectField(body.metadata);
+
+    // Support flat rent parameters if passed
+    if (!body.rent && (body.rentAmount !== undefined || body.rentFrequency !== undefined)) {
+      body.rent = {
+        amount: body.rentAmount !== undefined ? Number(body.rentAmount) : undefined,
+        frequency: body.rentFrequency !== undefined ? String(body.rentFrequency) : undefined,
+      };
+    }
+
     if (body.frontImage) {
       body.frontImage = await uploadS3File(body.frontImage, "hostels");
-    }
-    if (body.firstImage) {
-      body.firstImage = await uploadS3File(body.firstImage, "hostels");
-    }
-    if (body.secondImage) {
-      body.secondImage = await uploadS3File(body.secondImage, "hostels");
     }
     if (body.brochure) {
       body.brochure = await uploadS3File(body.brochure, "hostels");
@@ -551,8 +821,6 @@ export async function update(
     }
 
     const oldFrontImageKey = hostel.frontImage?.publickey;
-    const oldFirstImageKey = hostel.firstImage?.publickey;
-    const oldSecondImageKey = hostel.secondImage?.publickey;
     const oldBrochureKey = hostel.brochure?.publickey;
     const oldGalleryKeys = (hostel.galleryImages || []).map((img) => img.publickey);
 
@@ -564,24 +832,26 @@ export async function update(
       hostel.galleryImages = validated.galleryImages;
     }
 
-    if (validated.firstImage === null) {
-      hostel.firstImage = undefined;
-    } else if (validated.firstImage !== undefined) {
-      hostel.firstImage = validated.firstImage;
-    }
-
-    if (validated.secondImage === null) {
-      hostel.secondImage = undefined;
-    } else if (validated.secondImage !== undefined) {
-      hostel.secondImage = validated.secondImage;
-    }
-
+    // Update Rent details
     if (validated.rent !== undefined) {
-      hostel.rent = validated.rent;
+      if (validated.rent.frequency !== undefined) {
+        const freqDoc = await RentFrequency.findById(validated.rent.frequency);
+        if (!freqDoc) {
+          throw new AppError("Referenced rent frequency does not exist.", 404);
+        }
+        hostel.rent.frequency = new mongoose.Types.ObjectId(validated.rent.frequency);
+      }
+      if (validated.rent.amount !== undefined) {
+        hostel.rent.amount = validated.rent.amount;
+      }
     }
 
-    if (validated.rentFrequency !== undefined) {
-      hostel.rentFrequency = validated.rentFrequency;
+    // Update Rating
+    if (validated.rating !== undefined) {
+      hostel.rating = {
+        star: validated.rating.star !== undefined ? validated.rating.star : hostel.rating?.star ?? 0,
+        userCount: validated.rating.userCount !== undefined ? validated.rating.userCount : hostel.rating?.userCount ?? 0,
+      };
     }
 
     if (validated.description !== undefined) {
@@ -609,6 +879,58 @@ export async function update(
         }
       }
       hostel.amenities = validated.amenities.map((id) => new mongoose.Types.ObjectId(id));
+    }
+
+    // Handle Occupancies update
+    if (validated.occupancy !== undefined) {
+      if (validated.occupancy.length > 0) {
+        const count = await Occupancy.countDocuments({
+          _id: { $in: validated.occupancy },
+        });
+        if (count !== validated.occupancy.length) {
+          throw new AppError("One or more referenced occupancies do not exist.", 404);
+        }
+      }
+      hostel.occupancy = validated.occupancy.map((id) => new mongoose.Types.ObjectId(id));
+    }
+
+    // Handle Rooms update
+    if (validated.room !== undefined) {
+      if (validated.room.length > 0) {
+        const count = await Room.countDocuments({
+          _id: { $in: validated.room },
+        });
+        if (count !== validated.room.length) {
+          throw new AppError("One or more referenced rooms do not exist.", 404);
+        }
+      }
+      hostel.room = validated.room.map((id) => new mongoose.Types.ObjectId(id));
+    }
+
+    // Handle Services update
+    if (validated.services !== undefined) {
+      if (validated.services.length > 0) {
+        const count = await Service.countDocuments({
+          _id: { $in: validated.services },
+        });
+        if (count !== validated.services.length) {
+          throw new AppError("One or more referenced services do not exist.", 404);
+        }
+      }
+      hostel.services = validated.services.map((id) => new mongoose.Types.ObjectId(id));
+    }
+
+    // Handle Institutes update
+    if (validated.institute !== undefined) {
+      if (validated.institute.length > 0) {
+        const count = await Institute.countDocuments({
+          _id: { $in: validated.institute },
+        });
+        if (count !== validated.institute.length) {
+          throw new AppError("One or more referenced institutes do not exist.", 404);
+        }
+      }
+      hostel.institute = validated.institute.map((id) => new mongoose.Types.ObjectId(id));
     }
 
     // Handle Location update
@@ -658,18 +980,21 @@ export async function update(
     }
 
     await hostel.save();
-    await hostel.populate(["location.city", "location.locality", "amenities"]);
+    await hostel.populate([
+      "location.city",
+      "location.locality",
+      "amenities",
+      "occupancy",
+      "room",
+      "services",
+      "institute",
+      "rent.frequency",
+    ]);
 
     // Clean up replaced S3 files
     const keysToDelete: string[] = [];
     if (validated.frontImage !== undefined && oldFrontImageKey && oldFrontImageKey !== validated.frontImage.publickey) {
       keysToDelete.push(oldFrontImageKey);
-    }
-    if (validated.firstImage !== undefined && oldFirstImageKey && oldFirstImageKey !== validated.firstImage?.publickey) {
-      keysToDelete.push(oldFirstImageKey);
-    }
-    if (validated.secondImage !== undefined && oldSecondImageKey && oldSecondImageKey !== validated.secondImage?.publickey) {
-      keysToDelete.push(oldSecondImageKey);
     }
     if (validated.brochure !== undefined && oldBrochureKey && oldBrochureKey !== validated.brochure?.publickey) {
       keysToDelete.push(oldBrochureKey);
@@ -722,8 +1047,6 @@ export async function deleteHostel(
     // Collect all S3 keys attached to this hostel
     const hostelFiles: string[] = [];
     if (hostel.frontImage?.publickey) hostelFiles.push(hostel.frontImage.publickey);
-    if (hostel.firstImage?.publickey) hostelFiles.push(hostel.firstImage.publickey);
-    if (hostel.secondImage?.publickey) hostelFiles.push(hostel.secondImage.publickey);
     if (hostel.brochure?.publickey) hostelFiles.push(hostel.brochure.publickey);
     if (hostel.galleryImages?.length) {
       for (const img of hostel.galleryImages) {
@@ -744,6 +1067,137 @@ export async function deleteHostel(
     return apiSuccess(
       { message: "Hostel deleted successfully.", id: targetId },
       "Hostel deleted successfully."
+    );
+  } catch (error) {
+    return handleError(error, operation);
+  }
+}
+
+/**
+ * GET /api/residences
+ * Public API to retrieve active residences with optional filtering:
+ * - ?citySlug=... or ?cityId=... (filter by city)
+ * - ?tenantType=... (girls, boys, co-ed)
+ * - ?occupancy=... (filter by occupancy ObjectId or name)
+ * - ?search=... (filter by title, subtitle, or address)
+ * - ?page=... & ?limit=... (pagination)
+ */
+export async function listPublic(request: NextRequest): Promise<NextResponse> {
+  const operation = "listPublic";
+  try {
+    const { searchParams } = new URL(request.url);
+    const citySlug = searchParams.get("citySlug")?.trim().toLowerCase();
+    const cityId = searchParams.get("cityId")?.trim();
+    const tenantType = searchParams.get("tenantType")?.trim();
+    const occupancy = searchParams.get("occupancy")?.trim() || searchParams.get("occupancyId")?.trim();
+    const search = searchParams.get("search")?.trim();
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20", 10) || 20));
+
+    logger.info("Listing public residences/hostels started", {
+      operation,
+      citySlug,
+      cityId,
+      tenantType,
+      occupancy,
+      search,
+      page,
+      limit,
+    });
+
+    await connectToDatabase();
+
+    // Base filter: only active/published residences
+    const filter: Record<string, unknown> = { isActive: true };
+
+    // City filtering
+    if (citySlug) {
+      const cityDoc = await City.findOne({ slug: citySlug, isActive: true }).select("_id").lean();
+      if (!cityDoc) {
+        return apiSuccess(
+          { items: [], total: 0, page, limit, totalPages: 0 },
+          "No residences found"
+        );
+      }
+      filter["location.city"] = cityDoc._id;
+    } else if (cityId && mongoose.Types.ObjectId.isValid(cityId)) {
+      filter["location.city"] = new mongoose.Types.ObjectId(cityId);
+    }
+
+    // Tenant type filtering
+    if (tenantType) {
+      filter.tenantType = tenantType;
+    }
+
+    // Occupancy filtering
+    if (occupancy) {
+      if (mongoose.Types.ObjectId.isValid(occupancy)) {
+        filter.occupancy = new mongoose.Types.ObjectId(occupancy);
+      } else {
+        const escapedOcc = occupancy.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const occDoc = await Occupancy.findOne({
+          name: { $regex: new RegExp(`^${escapedOcc}$`, "i") },
+          isActive: true,
+        })
+          .select("_id")
+          .lean();
+
+        if (!occDoc) {
+          return apiSuccess(
+            { items: [], total: 0, page, limit, totalPages: 0 },
+            "No residences found"
+          );
+        }
+        filter.occupancy = occDoc._id;
+      }
+    }
+
+    // Text search filtering
+    if (search) {
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      filter.$or = [
+        { title: { $regex: escaped, $options: "i" } },
+        { subtitle: { $regex: escaped, $options: "i" } },
+        { "location.address": { $regex: escaped, $options: "i" } },
+      ];
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [docs, total] = await Promise.all([
+      Hostel.find(filter)
+        .populate("location.city", "city state country slug")
+        .populate("location.locality", "name slug")
+        .populate("amenities", "name image")
+        .populate("occupancy", "name image")
+        .populate("room", "name image")
+        .populate("services", "name image")
+        .populate("institute", "name slug")
+        .populate("rent.frequency", "name")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Hostel.countDocuments(filter),
+    ]);
+
+    const items = docs.map((doc: any) => ({
+      ...doc,
+      id: doc._id?.toString() || doc.id || "",
+      _id: doc._id?.toString() || doc.id || "",
+    }));
+
+    const totalPages = Math.ceil(total / limit) || 1;
+
+    return apiSuccess(
+      {
+        items,
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+      "Residences retrieved successfully"
     );
   } catch (error) {
     return handleError(error, operation);

@@ -208,6 +208,12 @@ export const icons: Record<string, ReactNode> = {
       <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" {...s} strokeLinecap="round" strokeLinejoin="round" />
     </>
   ),
+  door: (
+    <>
+      <path d="M4 21h16M6 21V5a2 2 0 012-2h8a2 2 0 012 2v16" {...s} strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="14" cy="12" r="1" fill="currentColor" />
+    </>
+  ),
 };
 
 export function Icon({ name, size = 16, className = "" }: { name: string; size?: number; className?: string }) {

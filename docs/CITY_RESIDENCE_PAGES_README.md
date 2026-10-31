@@ -15,7 +15,7 @@ The goal of this feature is to automatically provide city-specific residence lan
 ### Core Principles
 1. **Zero Manual Page Creation & Zero Admin Registration:** No separate page component or admin approval is needed to create city pages.
 2. **Single Reusable Template:** Every city landing page reuses the exact same Aurus design system, layout, cards, animations, and typography as the main `/residences` page.
-3. **Database as Single Source of Truth:** Pages are powered directly by the existing MongoDB collections (`City` and `Hostel`). No duplicate collections or synthetic data models are introduced.
+3. **Database as Single Source of Truth:** Pages are powered directly by the existing MongoDB collections (`City`, `Hostel`, `Occupancy`, `Room`, `Service`, `Institute`, and `RentFrequency`). No duplicate collections or synthetic data models are introduced.
 4. **Strict Automatic Availability (404 Rule):** A city page becomes accessible if and only if the city exists in City Master (`City` collection where `isActive: true`) and has at least one active, published residence (`Hostel` collection where `isActive: true` and `location.city === city._id`). If a city does not exist or has 0 published residences, Next.js immediately returns HTTP 404 (`notFound()`).
 
 ---
@@ -85,7 +85,7 @@ The goal of this feature is to automatically provide city-specific residence lan
 
 ## 3. Database Relationships
 
-The system relies strictly on the actual relationships established in the existing Mongoose models:
+The system relies strictly on the actual relationships established in the Mongoose models:
 
 ### 1. `City` Model (`src/models/city.model.ts`)
 - **Collection:** `cities`
@@ -102,17 +102,25 @@ The system relies strictly on the actual relationships established in the existi
 - **Collection:** `hostels`
 - **Fields:**
   - `title`: Name of the hostel/residence.
-  - `slug`: Unique lowercase slug (e.g., `"chapter-i"`, `"asd"`).
+  - `slug`: Unique lowercase slug (e.g., `"chapter-i"`, `"solitaire-residence"`).
+  - `subtitle`: Optional descriptive subtitle/tagline.
   - `isActive`: Boolean flag indicating if the hostel is published/active.
+  - `tenantType`: Single string enum (`"girls" | "boys" | "co-ed"`).
+  - `rent`: Object `{ amount: number, frequency: ObjectId (ref: "RentFrequency") }`.
+  - `rating`: Object `{ star: number (0-5), userCount: number }`.
   - `location.city`: `ObjectId` referencing the `City` model.
   - `location.locality`: `ObjectId` referencing the `Locality` model.
-  - `location.address`: Physical address string.
-  - `tenantType`: Array of strings (`"boys"`, `"girls"`, `"co-ed"`).
-  - `rent`: Monthly rent figure.
-  - `rentFrequency`: `"monthly"` or `"yearly"`.
+  - `location.address`: Physical street address string.
+  - `location.mapUrl`: Optional Google Maps URL.
   - `frontImage`: Main cover image object `{ url, publickey }`.
-  - `galleryImages`: Additional images.
+  - `galleryImages`: Additional gallery images array `[{ url, publickey }]`.
+  - `brochure`: Optional PDF document `{ url, publickey }`.
   - `amenities`: Array of `ObjectId`s referencing `Amenity` model.
+  - `occupancy`: Array of `ObjectId`s referencing `Occupancy` model.
+  - `room`: Array of `ObjectId`s referencing `Room` model.
+  - `services`: Array of `ObjectId`s referencing `Service` model.
+  - `institute`: Array of `ObjectId`s referencing `Institute` model (filtered by City).
+  - `metadata`: SEO metadata `{ title, description, keywords }`.
 
 ### Eligible Residence Criteria
 A residence is considered eligible for display if and only if:
@@ -126,7 +134,7 @@ A residence is considered eligible for display if and only if:
 
 | City in Master | Active Hostels | Outcome | Description |
 |---|---|---|---|
-| **Mumbai** | 1 | **200 OK** | Available immediately; lists active Mumbai residence(s). |
+| **Mumbai** | $\ge 1$ | **200 OK** | Available immediately; lists active Mumbai residence(s). |
 | **Pune** | 0 | **404 Not Found** | Exists in City Master but has 0 published residences. |
 | **Ahmedabad** | 0 | **404 Not Found** | Does not exist in City Master. |
 | **Invalid Slug** | 0 | **404 Not Found** | Arbitrary or malformed slug. |
@@ -139,11 +147,14 @@ A residence is considered eligible for display if and only if:
 
 ## 5. API Endpoints
 
+All public residence endpoints delegate their query logic and business rules directly to dedicated controller functions (`hostel.controller.ts` and `residence.controller.ts`):
+
 ### 1. `GET /api/residences/cities`
 Retrieves all cities from City Master that have at least one eligible (active) published residence.
 
 - **URL:** `/api/residences/cities`
 - **Method:** `GET`
+- **Data Source:** `getCitiesWithResidences` (`src/lib/residences/city.ts`)
 - **Auth:** Public
 - **Example Response:**
   ```json
@@ -168,6 +179,7 @@ Retrieves city details and verifies that the city has eligible residences. Retur
 
 - **URL:** `/api/residences/cities/mumbai`
 - **Method:** `GET`
+- **Data Source:** `getCityBySlug` (`src/lib/residences/city.ts`)
 - **Auth:** Public
 - **Success Response (200 OK):**
   ```json
@@ -193,13 +205,16 @@ Retrieves city details and verifies that the city has eligible residences. Retur
   ```
 
 ### 3. `GET /api/residences`
-Retrieves published active residences with optional filtering by city slug, city ID, tenant type, and text search.
+Retrieves published active residences with multi-dimensional filtering by city slug, city ID, tenant type, occupancy option, and text search.
 
-- **URL:** `/api/residences?citySlug=mumbai`
+- **URL:** `/api/residences?citySlug=mumbai&tenantType=boys&occupancy=Single`
+- **Method:** `GET`
+- **Controller Action:** `listPublic` (`src/controllers/hostel.controller.ts`)
 - **Query Parameters:**
   - `citySlug` (string): Filter by city slug (e.g. `mumbai`).
   - `cityId` (string): Filter by City `ObjectId`.
   - `tenantType` (string): Filter by tenant wing (`girls`, `boys`, `co-ed`).
+  - `occupancy` (string): Filter by Occupancy `ObjectId` or occupancy name (e.g. `Single`, `Double Sharing`).
   - `search` (string): Case-insensitive text search across title, subtitle, and address.
   - `page` (number): Page number (default: 1).
   - `limit` (number): Number of items per page (default: 20).
@@ -212,17 +227,42 @@ Retrieves published active residences with optional filtering by city slug, city
       "items": [
         {
           "_id": "6ae10e0f2bcc4dc0ad035a65",
-          "title": "asd",
-          "slug": "asd",
-          "tenantType": ["boys"],
+          "id": "6ae10e0f2bcc4dc0ad035a65",
+          "title": "Solitaire Residence",
+          "slug": "solitaire-residence",
+          "tenantType": "boys",
           "isActive": true,
-          "rent": 2000,
-          "rentFrequency": "monthly",
+          "rent": {
+            "amount": 22000,
+            "frequency": {
+              "_id": "6ae10e0f2bcc4dc0ad035a90",
+              "name": "Monthly"
+            }
+          },
+          "rating": {
+            "star": 4.8,
+            "userCount": 42
+          },
           "location": {
-            "city": { "city": "Mumbai", "slug": "mumbai" },
+            "city": { "city": "Mumbai", "slug": "mumbai", "state": "Maharashtra" },
             "locality": { "name": "Andheri West", "slug": "andheri-west" },
-            "address": "asd, 12, asdasd"
-          }
+            "address": "Opposite Infinity Mall, Link Road, Andheri West"
+          },
+          "amenities": [
+            { "_id": "6ae10e0f2bcc4dc0ad035a11", "name": "High-speed Wi-Fi" }
+          ],
+          "occupancy": [
+            { "_id": "6ae10e0f2bcc4dc0ad035a22", "name": "Single" }
+          ],
+          "room": [
+            { "_id": "6ae10e0f2bcc4dc0ad035a33", "name": "AC Deluxe" }
+          ],
+          "services": [
+            { "_id": "6ae10e0f2bcc4dc0ad035a44", "name": "Daily Housekeeping" }
+          ],
+          "institute": [
+            { "_id": "6ae10e0f2bcc4dc0ad035a55", "name": "NMIMS" }
+          ]
         }
       ],
       "total": 1,
@@ -242,26 +282,29 @@ Retrieves published active residences with optional filtering by city slug, city
 src/
 ├── app/
 │   ├── residences/
-│   │   ├── page.tsx                      # Main all-cities residences page (untouched)
+│   │   ├── page.tsx                      # Main all-cities residences page
 │   │   └── [citySlug]/
-│   │       └── page.tsx                  # Dynamic city landing page & single residence fallback
+│   │       └── page.tsx                  # Dual-purpose: Dynamic city landing page & single residence fallback
 │   └── api/
 │       └── residences/
-│           ├── route.ts                  # GET /api/residences
+│           ├── route.ts                  # GET /api/residences -> hostel.controller.listPublic
 │           └── cities/
-│               ├── route.ts              # GET /api/residences/cities
+│               ├── route.ts              # GET /api/residences/cities -> getCitiesWithResidences
 │               └── [citySlug]/
-│                   └── route.ts          # GET /api/residences/cities/[citySlug]
+│                   └── route.ts          # GET /api/residences/cities/[citySlug] -> getCityBySlug
+├── controllers/
+│   └── hostel.controller.ts              # Contains listPublic (public residences endpoint logic with occupancy filter)
 ├── components/
 │   └── residences/
-│       ├── ExploreResidences.tsx         # Exports reusable ResidenceCard
+│       ├── ExploreResidences.tsx         # Dynamic public residences card grid & search
 │       └── city/
 │           ├── CityHero.tsx              # City-specific hero banner & chapter count badge
 │           ├── CityIntroduction.tsx      # Curated features (Dining, Security, Study Hubs)
-│           └── CityResidenceContent.tsx  # Filter bar (search, gender wing, occupancy) + Cards Grid
+│           └── CityResidenceContent.tsx  # Dynamic filter bar (search, gender wing, occupancy) + Cards Grid
 └── lib/
     └── residences/
-        └── city.ts                       # Database access & data mapping utilities
+        ├── city.ts                       # Database access & data mapping utilities (getCitiesWithResidences, getCityBySlug)
+        └── detail.ts                     # Residence detail loader & related hostels mapping (getHostelBySlug, getRelatedHostels)
 ```
 
 ### Dynamic SEO Metadata
@@ -274,9 +317,15 @@ src/
 
 ### Single Residence Fallback
 The route `src/app/residences/[citySlug]/page.tsx` intelligently distinguishes between city pages and individual residence detail pages:
-1. If the slug matches an active City with $\ge 1$ published residences: renders the **City Residence Landing Page**.
+1. If the slug matches an active City with $\ge 1$ published residences: renders the **City Residence Landing Page** (`CityResidenceContent`).
 2. If the slug matches an individual residence (e.g. `/residences/chapter-i` or a hostel slug): renders the **Residence Detail Page** (`ResidenceDetail` + `RelatedResidences`).
 3. If the slug matches neither: calls Next.js `notFound()` to render the 404 page.
+
+### Static Pre-Generation (`generateStaticParams`)
+`generateStaticParams()` queries MongoDB for:
+- All active cities with $\ge 1$ published residence (`getCitiesWithResidences()`).
+- All active published hostels (`Hostel.find({ isActive: true }).select("slug")`).
+- Deduplicates all slugs to ensure pre-rendered static HTML is created for both city pages and residence detail pages during build time.
 
 ---
 
@@ -296,7 +345,7 @@ The suite in `src/scripts/test-city-residences.ts` verified all 7 key test cases
 
 ### Build Status
 - `npx tsc --noEmit`: Exited with code `0` (Zero TypeScript errors).
-- `npm run build`: Exited with code `0` (Next.js production build succeeded with Turbopack, Partial Prefetching, and Cache Components).
+- `npm run build`: Exited with code `0` (Next.js production build succeeded with Turbopack, Partial Prefetching, and Cache Components across all 61 routes).
 
 ---
 
@@ -342,5 +391,3 @@ To ensure the public site automatically displays links to active city pages with
   - Replaces hardcoded city links in the `OUR RESIDENCES` column with dynamic links (`/residences/${city.slug}`).
   - Preserves exact typography, font-mono uppercase styling, layout, and mobile/desktop responsive behavior.
   - Handles loading and empty states gracefully without showing technical errors or broken links.
-
-

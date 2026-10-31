@@ -35,10 +35,14 @@ export async function generateStaticParams() {
       if (h.slug) slugs.add(h.slug.toLowerCase().trim());
     });
 
-    return Array.from(slugs).map((citySlug) => ({ citySlug }));
+    const slugsArray = Array.from(slugs);
+    if (slugsArray.length === 0) {
+      return [{ citySlug: "mumbai" }, { citySlug: "noida" }, { citySlug: "pune" }];
+    }
+    return slugsArray.map((citySlug) => ({ citySlug }));
   } catch (error) {
     console.warn("[generateStaticParams] Could not pre-generate residence slugs:", error);
-    return [];
+    return [{ citySlug: "mumbai" }, { citySlug: "noida" }, { citySlug: "pune" }];
   }
 }
 

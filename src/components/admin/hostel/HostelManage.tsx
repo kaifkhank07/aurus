@@ -425,11 +425,23 @@ export default function HostelManage() {
                       ? (hostel.location.locality as { name?: string }).name || ""
                       : String(hostel.location?.locality || "—");
 
+                  const rentAmount =
+                    typeof hostel.rent === "object" && hostel.rent !== null
+                      ? hostel.rent.amount
+                      : Number(hostel.rent || 0);
+
                   const formattedRent = new Intl.NumberFormat("en-IN", {
                     style: "currency",
                     currency: "INR",
                     maximumFractionDigits: 0,
-                  }).format(hostel.rent);
+                  }).format(rentAmount);
+
+                  const rentFreqLabel =
+                    typeof hostel.rent?.frequency === "object" && hostel.rent?.frequency !== null
+                      ? hostel.rent.frequency.name
+                      : typeof hostel.rent?.frequency === "string"
+                      ? hostel.rent.frequency
+                      : "month";
 
                   const isTogglingThis = togglingId === hostel.id;
 
@@ -486,16 +498,9 @@ export default function HostelManage() {
 
                       {/* Tenant Category */}
                       <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="flex items-center gap-1 flex-wrap">
-                          {hostel.tenantType.map((t) => (
-                            <span
-                              key={t}
-                              className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200 uppercase tracking-wider"
-                            >
-                              {t}
-                            </span>
-                          ))}
-                        </div>
+                        <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200 uppercase tracking-wider">
+                          {Array.isArray(hostel.tenantType) ? hostel.tenantType.join(", ") : hostel.tenantType}
+                        </span>
                       </td>
 
                       {/* Rent */}
@@ -504,7 +509,7 @@ export default function HostelManage() {
                           {formattedRent}
                         </div>
                         <div className="text-[10px] text-slate-400 capitalize">
-                          per {hostel.rentFrequency === "monthly" ? "month" : "year"}
+                          per {rentFreqLabel}
                         </div>
                       </td>
 

@@ -84,14 +84,16 @@ async function runTests() {
     const testHostel = await Hostel.create({
       title: "Pune Test Residence",
       slug: "pune-test-residence-" + Date.now(),
-      tenantType: ["boys"],
+      tenantType: "boys",
       isActive: true,
       frontImage: {
         url: "https://example.com/test.jpg",
         publickey: "test.jpg",
       },
-      rent: 15000,
-      rentFrequency: "monthly",
+      rent: {
+        amount: 15000,
+        frequency: new mongoose.Types.ObjectId(),
+      },
       amenities: [],
       description: "Test description for Pune hostel",
       location: {
@@ -106,7 +108,7 @@ async function runTests() {
     console.assert(puneAfterCreate !== null, "Pune MUST now be available automatically!");
 
     // Clean up temporary test hostel
-    await Hostel.findByIdAndDelete(testHostel._id);
+    await Hostel.findByIdAndDelete((testHostel as any)._id);
     console.log("3. Removed test hostel from Pune. Testing page availability...");
     const puneAfterDelete = await getCityBySlug("pune");
     console.log("   Pune availability after removing hostel:", puneAfterDelete === null ? "404 (Correct)" : "Available");

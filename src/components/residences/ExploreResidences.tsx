@@ -25,20 +25,15 @@ function ChevronDown({ className = "" }: { className?: string }) {
 }
 
 /**
- * Formats tenantType array into user-facing occupancy badge string.
+ * Formats tenantType into user-facing occupancy badge string.
  */
-function formatOccupancyBadge(tenantType: string[] = []): string {
-  if (!Array.isArray(tenantType) || tenantType.length === 0) {
+function formatOccupancyBadge(tenantType?: string | string[]): string {
+  if (!tenantType) {
     return "Co-ed Living";
   }
-  const normalized = tenantType.map((t) => String(t).toLowerCase());
-  if (
-    normalized.includes("co-ed") ||
-    normalized.includes("coed") ||
-    (normalized.includes("girls") && normalized.includes("boys"))
-  ) {
-    return "Co-ed Living";
-  }
+  const normalized = Array.isArray(tenantType)
+    ? tenantType.map((t) => String(t).toLowerCase())
+    : [String(tenantType).toLowerCase()];
   if (normalized.includes("girls")) {
     return "Girls Only";
   }
@@ -170,13 +165,17 @@ export function ExploreResidences() {
       const image =
         hostel.frontImage?.url ||
         hostel.galleryImages?.[0]?.url ||
-        hostel.firstImage?.url ||
         "/images/image03.png";
 
       // 6. Colleges / Keywords
       const colleges = Array.isArray(hostel.metadata?.keywords)
         ? hostel.metadata.keywords
         : [];
+
+      const rentAmount =
+        typeof hostel.rent === "object" && hostel.rent !== null
+          ? Number(hostel.rent.amount || 0)
+          : Number(hostel.rent || 0);
 
       return {
         id: hostel.id || (hostel._id ? String(hostel._id) : hostel.slug),
@@ -192,8 +191,8 @@ export function ExploreResidences() {
           hostel.subtitle ||
           hostel.location?.address ||
           (cityName ? `Prime location in ${cityName}` : "Prime location"),
-        priceFrom: hostel.rent
-          ? `₹${Number(hostel.rent).toLocaleString("en-IN")}`
+        priceFrom: rentAmount > 0
+          ? `₹${rentAmount.toLocaleString("en-IN")}`
           : "₹50,000",
         href: `/residences/${hostel.slug || hostel.id}`,
         image,

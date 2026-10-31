@@ -2,13 +2,29 @@ import { IFileOption, ISeoMetadata, PaginationMeta } from "./general.types";
 import { SafeCity } from "./city.types";
 import { SafeLocality } from "./locality.types";
 import { SafeAmenity } from "./amenity.types";
-
+import { SafeOccupancy } from "./occupancy.types";
+import { SafeRoom } from "./room.types";
+import { SafeService } from "./service.types";
+import { SafeInstitute } from "./institute.types";
+import { SafeRentFrequency } from "./rent-frequency.types";
 
 export const TENANT_TYPES = ["girls", "boys", "co-ed"] as const;
 export type TenantType = (typeof TENANT_TYPES)[number];
 
-export const RENT_FREQUENCIES = ["monthly", "yearly"] as const;
-export type RentFrequency = (typeof RENT_FREQUENCIES)[number];
+export interface IHostelRating {
+  star: number;
+  userCount: number;
+}
+
+export interface IHostelRentInput {
+  amount: number;
+  frequency: string;
+}
+
+export interface SafeHostelRent {
+  amount: number;
+  frequency: string | SafeRentFrequency;
+}
 
 export interface IHostelLocation {
   city: string;
@@ -34,15 +50,17 @@ export interface SafeHostel {
   title: string;
   slug: string;
   subtitle?: string;
-  tenantType: TenantType[];
+  tenantType: TenantType;
   isActive: boolean;
   frontImage: IFileOption;
   galleryImages: IFileOption[];
-  firstImage?: IFileOption;
-  secondImage?: IFileOption;
-  rent: number;
-  rentFrequency: RentFrequency;
+  rent: SafeHostelRent;
   amenities: (string | SafeAmenity)[];
+  occupancy: (string | SafeOccupancy)[];
+  room: (string | SafeRoom)[];
+  services: (string | SafeService)[];
+  institute: (string | SafeInstitute)[];
+  rating: IHostelRating;
   description: string;
   location: SafeHostelLocation;
   brochure?: IFileOption;
@@ -54,15 +72,17 @@ export interface SafeHostel {
 export interface CreateHostelInput {
   title: string;
   subtitle?: string;
-  tenantType: TenantType[];
+  tenantType: TenantType;
   isActive?: boolean;
   frontImage: IFileOption;
   galleryImages?: IFileOption[];
-  firstImage?: IFileOption;
-  secondImage?: IFileOption;
-  rent: number;
-  rentFrequency: RentFrequency;
-  amenities: string[];
+  rent: IHostelRentInput;
+  amenities?: string[];
+  occupancy?: string[];
+  room?: string[];
+  services?: string[];
+  institute?: string[];
+  rating?: IHostelRating;
   description: string;
   location: IHostelLocation;
   brochure?: IFileOption;
@@ -72,15 +92,17 @@ export interface CreateHostelInput {
 export interface UpdateHostelInput {
   title?: string;
   subtitle?: string;
-  tenantType?: TenantType[];
+  tenantType?: TenantType;
   isActive?: boolean;
   frontImage?: IFileOption;
   galleryImages?: IFileOption[];
-  firstImage?: IFileOption | null;
-  secondImage?: IFileOption | null;
-  rent?: number;
-  rentFrequency?: RentFrequency;
+  rent?: Partial<IHostelRentInput>;
   amenities?: string[];
+  occupancy?: string[];
+  room?: string[];
+  services?: string[];
+  institute?: string[];
+  rating?: Partial<IHostelRating>;
   description?: string;
   location?: Partial<IHostelLocation>;
   brochure?: IFileOption | null;
@@ -96,10 +118,14 @@ export interface HostelQueryParams {
   locality?: string;
   tenantType?: TenantType;
   amenity?: string;
-  rentFrequency?: RentFrequency;
+  occupancy?: string;
+  room?: string;
+  service?: string;
+  institute?: string;
+  rentFrequency?: string;
   minRent?: number;
   maxRent?: number;
-  sortBy?: "rent" | "title" | "createdAt";
+  sortBy?: "rent" | "title" | "createdAt" | "star";
   sortOrderDir?: "asc" | "desc";
 }
 
@@ -113,6 +139,7 @@ export interface PublicHostelQueryParams {
   cityId?: string;
   search?: string;
   tenantType?: string;
+  occupancy?: string;
   page?: number;
   limit?: number;
 }
@@ -125,4 +152,3 @@ export interface PublicHostelsResult {
   totalPages: number;
   pagination?: PaginationMeta;
 }
-

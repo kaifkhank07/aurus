@@ -1,20 +1,32 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 import { IFileOption, ISeoMetadata } from "@/types/general.types";
-import { TENANT_TYPES, TenantType, RENT_FREQUENCIES, RentFrequency } from "@/types/hostel.types";
+import { TENANT_TYPES, TenantType } from "@/types/hostel.types";
+
+export interface IHostelRating {
+  star: number;
+  userCount: number;
+}
+
+export interface IHostelRent {
+  amount: number;
+  frequency: mongoose.Types.ObjectId;
+}
 
 export interface IHostelDocument extends Document {
   title: string;
   slug: string;
   subtitle?: string;
-  tenantType: TenantType[];
+  tenantType: TenantType;
   isActive: boolean;
   frontImage: IFileOption;
   galleryImages: IFileOption[];
-  firstImage?: IFileOption;
-  secondImage?: IFileOption;
-  rent: number;
-  rentFrequency: RentFrequency;
+  rent: IHostelRent;
   amenities: mongoose.Types.ObjectId[];
+  occupancy: mongoose.Types.ObjectId[];
+  room: mongoose.Types.ObjectId[];
+  services: mongoose.Types.ObjectId[];
+  institute: mongoose.Types.ObjectId[];
+  rating: IHostelRating;
   description: string;
   location: {
     city: mongoose.Types.ObjectId;
@@ -43,6 +55,41 @@ const HostelMetadataSchema = new Schema<ISeoMetadata>(
     title: { type: String, trim: true },
     description: { type: String, trim: true },
     keywords: [{ type: String, trim: true }],
+  },
+  { _id: false }
+);
+
+const HostelRatingSchema = new Schema<IHostelRating>(
+  {
+    star: {
+      type: Number,
+      default: 0,
+      min: [0, "Rating star must be >= 0"],
+      max: [5, "Rating star cannot exceed 5"],
+    },
+    userCount: {
+      type: Number,
+      default: 0,
+      min: [0, "User count must be >= 0"],
+    },
+  },
+  { _id: false }
+);
+
+const HostelRentSchema = new Schema<IHostelRent>(
+  {
+    amount: {
+      type: Number,
+      required: [true, "Rent amount is required"],
+      min: [0, "Rent amount must be a non-negative number"],
+      index: true,
+    },
+    frequency: {
+      type: Schema.Types.ObjectId,
+      ref: "RentFrequency",
+      required: [true, "Rent frequency reference is required"],
+      index: true,
+    },
   },
   { _id: false }
 );
@@ -106,16 +153,13 @@ const HostelSchema = new Schema<IHostelDocument>(
       maxlength: [300, "Subtitle cannot exceed 300 characters"],
     },
     tenantType: {
-      type: [String],
+      type: String,
       enum: {
         values: TENANT_TYPES,
-        message: "Invalid tenant type provided",
+        message: "Tenant type must be 'girls', 'boys', or 'co-ed'",
       },
-      required: [true, "At least one tenant type is required"],
-      validate: {
-        validator: (v: string[]) => Array.isArray(v) && v.length > 0,
-        message: "Tenant type array cannot be empty",
-      },
+      required: [true, "Tenant type is required"],
+      index: true,
     },
     isActive: {
       type: Boolean,
@@ -130,28 +174,9 @@ const HostelSchema = new Schema<IHostelDocument>(
       type: [HostelFileSchema],
       default: [],
     },
-    firstImage: {
-      type: HostelFileSchema,
-      default: undefined,
-    },
-    secondImage: {
-      type: HostelFileSchema,
-      default: undefined,
-    },
     rent: {
-      type: Number,
-      required: [true, "Rent amount is required"],
-      min: [0, "Rent must be a non-negative number"],
-      index: true,
-    },
-    rentFrequency: {
-      type: String,
-      enum: {
-        values: RENT_FREQUENCIES,
-        message: "Rent frequency must be 'monthly' or 'yearly'",
-      },
-      required: [true, "Rent frequency is required"],
-      index: true,
+      type: HostelRentSchema,
+      required: [true, "Rent details (amount and frequency) are required"],
     },
     amenities: [
       {
@@ -160,6 +185,38 @@ const HostelSchema = new Schema<IHostelDocument>(
         index: true,
       },
     ],
+    occupancy: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Occupancy",
+        index: true,
+      },
+    ],
+    room: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Room",
+        index: true,
+      },
+    ],
+    services: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Service",
+        index: true,
+      },
+    ],
+    institute: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Institute",
+        index: true,
+      },
+    ],
+    rating: {
+      type: HostelRatingSchema,
+      default: () => ({ star: 0, userCount: 0 }),
+    },
     description: {
       type: String,
       required: [true, "Description is required"],
@@ -185,8 +242,7 @@ const HostelSchema = new Schema<IHostelDocument>(
 
 // Indexes
 HostelSchema.index({ "location.city": 1, "location.locality": 1 });
-HostelSchema.index({ rent: 1, rentFrequency: 1 });
-HostelSchema.index({ tenantType: 1 });
+HostelSchema.index({ "rent.amount": 1, "rent.frequency": 1 });
 
 if (process.env.NODE_ENV !== "production" && mongoose.models.Hostel) {
   mongoose.deleteModel("Hostel");

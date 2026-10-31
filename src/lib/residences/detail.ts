@@ -6,6 +6,11 @@ import { Occupancy } from "@/models/occupancy.model";
 import "@/models/city.model";
 import "@/models/locality.model";
 import "@/models/amenity.model";
+import "@/models/occupancy.model";
+import "@/models/room.model";
+import "@/models/service.model";
+import "@/models/institute.model";
+import "@/models/rent-frequency.model";
 import {
   ResidenceDetail,
   KeySpec,
@@ -36,24 +41,21 @@ export function mapHostelToResidenceDetail(
   }
 
   // 2. Gender badge and wing text
-  const tenantTypes = Array.isArray(hostel.tenantType)
-    ? hostel.tenantType.map((t: string) => String(t).toLowerCase())
-    : [];
+  const rawTenant = Array.isArray(hostel.tenantType)
+    ? hostel.tenantType[0]
+    : hostel.tenantType;
+  const tenantStr = String(rawTenant || "co-ed").toLowerCase();
   let genderBadge = "CO-ED LIVING";
   let wingText = "Co-ed Living";
-  if (
-    tenantTypes.includes("co-ed") ||
-    tenantTypes.includes("coed") ||
-    (tenantTypes.includes("girls") && tenantTypes.includes("boys"))
-  ) {
-    genderBadge = "CO-ED LIVING";
-    wingText = "Co-ed Living";
-  } else if (tenantTypes.includes("girls")) {
+  if (tenantStr === "girls") {
     genderBadge = "GIRLS ONLY";
     wingText = "Girls Only";
-  } else if (tenantTypes.includes("boys")) {
+  } else if (tenantStr === "boys") {
     genderBadge = "BOYS ONLY";
     wingText = "Boys Only";
+  } else {
+    genderBadge = "CO-ED LIVING";
+    wingText = "Co-ed Living";
   }
 
   // 3. Location info & badge
@@ -80,7 +82,7 @@ export function mapHostelToResidenceDetail(
       ? `https://maps.google.com/?q=${hostel.location.latitude},${hostel.location.longitude}`
       : `https://maps.google.com/?q=${encodeURIComponent(address)}`);
 
-  // 4. Hero and Gallery Images
+  // 4. Hero and Gallery Images (firstImage and secondImage removed)
   const galleryUrls: string[] = [];
   if (hostel.frontImage?.url) galleryUrls.push(hostel.frontImage.url);
   if (Array.isArray(hostel.galleryImages)) {
@@ -91,12 +93,6 @@ export function mapHostelToResidenceDetail(
       }
     });
   }
-  if (hostel.firstImage?.url && !galleryUrls.includes(hostel.firstImage.url)) {
-    galleryUrls.push(hostel.firstImage.url);
-  }
-  if (hostel.secondImage?.url && !galleryUrls.includes(hostel.secondImage.url)) {
-    galleryUrls.push(hostel.secondImage.url);
-  }
 
   const mainImage = galleryUrls[0] || "/images/image03.png";
   const galleryImages =
@@ -105,22 +101,40 @@ export function mapHostelToResidenceDetail(
       : [mainImage, mainImage];
 
   // 5. Rooms & Occupancies Specs
-  const roomNames = occupancies.map((o) => o.name).filter(Boolean);
+  const hostelOccupancies = Array.isArray(hostel.occupancy) && hostel.occupancy.length > 0
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ? hostel.occupancy.map((o: any) => (typeof o === "object" ? o?.name : "")).filter(Boolean)
+    : [];
+
+  const roomNames: string[] = hostelOccupancies.length > 0
+    ? hostelOccupancies
+    : occupancies.map((o) => o.name).filter(Boolean);
+
   const roomsSpecValue =
     roomNames.length > 0 ? roomNames.join(", ") : "Single, Double, Triple";
 
-  // 6. Billing Period Spec
-  const billingText =
-    hostel.rentFrequency === "yearly"
-      ? "Yearly"
-      : hostel.rentFrequency
-      ? hostel.rentFrequency.charAt(0).toUpperCase() + hostel.rentFrequency.slice(1)
+  // 6. Billing Period Spec & Rating
+  const freqName =
+    typeof hostel.rent?.frequency === "object" && hostel.rent?.frequency?.name
+      ? hostel.rent.frequency.name
+      : typeof hostel.rentFrequency === "string"
+      ? hostel.rentFrequency
       : "Monthly";
+
+  const billingText = freqName.charAt(0).toUpperCase() + freqName.slice(1);
+
+  const starRating = hostel.rating?.star !== undefined && hostel.rating?.star > 0
+    ? hostel.rating.star
+    : 4.9;
+  const userCount = hostel.rating?.userCount !== undefined && hostel.rating?.userCount > 0
+    ? hostel.rating.userCount
+    : 48;
+  const ratingText = `★ ${starRating} (${userCount} reviews)`;
 
   const keySpecs: KeySpec[] = [
     { label: "WING", value: wingText },
     { label: "ROOMS", value: roomsSpecValue },
-    { label: "RATING", value: "★ 4.9 (48 reviews)" },
+    { label: "RATING", value: ratingText },
     { label: "BILLING", value: billingText },
   ];
 
@@ -172,15 +186,20 @@ export function mapHostelToResidenceDetail(
       : ["NMIMS", "MITHIBAI COLLEGE", "DJ SANGHVI", "NM COLLEGE"];
 
   // 9. Pricing & Room options
-  const startsFrom = hostel.rent
-    ? `₹${Number(hostel.rent).toLocaleString("en-IN")}`
+  const startingRent =
+    typeof hostel.rent === "object" && hostel.rent !== null
+      ? Number(hostel.rent.amount || 0)
+      : Number(hostel.rent || 0);
+
+  const startsFrom = startingRent > 0
+    ? `₹${startingRent.toLocaleString("en-IN")}`
     : "₹60,000";
 
-  const period = hostel.rentFrequency === "yearly" ? "/year" : "/month";
+  const period = freqName.toLowerCase() === "yearly" ? "/year" : "/month";
 
   const roomOptions: RoomOption[] =
     roomNames.length > 0
-      ? roomNames.map((name) => ({
+      ? roomNames.map((name: string) => ({
           type:
             name.toLowerCase().includes("sharing") || name.toLowerCase().includes("occupancy")
               ? name
@@ -238,7 +257,7 @@ export function mapHostelToResidenceDetail(
 }
 
 /**
- * Retrieves a hostel by its slug or ID, fully populated with city, locality, and amenities.
+ * Retrieves a hostel by its slug or ID, fully populated with city, locality, and relations.
  * Returns the mapped ResidenceDetail and raw document, or null if not found.
  */
 export async function getHostelBySlug(slug: string): Promise<{
@@ -264,6 +283,11 @@ export async function getHostelBySlug(slug: string): Promise<{
       .populate("location.city", "city state country slug")
       .populate("location.locality", "name slug")
       .populate("amenities", "name image")
+      .populate("occupancy", "name image")
+      .populate("room", "name image")
+      .populate("services", "name image")
+      .populate("institute", "name slug")
+      .populate("rent.frequency", "name")
       .lean(),
     Occupancy.find({ isActive: true }).sort({ createdAt: 1 }).lean(),
   ]);
@@ -304,6 +328,11 @@ export async function getRelatedHostels(
     .populate("location.city", "city state country slug")
     .populate("location.locality", "name slug")
     .populate("amenities", "name image")
+    .populate("occupancy", "name image")
+    .populate("room", "name image")
+    .populate("services", "name image")
+    .populate("institute", "name slug")
+    .populate("rent.frequency", "name")
     .sort({ createdAt: -1 })
     .limit(6)
     .lean<IHostelDocument[]>();
@@ -327,4 +356,3 @@ export async function getRelatedHostels(
   const top3 = sorted.slice(0, 3);
   return mapHostelsToExploreItems(top3, "");
 }
-

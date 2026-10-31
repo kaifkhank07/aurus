@@ -41,6 +41,27 @@ import {
   AmenityQueryParams,
   PaginatedAmenitiesResult,
 } from "@/types/amenity.types";
+import {
+  SafeService,
+  CreateServiceInput,
+  UpdateServiceInput,
+  ServiceQueryParams,
+  PaginatedServicesResult,
+} from "@/types/service.types";
+import {
+  SafeRoom,
+  CreateRoomInput,
+  UpdateRoomInput,
+  RoomQueryParams,
+  PaginatedRoomsResult,
+} from "@/types/room.types";
+import {
+  SafeRentFrequency,
+  CreateRentFrequencyInput,
+  UpdateRentFrequencyInput,
+  RentFrequencyQueryParams,
+  PaginatedRentFrequenciesResult,
+} from "@/types/rent-frequency.types";
 
 /**
  * Standardized error extractor across all master operations.
@@ -112,6 +133,24 @@ export interface MasterState {
   amenitiesPagination: PaginationMeta | null;
   isLoadingAmenities: boolean;
   amenitiesError: string | null;
+
+  // ── Service Module State ──
+  services: SafeService[];
+  servicesPagination: PaginationMeta | null;
+  isLoadingServices: boolean;
+  servicesError: string | null;
+
+  // ── Room Module State ──
+  rooms: SafeRoom[];
+  roomsPagination: PaginationMeta | null;
+  isLoadingRooms: boolean;
+  roomsError: string | null;
+
+  // ── Rent Frequency Module State ──
+  rentFrequencies: SafeRentFrequency[];
+  rentFrequenciesPagination: PaginationMeta | null;
+  isLoadingRentFrequencies: boolean;
+  rentFrequenciesError: string | null;
 
   // ── Global Mutation State ──
   isMutating: boolean;
@@ -222,6 +261,63 @@ export interface MasterState {
   deleteAmenity: (
     id: string
   ) => Promise<{ success: boolean; message?: string }>;
+
+  // ── Service Actions ──
+  fetchServices: (
+    params?: Partial<ServiceQueryParams>,
+    force?: boolean
+  ) => Promise<{ success: boolean; data?: PaginatedServicesResult; message?: string }>;
+  getServiceById: (
+    id: string
+  ) => Promise<{ success: boolean; data?: SafeService; message?: string }>;
+  createService: (
+    input: CreateServiceInput | FormData
+  ) => Promise<{ success: boolean; data?: SafeService; message?: string }>;
+  updateService: (
+    id: string,
+    input: UpdateServiceInput | FormData
+  ) => Promise<{ success: boolean; data?: SafeService; message?: string }>;
+  deleteService: (
+    id: string
+  ) => Promise<{ success: boolean; message?: string }>;
+
+  // ── Room Actions ──
+  fetchRooms: (
+    params?: Partial<RoomQueryParams>,
+    force?: boolean
+  ) => Promise<{ success: boolean; data?: PaginatedRoomsResult; message?: string }>;
+  getRoomById: (
+    id: string
+  ) => Promise<{ success: boolean; data?: SafeRoom; message?: string }>;
+  createRoom: (
+    input: CreateRoomInput | FormData
+  ) => Promise<{ success: boolean; data?: SafeRoom; message?: string }>;
+  updateRoom: (
+    id: string,
+    input: UpdateRoomInput | FormData
+  ) => Promise<{ success: boolean; data?: SafeRoom; message?: string }>;
+  deleteRoom: (
+    id: string
+  ) => Promise<{ success: boolean; message?: string }>;
+
+  // ── Rent Frequency Actions ──
+  fetchRentFrequencies: (
+    params?: Partial<RentFrequencyQueryParams>,
+    force?: boolean
+  ) => Promise<{ success: boolean; data?: PaginatedRentFrequenciesResult; message?: string }>;
+  getRentFrequencyById: (
+    id: string
+  ) => Promise<{ success: boolean; data?: SafeRentFrequency; message?: string }>;
+  createRentFrequency: (
+    input: CreateRentFrequencyInput | FormData
+  ) => Promise<{ success: boolean; data?: SafeRentFrequency; message?: string }>;
+  updateRentFrequency: (
+    id: string,
+    input: UpdateRentFrequencyInput | FormData
+  ) => Promise<{ success: boolean; data?: SafeRentFrequency; message?: string }>;
+  deleteRentFrequency: (
+    id: string
+  ) => Promise<{ success: boolean; message?: string }>;
 }
 
 // In-flight request caching to prevent duplicate API calls
@@ -274,6 +370,21 @@ export const useMasterStore = create<MasterState>((set) => ({
   isLoadingAmenities: false,
   amenitiesError: null,
 
+  services: [],
+  servicesPagination: null,
+  isLoadingServices: false,
+  servicesError: null,
+
+  rooms: [],
+  roomsPagination: null,
+  isLoadingRooms: false,
+  roomsError: null,
+
+  rentFrequencies: [],
+  rentFrequenciesPagination: null,
+  isLoadingRentFrequencies: false,
+  rentFrequenciesError: null,
+
   isMutating: false,
   error: null,
 
@@ -287,6 +398,9 @@ export const useMasterStore = create<MasterState>((set) => ({
       occupanciesError: null,
       publicOccupanciesError: null,
       amenitiesError: null,
+      servicesError: null,
+      roomsError: null,
+      rentFrequenciesError: null,
     }),
 
   // =========================================================================
@@ -1116,6 +1230,460 @@ export const useMasterStore = create<MasterState>((set) => ({
     } catch (err) {
       const msg = extractErrorMessage(err, "Failed to delete amenity record.");
       set({ isMutating: false, error: msg, amenitiesError: msg });
+      return { success: false, message: msg };
+    }
+  },
+
+  // =========================================================================
+  // 6. Service Module
+  // =========================================================================
+  fetchServices: async (params = {}, force = false) => {
+    const key = `services_${JSON.stringify(params)}`;
+    if (!force && inFlightRequests.has(key)) {
+      return inFlightRequests.get(key) as Promise<{
+        success: boolean;
+        data?: PaginatedServicesResult;
+        message?: string;
+      }>;
+    }
+
+    set({ isLoadingServices: true, servicesError: null });
+
+    return getInFlight(key, async () => {
+      try {
+        const res = await adminApiClient.get<ApiResponse<PaginatedServicesResult>>("/services", {
+          params,
+        });
+
+        if (res.data.success && res.data.data) {
+          set({
+            services: res.data.data.items || [],
+            servicesPagination: res.data.data.pagination || null,
+            isLoadingServices: false,
+            servicesError: null,
+          });
+          return { success: true, data: res.data.data, message: res.data.message };
+        }
+
+        const msg = res.data.message || "Failed to load services.";
+        set({ isLoadingServices: false, servicesError: msg });
+        return { success: false, message: msg };
+      } catch (err) {
+        const msg = extractErrorMessage(err, "Failed to load services from server.");
+        set({ isLoadingServices: false, servicesError: msg });
+        return { success: false, message: msg };
+      }
+    });
+  },
+
+  getServiceById: async (id: string) => {
+    try {
+      const res = await adminApiClient.get<ApiResponse<{ service: SafeService }>>(
+        `/services/${id}`
+      );
+      if (res.data.success && res.data.data?.service) {
+        return { success: true, data: res.data.data.service, message: res.data.message };
+      }
+      return { success: false, message: res.data.message || "Service not found." };
+    } catch (err) {
+      const msg = extractErrorMessage(err, "Failed to fetch service details.");
+      return { success: false, message: msg };
+    }
+  },
+
+  createService: async (input) => {
+    set({ isMutating: true, error: null, servicesError: null });
+    try {
+      const res = await adminApiClient.post<ApiResponse<{ service: SafeService }>>(
+        "/services",
+        input
+      );
+
+      if (res.data.success && res.data.data?.service) {
+        const created = res.data.data.service;
+        set((state) => ({
+          services: [created, ...state.services],
+          servicesPagination: state.servicesPagination
+            ? {
+                ...state.servicesPagination,
+                total: state.servicesPagination.total + 1,
+              }
+            : null,
+          isMutating: false,
+          error: null,
+        }));
+        return { success: true, data: created, message: res.data.message };
+      }
+
+      const msg = res.data.message || "Failed to create service.";
+      set({ isMutating: false, error: msg, servicesError: msg });
+      return { success: false, message: msg };
+    } catch (err) {
+      const msg = extractErrorMessage(err, "Failed to create service record.");
+      set({ isMutating: false, error: msg, servicesError: msg });
+      return { success: false, message: msg };
+    }
+  },
+
+  updateService: async (id, input) => {
+    set({ isMutating: true, error: null, servicesError: null });
+    try {
+      const res = await adminApiClient.patch<ApiResponse<{ service: SafeService }>>(
+        `/services/${id}`,
+        input
+      );
+
+      if (res.data.success && res.data.data?.service) {
+        const updated = res.data.data.service;
+        set((state) => ({
+          services: state.services.map((s) => (s.id === id ? updated : s)),
+          isMutating: false,
+          error: null,
+        }));
+        return { success: true, data: updated, message: res.data.message };
+      }
+
+      const msg = res.data.message || "Failed to update service.";
+      set({ isMutating: false, error: msg, servicesError: msg });
+      return { success: false, message: msg };
+    } catch (err) {
+      const msg = extractErrorMessage(err, "Failed to update service record.");
+      set({ isMutating: false, error: msg, servicesError: msg });
+      return { success: false, message: msg };
+    }
+  },
+
+  deleteService: async (id: string) => {
+    set({ isMutating: true, error: null, servicesError: null });
+    try {
+      const res = await adminApiClient.delete<ApiResponse<{ message: string; id: string }>>(
+        `/services/${id}`
+      );
+
+      if (res.data.success) {
+        set((state) => ({
+          services: state.services.filter((s) => s.id !== id),
+          servicesPagination: state.servicesPagination
+            ? {
+                ...state.servicesPagination,
+                total: Math.max(0, state.servicesPagination.total - 1),
+              }
+            : null,
+          isMutating: false,
+          error: null,
+        }));
+        return { success: true, message: res.data.message || "Service deleted successfully." };
+      }
+
+      const msg = res.data.message || "Failed to delete service.";
+      set({ isMutating: false, error: msg, servicesError: msg });
+      return { success: false, message: msg };
+    } catch (err) {
+      const msg = extractErrorMessage(err, "Failed to delete service record.");
+      set({ isMutating: false, error: msg, servicesError: msg });
+      return { success: false, message: msg };
+    }
+  },
+
+  // =========================================================================
+  // 7. Room Module
+  // =========================================================================
+  fetchRooms: async (params = {}, force = false) => {
+    const key = `rooms_${JSON.stringify(params)}`;
+    if (!force && inFlightRequests.has(key)) {
+      return inFlightRequests.get(key) as Promise<{
+        success: boolean;
+        data?: PaginatedRoomsResult;
+        message?: string;
+      }>;
+    }
+
+    set({ isLoadingRooms: true, roomsError: null });
+
+    return getInFlight(key, async () => {
+      try {
+        const res = await adminApiClient.get<ApiResponse<PaginatedRoomsResult>>("/rooms", {
+          params,
+        });
+
+        if (res.data.success && res.data.data) {
+          set({
+            rooms: res.data.data.items || [],
+            roomsPagination: res.data.data.pagination || null,
+            isLoadingRooms: false,
+            roomsError: null,
+          });
+          return { success: true, data: res.data.data, message: res.data.message };
+        }
+
+        const msg = res.data.message || "Failed to load rooms.";
+        set({ isLoadingRooms: false, roomsError: msg });
+        return { success: false, message: msg };
+      } catch (err) {
+        const msg = extractErrorMessage(err, "Failed to load rooms from server.");
+        set({ isLoadingRooms: false, roomsError: msg });
+        return { success: false, message: msg };
+      }
+    });
+  },
+
+  getRoomById: async (id: string) => {
+    try {
+      const res = await adminApiClient.get<ApiResponse<{ room: SafeRoom }>>(
+        `/rooms/${id}`
+      );
+      if (res.data.success && res.data.data?.room) {
+        return { success: true, data: res.data.data.room, message: res.data.message };
+      }
+      return { success: false, message: res.data.message || "Room not found." };
+    } catch (err) {
+      const msg = extractErrorMessage(err, "Failed to fetch room details.");
+      return { success: false, message: msg };
+    }
+  },
+
+  createRoom: async (input) => {
+    set({ isMutating: true, error: null, roomsError: null });
+    try {
+      const res = await adminApiClient.post<ApiResponse<{ room: SafeRoom }>>(
+        "/rooms",
+        input
+      );
+
+      if (res.data.success && res.data.data?.room) {
+        const created = res.data.data.room;
+        set((state) => ({
+          rooms: [created, ...state.rooms],
+          roomsPagination: state.roomsPagination
+            ? {
+                ...state.roomsPagination,
+                total: state.roomsPagination.total + 1,
+              }
+            : null,
+          isMutating: false,
+          error: null,
+        }));
+        return { success: true, data: created, message: res.data.message };
+      }
+
+      const msg = res.data.message || "Failed to create room.";
+      set({ isMutating: false, error: msg, roomsError: msg });
+      return { success: false, message: msg };
+    } catch (err) {
+      const msg = extractErrorMessage(err, "Failed to create room record.");
+      set({ isMutating: false, error: msg, roomsError: msg });
+      return { success: false, message: msg };
+    }
+  },
+
+  updateRoom: async (id, input) => {
+    set({ isMutating: true, error: null, roomsError: null });
+    try {
+      const res = await adminApiClient.patch<ApiResponse<{ room: SafeRoom }>>(
+        `/rooms/${id}`,
+        input
+      );
+
+      if (res.data.success && res.data.data?.room) {
+        const updated = res.data.data.room;
+        set((state) => ({
+          rooms: state.rooms.map((r) => (r.id === id ? updated : r)),
+          isMutating: false,
+          error: null,
+        }));
+        return { success: true, data: updated, message: res.data.message };
+      }
+
+      const msg = res.data.message || "Failed to update room.";
+      set({ isMutating: false, error: msg, roomsError: msg });
+      return { success: false, message: msg };
+    } catch (err) {
+      const msg = extractErrorMessage(err, "Failed to update room record.");
+      set({ isMutating: false, error: msg, roomsError: msg });
+      return { success: false, message: msg };
+    }
+  },
+
+  deleteRoom: async (id: string) => {
+    set({ isMutating: true, error: null, roomsError: null });
+    try {
+      const res = await adminApiClient.delete<ApiResponse<{ message: string; id: string }>>(
+        `/rooms/${id}`
+      );
+
+      if (res.data.success) {
+        set((state) => ({
+          rooms: state.rooms.filter((r) => r.id !== id),
+          roomsPagination: state.roomsPagination
+            ? {
+                ...state.roomsPagination,
+                total: Math.max(0, state.roomsPagination.total - 1),
+              }
+            : null,
+          isMutating: false,
+          error: null,
+        }));
+        return { success: true, message: res.data.message || "Room deleted successfully." };
+      }
+
+      const msg = res.data.message || "Failed to delete room.";
+      set({ isMutating: false, error: msg, roomsError: msg });
+      return { success: false, message: msg };
+    } catch (err) {
+      const msg = extractErrorMessage(err, "Failed to delete room record.");
+      set({ isMutating: false, error: msg, roomsError: msg });
+      return { success: false, message: msg };
+    }
+  },
+
+  // =========================================================================
+  // 8. Rent Frequency Module
+  // =========================================================================
+  fetchRentFrequencies: async (params = {}, force = false) => {
+    const key = `rent_frequencies_${JSON.stringify(params)}`;
+    if (!force && inFlightRequests.has(key)) {
+      return inFlightRequests.get(key) as Promise<{
+        success: boolean;
+        data?: PaginatedRentFrequenciesResult;
+        message?: string;
+      }>;
+    }
+
+    set({ isLoadingRentFrequencies: true, rentFrequenciesError: null });
+
+    return getInFlight(key, async () => {
+      try {
+        const res = await adminApiClient.get<ApiResponse<PaginatedRentFrequenciesResult>>(
+          "/rent-frequencies",
+          { params }
+        );
+
+        if (res.data.success && res.data.data) {
+          set({
+            rentFrequencies: res.data.data.items || [],
+            rentFrequenciesPagination: res.data.data.pagination || null,
+            isLoadingRentFrequencies: false,
+            rentFrequenciesError: null,
+          });
+          return { success: true, data: res.data.data, message: res.data.message };
+        }
+
+        const msg = res.data.message || "Failed to load rent frequencies.";
+        set({ isLoadingRentFrequencies: false, rentFrequenciesError: msg });
+        return { success: false, message: msg };
+      } catch (err) {
+        const msg = extractErrorMessage(err, "Failed to load rent frequencies from server.");
+        set({ isLoadingRentFrequencies: false, rentFrequenciesError: msg });
+        return { success: false, message: msg };
+      }
+    });
+  },
+
+  getRentFrequencyById: async (id: string) => {
+    try {
+      const res = await adminApiClient.get<ApiResponse<{ rentFrequency: SafeRentFrequency }>>(
+        `/rent-frequencies/${id}`
+      );
+      if (res.data.success && res.data.data?.rentFrequency) {
+        return { success: true, data: res.data.data.rentFrequency, message: res.data.message };
+      }
+      return { success: false, message: res.data.message || "Rent frequency not found." };
+    } catch (err) {
+      const msg = extractErrorMessage(err, "Failed to fetch rent frequency details.");
+      return { success: false, message: msg };
+    }
+  },
+
+  createRentFrequency: async (input) => {
+    set({ isMutating: true, error: null, rentFrequenciesError: null });
+    try {
+      const res = await adminApiClient.post<ApiResponse<{ rentFrequency: SafeRentFrequency }>>(
+        "/rent-frequencies",
+        input
+      );
+
+      if (res.data.success && res.data.data?.rentFrequency) {
+        const created = res.data.data.rentFrequency;
+        set((state) => ({
+          rentFrequencies: [created, ...state.rentFrequencies],
+          rentFrequenciesPagination: state.rentFrequenciesPagination
+            ? {
+                ...state.rentFrequenciesPagination,
+                total: state.rentFrequenciesPagination.total + 1,
+              }
+            : null,
+          isMutating: false,
+          error: null,
+        }));
+        return { success: true, data: created, message: res.data.message };
+      }
+
+      const msg = res.data.message || "Failed to create rent frequency.";
+      set({ isMutating: false, error: msg, rentFrequenciesError: msg });
+      return { success: false, message: msg };
+    } catch (err) {
+      const msg = extractErrorMessage(err, "Failed to create rent frequency record.");
+      set({ isMutating: false, error: msg, rentFrequenciesError: msg });
+      return { success: false, message: msg };
+    }
+  },
+
+  updateRentFrequency: async (id, input) => {
+    set({ isMutating: true, error: null, rentFrequenciesError: null });
+    try {
+      const res = await adminApiClient.patch<ApiResponse<{ rentFrequency: SafeRentFrequency }>>(
+        `/rent-frequencies/${id}`,
+        input
+      );
+
+      if (res.data.success && res.data.data?.rentFrequency) {
+        const updated = res.data.data.rentFrequency;
+        set((state) => ({
+          rentFrequencies: state.rentFrequencies.map((rf) => (rf.id === id ? updated : rf)),
+          isMutating: false,
+          error: null,
+        }));
+        return { success: true, data: updated, message: res.data.message };
+      }
+
+      const msg = res.data.message || "Failed to update rent frequency.";
+      set({ isMutating: false, error: msg, rentFrequenciesError: msg });
+      return { success: false, message: msg };
+    } catch (err) {
+      const msg = extractErrorMessage(err, "Failed to update rent frequency record.");
+      set({ isMutating: false, error: msg, rentFrequenciesError: msg });
+      return { success: false, message: msg };
+    }
+  },
+
+  deleteRentFrequency: async (id: string) => {
+    set({ isMutating: true, error: null, rentFrequenciesError: null });
+    try {
+      const res = await adminApiClient.delete<ApiResponse<{ message: string; id: string }>>(
+        `/rent-frequencies/${id}`
+      );
+
+      if (res.data.success) {
+        set((state) => ({
+          rentFrequencies: state.rentFrequencies.filter((rf) => rf.id !== id),
+          rentFrequenciesPagination: state.rentFrequenciesPagination
+            ? {
+                ...state.rentFrequenciesPagination,
+                total: Math.max(0, state.rentFrequenciesPagination.total - 1),
+              }
+            : null,
+          isMutating: false,
+          error: null,
+        }));
+        return { success: true, message: res.data.message || "Rent frequency deleted successfully." };
+      }
+
+      const msg = res.data.message || "Failed to delete rent frequency.";
+      set({ isMutating: false, error: msg, rentFrequenciesError: msg });
+      return { success: false, message: msg };
+    } catch (err) {
+      const msg = extractErrorMessage(err, "Failed to delete rent frequency record.");
+      set({ isMutating: false, error: msg, rentFrequenciesError: msg });
       return { success: false, message: msg };
     }
   },

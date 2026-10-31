@@ -5,6 +5,11 @@ import { Hostel, IHostelDocument } from "@/models/hostel.model";
 // Ensure related models are registered
 import "@/models/locality.model";
 import "@/models/amenity.model";
+import "@/models/occupancy.model";
+import "@/models/room.model";
+import "@/models/service.model";
+import "@/models/institute.model";
+import "@/models/rent-frequency.model";
 import { ExploreResidenceItem } from "@/data/residences";
 
 export interface CitySummary {
@@ -149,13 +154,12 @@ export async function getResidencesByCityId(cityId: string) {
 }
 
 /**
- * Formats tenantType array into user-facing occupancy badge.
+ * Formats tenantType into user-facing occupancy badge.
  */
-function formatOccupancyBadge(tenantType: string[] = []): "Girls Only" | "Boys Only" | "Co-ed Living" {
-  const normalized = tenantType.map((t) => t.toLowerCase());
-  if (normalized.includes("co-ed") || (normalized.includes("girls") && normalized.includes("boys"))) {
-    return "Co-ed Living";
-  }
+function formatOccupancyBadge(tenantType: string | string[] = ""): "Girls Only" | "Boys Only" | "Co-ed Living" {
+  const normalized = Array.isArray(tenantType)
+    ? tenantType.map((t) => String(t).toLowerCase())
+    : [String(tenantType || "co-ed").toLowerCase()];
   if (normalized.includes("girls")) {
     return "Girls Only";
   }
@@ -187,6 +191,11 @@ export function mapHostelsToExploreItems(
     const localityText =
       localityName && city ? `${localityName} · ${city}` : localityName || city || "Prime Location";
 
+    const rentAmount =
+      typeof hostel.rent === "object" && hostel.rent !== null
+        ? Number(hostel.rent.amount || 0)
+        : Number(hostel.rent || 0);
+
     return {
       id: hostel._id ? String(hostel._id) : hostel.slug,
       _id: hostel._id ? String(hostel._id) : hostel.slug,
@@ -201,7 +210,7 @@ export function mapHostelsToExploreItems(
         hostel.subtitle ||
         hostel.location?.address ||
         (city ? `Prime location in ${city}` : "Prime location"),
-      priceFrom: `₹${Number(hostel.rent || 0).toLocaleString("en-IN")}`,
+      priceFrom: `₹${rentAmount.toLocaleString("en-IN")}`,
       href: `/residences/${hostel.slug}`,
       image: hostel.frontImage?.url || "/images/image03.png",
       colleges: Array.isArray(hostel.metadata?.keywords) ? hostel.metadata.keywords : [],
