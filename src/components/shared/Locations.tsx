@@ -160,7 +160,7 @@ export function Locations({ showHeading = false }: LocationProps) {
                             : "text-muted group-hover:text-ink"
                           }`}
                       >
-                        {city.activeHostelsCount} Residences
+                        {city.activeHostelsCount > 0 ? (`${city.activeHostelsCount} Residences`) : (`Comming Soon`)}
                       </span>
                     </button>
                   </li>

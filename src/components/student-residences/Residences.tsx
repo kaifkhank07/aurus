@@ -6,12 +6,47 @@ import gsap from "gsap";
 import { residences } from "@/data/student-residences";
 import { ArrowRight, Container, Eyebrow, Figure } from "@/components/ui/Primitives";
 import { Heading } from "../utils/Heading";
+import ResidenceCard from "../residences/ResidenceCard";
+import useHostelAndEnquiryStore from "@/store/useHostelAndEnquiryStore";
+
+function CarouselButton({
+  direction,
+  disabled,
+  onClick,
+}: {
+  direction: "prev" | "next";
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={direction === "prev" ? "Previous residences" : "Next residences"}
+      className="flex h-12 w-12 items-center justify-center rounded-full border border-ink/25 text-ink transition-all duration-300 hover:border-ink hover:bg-ink hover:text-cream active:scale-95 disabled:pointer-events-none disabled:opacity-25 cursor-pointer"
+    >
+      <ArrowRight className={direction === "prev" ? "rotate-180" : ""} />
+    </button>
+  );
+}
 
 export function Residences() {
   const trackRef = useRef<HTMLUListElement>(null);
   const targetScrollRef = useRef<number | null>(null);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
+
+  const {
+    latestHostels,
+    isLoadingLatestHostels,
+    fetchLatestHostels,
+  } = useHostelAndEnquiryStore();
+
+  // Fetch dynamic public latest hostel
+  useEffect(() => {
+    fetchLatestHostels({ limit: 10 });
+  }, [fetchLatestHostels]);
 
   const sync = useCallback(() => {
     const el = trackRef.current;
@@ -106,112 +141,37 @@ export function Residences() {
       </Container>
 
       {/* Track bleeds past the container on the right, as in the Figma */}
-      <div className="">
-        <ul
-          ref={trackRef}
-          onScroll={sync}
-          className="no-scrollbar flex gap-4 overflow-x-auto lg:gap-[min(1.5625vw,30px)]"
-        >
-          {residences.items.map((item, index) => (
-            <li
-              key={item.name}
-              className={`w-[76vw] shrink-0 sm:w-[44vw] lg:w-[min(19.4271vw,373px)] ${index === 0 ? "ml-5 sm:ml-8 lg:ml-[6.25vw] 3xl:ml-[7.25vh]" : ""
-                }`}
-            >
-              <ResidenceCard item={item} />
-            </li>
-          ))}
-        </ul>
-      </div>
+      {latestHostels.length > 0 ? (
+        <div className="">
+          <ul
+            ref={trackRef}
+            onScroll={sync}
+            className="no-scrollbar flex gap-4 overflow-x-auto lg:gap-[min(1.5625vw,30px)]"
+          >
+
+            {latestHostels.map((item, index) => (
+              <li
+                key={index}
+                className={`w-[76vw] shrink-0 sm:w-[44vw] lg:w-[min(19.4271vw,373px)] ${index === 0 ? "ml-5 sm:ml-8 lg:ml-[6.25vw] 3xl:ml-[7.25vh]" : ""
+                  }`}
+              >
+                <ResidenceCard item={item} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center rounded-[20px] border border-ink/10 bg-[#faf8f4] py-16 px-6 text-center">
+          <p className="font-sans text-[16px] text-muted">
+            {isLoadingLatestHostels && latestHostels.length === 0
+              ? "Loading residences..."
+              : "No available at the moment. Please check baack soon."}
+          </p>
+        </div>
+      )}
     </section>
   );
 }
 
-function CarouselButton({
-  direction,
-  disabled,
-  onClick,
-}: {
-  direction: "prev" | "next";
-  disabled: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={direction === "prev" ? "Previous residences" : "Next residences"}
-      className="flex h-12 w-12 items-center justify-center rounded-full border border-ink/25 text-ink transition-all duration-300 hover:border-ink hover:bg-ink hover:text-cream active:scale-95 disabled:pointer-events-none disabled:opacity-25 cursor-pointer"
-    >
-      <ArrowRight className={direction === "prev" ? "rotate-180" : ""} />
-    </button>
-  );
-}
 
-function ResidenceCard({ item }: { item: (typeof residences.items)[number] }) {
-  return (
-    <Link
-      href={item.href}
-      className="group flex h-full flex-col overflow-hidden rounded-[18px] border border-ink/10 bg-[#faf8f4] transition-all duration-300 hover:border-ink/25 hover:shadow-[0_10px_30px_rgba(0,0,0,0.06)]"
-    >
-      {/* Residence Image */}
-      <div className="relative aspect-[373/220] w-full shrink-0 overflow-hidden rounded-t-[14px]">
-        <Figure
-          src={item.image}
-          alt={`${item.name} residence interior`}
-          sizes="(min-width: 1024px) 24vw, (min-width: 640px) 44vw, 90vw"
-          className="absolute inset-0 h-full w-full transition-transform duration-700 ease-out group-hover:scale-105"
-        />
 
-        {/* Occupancy Badge */}
-        <span className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] absolute left-4 top-4 rounded-full bg-[#faf8f4] px-3 py-1.5 text-[9px] tracking-[0.18em] text-ink shadow-sm">
-          {item.occupancy}
-        </span>
-
-        {/* Featured Badge */}
-        {item.featured && (
-          <span className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] absolute right-4 top-4 rounded-full bg-[#d8c89b] px-3 py-1.5 text-[9px] tracking-[0.18em] text-ink shadow-sm">
-            Featured
-          </span>
-        )}
-      </div>
-
-      {/* Residence Details */}
-      <div className="flex flex-1 flex-col px-5 pb-3 pt-4">
-        <p className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] text-[9px] uppercase tracking-[0.24em] text-[#88847c]">
-          {item.locality}
-        </p>
-
-        <h3 className="mt-2 text-[clamp(27px,3vw,36px)] font-light uppercase leading-[1.05] tracking-[-0.055em] text-ink">
-          {item.name}
-        </h3>
-
-        <p className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] mt-2 text-[9px] uppercase tracking-[0.08em] text-[#88847c]">
-          {item.distance}
-        </p>
-
-        {/* Price and Action */}
-        <div className="mt-3 flex items-end justify-between gap-3 border-t border-line pt-3">
-          <div className="min-w-0">
-            <span className="block text-[10px] uppercase text-[#88847c] tracking-[0.04em] font-light">
-              Starts from
-            </span>
-
-            <span className="mt-0.5 block whitespace-nowrap text-[17px] font-medium leading-none tracking-[-0.04em] text-ink">
-              {item.priceFrom}
-              <span className="ml-1 text-[9px] font-normal tracking-normal text-[#88847c]">
-                /mo
-              </span>
-            </span>
-          </div>
-
-          <span className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] inline-flex shrink-0 items-center gap-2 rounded-full border-b-2 border-ink/30 px-3 py-2 text-[9px] uppercase tracking-[0.18em] text-[#77736c] transition-colors group-hover:bg-ink group-hover:text-[#faf8f4]">
-            View Residence
-            <ArrowRight />
-          </span>
-        </div>
-      </div>
-    </Link>
-  );
-}

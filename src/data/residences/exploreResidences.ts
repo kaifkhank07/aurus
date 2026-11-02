@@ -1,20 +1,3 @@
-export type ExploreResidenceItem = {
-  id?: string;
-  _id?: string;
-  slug?: string;
-  name: string;
-  occupancy: string;
-  roomOccupancy: string;
-  city: string;
-  featured: boolean;
-  locality: string;
-  distance: string;
-  priceFrom: string;
-  href: string;
-  image: string;
-  colleges?: string[];
-};
-
 export const exploreResidences = {
   titleTop: "Our Hostel across",
   titleAccent: "India.",

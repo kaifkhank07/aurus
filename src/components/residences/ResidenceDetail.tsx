@@ -1,13 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Container } from "@/components/ui/Primitives";
-import {
-  type ResidenceDetail as ResidenceDetailType,
-} from "@/data/residences";
 import { Heading } from "../utils/Heading";
 import { ScheduleVisitModal } from "./ScheduleVisitModal";
+import { useHostelAndEnquiryStore } from "@/store/useHostelAndEnquiryStore";
+import { SafeHostel } from "@/types/hostel.types";
 
 function CheckCircleIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -60,18 +59,213 @@ function PhoneIcon({ className = "w-4 h-4" }: { className?: string }) {
   );
 }
 
-export interface ResidenceDetailProps {
-  data: ResidenceDetailType;
+interface ResidenceDetailProps {
+  slug?: string;
+  hostel?: SafeHostel;
 }
 
-export function ResidenceDetail({ data }: ResidenceDetailProps) {
-  const [activeHeroImage, setActiveHeroImage] = useState(data.mainImage);
+export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Keep active hero image in sync when viewing different residences
+  const {
+    publicHostels,
+    isLoadingPublicHostels,
+    fetchPublicHostels,
+  } = useHostelAndEnquiryStore();
+
+  // Load public hostels if not already loaded
   useEffect(() => {
-    setActiveHeroImage(data.mainImage);
-  }, [data.mainImage]);
+    if (!propHostel && publicHostels.length === 0) {
+      fetchPublicHostels({ limit: 100 });
+    }
+  }, [propHostel, publicHostels.length, fetchPublicHostels]);
+
+  // Resolve current hostel from prop or store by slug
+  const hostel = useMemo(() => {
+    if (propHostel) return propHostel;
+    if (!slug) return publicHostels[0] || null;
+
+    const normalizedSlug = slug.toLowerCase().trim();
+    return (
+      publicHostels.find(
+        (h) =>
+          h.slug?.toLowerCase().trim() === normalizedSlug ||
+          h.id === normalizedSlug ||
+          h._id === normalizedSlug
+      ) || null
+    );
+  }, [propHostel, slug, publicHostels]);
+
+  // Loading state
+  if (isLoadingPublicHostels && !hostel) {
+    return (
+      <section className="py-16 sm:py-24">
+        <Container className="text-center">
+          <p className="font-mono text-xs uppercase tracking-[2px] text-[#88847C] animate-pulse">
+            Loading residence details...
+          </p>
+        </Container>
+      </section>
+    );
+  }
+
+  // Not found fallback
+  if (!hostel) {
+    return (
+      <section className="py-16 sm:py-24">
+        <Container className="text-center space-y-4">
+          <p className="font-sans text-xl text-ink">Residence not found</p>
+          <p className="font-mono text-xs uppercase tracking-[2px] text-[#88847C]">
+            The requested residence could not be found or is currently inactive.
+          </p>
+        </Container>
+      </section>
+    );
+  }
+
+  // 1. Gender / Wing Badge
+  const genderBadge =
+    hostel.tenantType === "girls"
+      ? "GIRLS ONLY"
+      : hostel.tenantType === "boys"
+      ? "BOYS ONLY"
+      : "CO-ED LIVING";
+
+  // 2. Locality & City
+  const localityName =
+    typeof hostel.location?.locality === "object" && hostel.location?.locality !== null
+      ? hostel.location.locality.name
+      : typeof hostel.location?.locality === "string"
+      ? hostel.location.locality
+      : "";
+
+  const cityName =
+    typeof hostel.location?.city === "object" && hostel.location?.city !== null
+      ? hostel.location.city.city
+      : typeof hostel.location?.city === "string"
+      ? hostel.location.city
+      : "";
+
+  const locationBadge =
+    localityName && cityName
+      ? `${localityName}, ${cityName}`.toUpperCase()
+      : (localityName || cityName || "MUMBAI").toUpperCase();
+
+  // 3. Images
+  const heroImage =
+    hostel.frontImage?.url ||
+    hostel.galleryImages?.[0]?.url ||
+    "/images/image03.png";
+
+  const allGalleryUrls = Array.isArray(hostel.galleryImages)
+    ? hostel.galleryImages.map((img) => img.url).filter(Boolean)
+    : [];
+
+  const galleryImages =
+    allGalleryUrls.length >= 2
+      ? allGalleryUrls
+      : allGalleryUrls.length === 1
+      ? [allGalleryUrls[0], heroImage]
+      : [heroImage, heroImage];
+
+  // 4. Room & Occupancies
+  const occupanciesList = Array.isArray(hostel.occupancy)
+    ? hostel.occupancy
+        .map((o) => (typeof o === "object" && o !== null ? o.name : String(o)))
+        .filter(Boolean)
+    : [];
+
+  const roomsList = Array.isArray(hostel.room)
+    ? hostel.room
+        .map((r) => (typeof r === "object" && r !== null ? r.name : String(r)))
+        .filter(Boolean)
+    : [];
+
+  const roomsSpecValue =
+    occupanciesList.length > 0
+      ? occupanciesList.join(", ")
+      : roomsList.length > 0
+      ? roomsList.join(", ")
+      : "Single, Double Sharing";
+
+  // 5. Pricing & Frequency
+  const rentAmount = Number(hostel.rent?.amount || 0);
+  const startsFrom =
+    rentAmount > 0 ? `₹${rentAmount.toLocaleString("en-IN")}` : "₹50,000";
+
+  const freqName =
+    typeof hostel.rent?.frequency === "object" && hostel.rent?.frequency !== null
+      ? hostel.rent.frequency.name
+      : typeof hostel.rent?.frequency === "string"
+      ? hostel.rent.frequency
+      : "Monthly";
+
+  const period = freqName.toLowerCase().includes("year") ? "/ year" : "/ month";
+
+  // 6. Rating & Key Specs
+  const ratingText =
+    hostel.rating?.star !== undefined && hostel.rating.star > 0
+      ? `★ ${hostel.rating.star} (${hostel.rating.userCount || 0} reviews)`
+      : "★ 4.9 (48 reviews)";
+
+  const keySpecs = [
+    { label: "WING", value: genderBadge },
+    { label: "ROOMS", value: roomsSpecValue },
+    { label: "RATING", value: ratingText },
+    { label: "PAYMENT", value: freqName.charAt(0).toUpperCase() + freqName.slice(1) },
+  ];
+
+  // 7. Room Options for Pricing Card
+  const roomOptions =
+    occupanciesList.length > 0
+      ? occupanciesList.map((name) => ({
+          type:
+            name.toLowerCase().includes("sharing") || name.toLowerCase().includes("occupancy")
+              ? name
+              : `${name} Sharing`,
+          status: "Available",
+        }))
+      : [
+          { type: "Single Occupancy", status: "Available" },
+          { type: "Double Sharing", status: "Available" },
+        ];
+
+  // roomOptions.push({
+  //   type: "Meals, Wi-Fi, Housekeeping",
+  //   status: "Included",
+  // });
+
+  // 8. Included in your stay (Amenities only)
+  const amenitiesList = Array.isArray(hostel.amenities)
+    ? hostel.amenities
+        .map((a) => (typeof a === "object" && a !== null ? a.name : String(a)))
+        .filter(Boolean)
+    : [];
+
+  // 9. Every Aurus Chapter includes (Services only)
+  const servicesList = Array.isArray(hostel.services)
+    ? hostel.services
+        .map((s) => (typeof s === "object" && s !== null ? s.name : String(s)))
+        .filter(Boolean)
+    : [];
+
+  // 10. Near campus (Institutes only)
+  const instituteList = Array.isArray(hostel.institute)
+    ? hostel.institute
+        .map((inst) => (typeof inst === "object" && inst !== null ? inst.name : String(inst)))
+        .filter(Boolean)
+    : [];
+
+  // 10. Location
+  const address =
+    hostel.location?.address ||
+    (localityName && cityName ? `${localityName}, ${cityName}` : cityName || "Prime Location");
+
+  const mapUrl =
+    hostel.location?.mapUrl ||
+    (hostel.location?.latitude && hostel.location?.longitude
+      ? `https://maps.google.com/?q=${hostel.location.latitude},${hostel.location.longitude}`
+      : `https://maps.google.com/?q=${encodeURIComponent(address)}`);
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">
@@ -80,8 +274,8 @@ export function ResidenceDetail({ data }: ResidenceDetailProps) {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <Heading
-              title1={data.title}
-              title2={data.subtitle}
+              title1={hostel.title}
+              title2={hostel.subtitle || ""}
               className="max-w-[70%] sm:max-w-none"
             />
           </div>
@@ -89,10 +283,10 @@ export function ResidenceDetail({ data }: ResidenceDetailProps) {
           {/* Badges */}
           <div className="flex items-center gap-2.5 shrink-0">
             <span className="bg-ink text-white font-mono text-[9px] sm:text-[10px] lg:text-[13px] uppercase px-4 sm:px-6 3xl:px-8 py-1.5 rounded-full font-medium">
-              {data.genderBadge}
+              {genderBadge}
             </span>
             <span className="border border-ink/25 bg-white/40 text-ink font-mono text-[9px] sm:text-[10px] lg:text-[13px] uppercase px-4 sm:px-6 3xl:px-8 py-1.5 rounded-full font-medium">
-              {data.locationBadge}
+              {locationBadge}
             </span>
           </div>
         </div>
@@ -101,8 +295,8 @@ export function ResidenceDetail({ data }: ResidenceDetailProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
           <div className="lg:col-span-2 lg:row-span-2 relative aspect-[16/10] sm:aspect-[1.5/1] rounded-[18px] sm:rounded-[22px] overflow-hidden bg-neutral-200 group">
             <Image
-              src={activeHeroImage}
-              alt={`${data.title} main interior view`}
+              src={heroImage}
+              alt={`${hostel.title} main interior view`}
               fill
               priority
               sizes="(min-width: 1024px) 66vw, 100vw"
@@ -110,18 +304,17 @@ export function ResidenceDetail({ data }: ResidenceDetailProps) {
             />
           </div>
 
-          {data.galleryImages.slice(0, 2).map((img, idx) => (
+          {galleryImages.slice(0, 2).map((img, idx) => (
             <div
               key={idx}
-              onClick={() => setActiveHeroImage(img)}
               className="relative aspect-[16/10] sm:aspect-[1.5/1] rounded-[18px] sm:rounded-[22px] overflow-hidden bg-neutral-200 group cursor-pointer"
             >
               <Image
                 src={img}
-                alt={`${data.title} main interior view`}
+                alt={`${hostel.title} gallery view ${idx + 1}`}
                 fill
                 priority
-                sizes="(min-width: 1024px) 66vw, 100vw"
+                sizes="(min-width: 1024px) 33vw, 100vw"
                 className="object-cover transition-transform duration-700 ease-out group-hover:scale-102"
               />
             </div>
@@ -134,15 +327,19 @@ export function ResidenceDetail({ data }: ResidenceDetailProps) {
           <div className="lg:col-span-2 space-y-8 sm:space-y-10">
             {/* Description */}
             <p className="font-sans text-ink text-lg sm:text-xl lg:text-[28px] 3xl:text-[35px] font-regular leading-sung max-w-3xl">
-              {data.description}
+              {hostel.description ||
+                "A premium student residence crafted for comfort, safety, and an enriching community experience. Featuring elegantly designed interiors, dedicated study zones, and chef-curated dining."}
             </p>
 
             {/* Key Specs Box */}
             <div className="grid grid-cols-2 sm:grid-cols-4 border border-ink/15 overflow-hidden bg-[#FAF8F4]/80">
-              {data.keySpecs.map((spec, index) => (
-                <div key={spec.label} className={`p-4 sm:p-5 flex flex-col justify-center border-r border-ink/15
-                ${index < 2 ? 'border-b lg:border-b-0 border-ink/15' : 'border-b-0'}
-                `}>
+              {keySpecs.map((spec, index) => (
+                <div
+                  key={spec.label}
+                  className={`p-4 sm:p-5 flex flex-col justify-center border-r border-ink/15 ${
+                    index < 2 ? "border-b lg:border-b-0 border-ink/15" : "border-b-0"
+                  }`}
+                >
                   <span className="font-mono uppercase text-[10px] sm:text-[11px] lg:text-[14px] tracking-[2px] text-[#88847C] block mb-1 font-medium">
                     {spec.label}
                   </span>
@@ -161,19 +358,19 @@ export function ResidenceDetail({ data }: ResidenceDetailProps) {
               </span>
               <div className="mt-1 flex items-baseline">
                 <span className="font-sans text-3xl sm:text-4xl font-semibold tracking-tight text-ink leading-tight">
-                  {data.pricing.startsFrom}
+                  {startsFrom}
                 </span>
                 <span className="ml-1 text-xs text-[#77736B] font-normal">
-                  {data.pricing.period}
+                  {period}
                 </span>
               </div>
 
               {/* Room Options & Inclusions List */}
               <div className="divide-y divide-ink/10 border-y border-ink/10 my-6 py-0.5">
-                {data.pricing.roomOptions.map((opt, i) => (
+                {roomOptions.map((opt, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between py-2 lg:py-3 font-sans  text-xs sm:text-[14px] text-ink font-regular"
+                    className="flex items-center justify-between py-2 lg:py-3 font-sans text-xs sm:text-[14px] text-ink font-regular"
                   >
                     <span className="text-[#77736B]">{opt.type}</span>
                     <span className="text-ink">{opt.status}</span>
@@ -188,33 +385,33 @@ export function ResidenceDetail({ data }: ResidenceDetailProps) {
                   onClick={() => setIsModalOpen(true)}
                   className="w-full rounded-full bg-ink py-3.5 px-4 font-mono text-[11px] sm:text-[12px] uppercase tracking-[2px] font-medium text-white hover:bg-ink/85 transition text-center block cursor-pointer shadow-xs"
                 >
-                  {data.pricing.scheduleVisitText}
+                  SCHEDULE A VISIT
                 </button>
 
                 <a
-                  href={`https://wa.me/${data.pricing.whatsappNumber}?text=${encodeURIComponent(
-                    `Hello! I'm interested in visiting ${data.title}.`
+                  href={`https://wa.me/919876543210?text=${encodeURIComponent(
+                    `Hello! I'm interested in visiting ${hostel.title}.`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full rounded-full border border-ink/30 py-2.5 px-4 font-mono text-[11px] sm:text-[12px] uppercase tracking-[2px] font-medium text-ink hover:border-ink hover:bg-ink/5 transition flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <WhatsAppIcon className="w-4 h-4 text-emerald-600" />
-                  {data.pricing.whatsappText}
+                  WHATSAPP US
                 </a>
 
                 <a
-                  href={`tel:${data.pricing.callNumber}`}
+                  href="tel:18005720709"
                   className="w-full rounded-full border border-ink/30 py-2.5 px-4 font-mono text-[11px] sm:text-[12px] uppercase tracking-[2px] font-medium text-ink hover:border-ink hover:bg-ink/5 transition flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <PhoneIcon className="w-4 h-4 text-ink" />
-                  {data.pricing.callText}
+                  CALL US
                 </a>
               </div>
 
               {/* Disclaimer */}
               <p className="font-sans text-[10px] sm:text-[11px] text-[#88847C] leading-relaxed text-center mt-5 font-light">
-                {data.pricing.disclaimer}
+                Prices are indicative and vary by room type and floor. Final pricing is confirmed during your visit.
               </p>
             </div>
 
@@ -223,19 +420,23 @@ export function ResidenceDetail({ data }: ResidenceDetailProps) {
               <h2 className="font-sans text-ink text-lg sm:text-xl lg:text-[28px] 3xl:text-[35px] font-regular leading-sung mb-4">
                 Included in your stay
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 border-t border-ink/15">
-                {data.includedInStay.map((item, index) => (
-                  <div
-                    key={index}
-                    className="border-b border-ink/15 py-3 sm:py-3.5 flex items-center gap-3 pr-4"
-                  >
-                    <CheckCircleIcon className="w-4 h-4 text-ink shrink-0" />
-                    <span className="font-sans text-[13.5px] sm:text-[14.5px] lg:text-[18px] text-ink font-light">
-                      {item}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              {amenitiesList.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 border-t border-ink/15">
+                  {amenitiesList.map((item, index) => (
+                    <div
+                      key={index}
+                      className="border-b border-ink/15 py-3 sm:py-3.5 flex items-center gap-3 pr-4"
+                    >
+                      <CheckCircleIcon className="w-4 h-4 text-ink shrink-0" />
+                      <span className="font-sans text-[13.5px] sm:text-[14.5px] lg:text-[18px] text-ink font-light">
+                        {item}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="font-sans text-sm text-[#88847C]">No amenities listed.</p>
+              )}
             </div>
 
             {/* Every Aurus Chapter includes */}
@@ -243,16 +444,20 @@ export function ResidenceDetail({ data }: ResidenceDetailProps) {
               <h2 className="font-sans text-ink text-lg sm:text-xl lg:text-[28px] 3xl:text-[35px] font-regular leading-sung mb-4">
                 Every Aurus Chapter includes
               </h2>
-              <div className="flex flex-wrap gap-3 3xl:gap-4">
-                {data.chapterIncludes.map((chip, index) => (
-                  <span
-                    key={index}
-                    className="px-4 lg:px-6 py-2 rounded-full border border-ink/15 font-mono uppercase font-regular text-[10px] sm:text-[11px] lg:text-[13px] tracking-[1.5px] text-ink transition-colors hover:border-ink/40"
-                  >
-                    {chip}
-                  </span>
-                ))}
-              </div>
+              {servicesList.length > 0 ? (
+                <div className="flex flex-wrap gap-3 3xl:gap-4">
+                  {servicesList.map((service, index) => (
+                    <span
+                      key={index}
+                      className="px-4 lg:px-6 py-2 rounded-full border border-ink/15 font-mono uppercase font-regular text-[10px] sm:text-[11px] lg:text-[13px] tracking-[1.5px] text-ink transition-colors hover:border-ink/40"
+                    >
+                      {service}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="font-sans text-sm text-[#88847C]">No services listed.</p>
+              )}
             </div>
 
             {/* Near campus */}
@@ -261,18 +466,22 @@ export function ResidenceDetail({ data }: ResidenceDetailProps) {
                 Near campus
               </h2>
               <p className="font-sans text-xs sm:text-[13px] lg:text-[16px] 3xl:text-[19px] text-[#77736C] font-regular mb-3.5">
-                {data.nearCampus.distance}
+                Minutes away from premier institutes & universities
               </p>
-              <div className="flex flex-wrap gap-3 3xl:gap-4">
-                {data.nearCampus.colleges.map((college, index) => (
-                  <span
-                    key={index}
-                    className="px-4 lg:px-6 py-2 rounded-full bg-ink text-white font-mono uppercase font-regular text-[10px] sm:text-[11px] lg:text-[13px] tracking-[1.5px]"
-                  >
-                    {college}
-                  </span>
-                ))}
-              </div>
+              {instituteList.length > 0 ? (
+                <div className="flex flex-wrap gap-3 3xl:gap-4">
+                  {instituteList.map((institute, index) => (
+                    <span
+                      key={index}
+                      className="px-4 lg:px-6 py-2 rounded-full bg-ink text-white font-mono uppercase font-regular text-[10px] sm:text-[11px] lg:text-[13px] tracking-[1.5px]"
+                    >
+                      {institute}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="font-sans text-sm text-[#88847C]">No institutes listed.</p>
+              )}
             </div>
 
             {/* Location */}
@@ -283,14 +492,14 @@ export function ResidenceDetail({ data }: ResidenceDetailProps) {
               <div className="rounded-[20px] bg-white p-5 sm:p-6 sm:px-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 shadow-[0_2px_15px_rgba(0,0,0,0.03)]">
                 <div>
                   <span className="font-mono uppercase text-[14px] text-[#88847C] font-regular block mb-1">
-                    {data.location.label}
+                    {locationBadge}
                   </span>
                   <p className="font-sans text-[14px] text-ink leading-relaxed max-w-lg font-regular">
-                    {data.location.address}
+                    {address}
                   </p>
                 </div>
                 <a
-                  href={data.location.mapUrl}
+                  href={mapUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center px-4 lg:px-6 py-2 rounded-full border border-ink font-mono uppercase font-regular text-[10px] sm:text-[11px] lg:text-[13px] tracking-[1.5px] text-ink hover:bg-ink hover:text-white transition-colors duration-200 whitespace-nowrap cursor-pointer shrink-0 self-start sm:self-auto"
@@ -301,7 +510,7 @@ export function ResidenceDetail({ data }: ResidenceDetailProps) {
             </div>
           </div>
 
-          {/* Right Column: Sticky Pricing & Booking Card */}
+          {/* Right Column: Sticky Pricing & Booking Card (Desktop) */}
           <div className="hidden lg:block">
             <div className="lg:sticky lg:top-28 rounded-[20px] border border-ink/10 bg-white p-6 sm:p-7 max-w-[80%] ml-auto">
               {/* Price Header */}
@@ -310,19 +519,19 @@ export function ResidenceDetail({ data }: ResidenceDetailProps) {
               </span>
               <div className="mt-1 flex items-baseline">
                 <span className="font-sans text-3xl sm:text-4xl font-semibold tracking-tight text-ink leading-tight">
-                  {data.pricing.startsFrom}
+                  {startsFrom}
                 </span>
                 <span className="ml-1 text-xs text-[#77736B] font-normal">
-                  {data.pricing.period}
+                  {period}
                 </span>
               </div>
 
               {/* Room Options & Inclusions List */}
               <div className="divide-y divide-ink/10 border-y border-ink/10 my-6 py-0.5">
-                {data.pricing.roomOptions.map((opt, i) => (
+                {roomOptions.map((opt, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between py-2 lg:py-3 font-sans  text-xs sm:text-[14px] text-ink font-regular"
+                    className="flex items-center justify-between py-2 lg:py-3 font-sans text-xs sm:text-[14px] text-ink font-regular"
                   >
                     <span className="text-[#77736B]">{opt.type}</span>
                     <span className="text-ink">{opt.status}</span>
@@ -337,33 +546,33 @@ export function ResidenceDetail({ data }: ResidenceDetailProps) {
                   onClick={() => setIsModalOpen(true)}
                   className="w-full rounded-full bg-ink py-3.5 px-4 font-mono text-[11px] sm:text-[12px] uppercase tracking-[2px] font-medium text-white hover:bg-ink/85 transition text-center block cursor-pointer shadow-xs"
                 >
-                  {data.pricing.scheduleVisitText}
+                  SCHEDULE A VISIT
                 </button>
 
                 <a
-                  href={`https://wa.me/${data.pricing.whatsappNumber}?text=${encodeURIComponent(
-                    `Hello! I'm interested in visiting ${data.title}.`
+                  href={`https://wa.me/919876543210?text=${encodeURIComponent(
+                    `Hello! I'm interested in visiting ${hostel.title}.`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full rounded-full border border-ink/30 py-2.5 px-4 font-mono text-[11px] sm:text-[12px] uppercase tracking-[2px] font-medium text-ink hover:border-ink hover:bg-ink/5 transition flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <WhatsAppIcon className="w-4 h-4 text-emerald-600" />
-                  {data.pricing.whatsappText}
+                  WHATSAPP US
                 </a>
 
                 <a
-                  href={`tel:${data.pricing.callNumber}`}
+                  href="tel:18005720709"
                   className="w-full rounded-full border border-ink/30 py-2.5 px-4 font-mono text-[11px] sm:text-[12px] uppercase tracking-[2px] font-medium text-ink hover:border-ink hover:bg-ink/5 transition flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <PhoneIcon className="w-4 h-4 text-ink" />
-                  {data.pricing.callText}
+                  CALL US
                 </a>
               </div>
 
               {/* Disclaimer */}
               <p className="font-sans text-[10px] sm:text-[11px] text-[#88847C] leading-relaxed text-center mt-5 font-light">
-                {data.pricing.disclaimer}
+                Prices are indicative and vary by room type and floor. Final pricing is confirmed during your visit.
               </p>
             </div>
           </div>
@@ -374,8 +583,8 @@ export function ResidenceDetail({ data }: ResidenceDetailProps) {
       <ScheduleVisitModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        residenceTitle={data.title}
-        residenceLocation={data.location?.address || data.location?.label || data.title}
+        residenceTitle={hostel.title}
+        residenceLocation={address}
       />
     </section>
   );

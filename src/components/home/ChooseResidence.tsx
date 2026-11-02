@@ -4,9 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { gsap } from "gsap";
 import { landing } from "@/data/home";
-import { nav } from "@/data/layout";
 import { ArrowRight, Figure } from "@/components/ui/Primitives";
-import { useResidences } from "@/store/useResidences";
 import { LandingNavbar } from "../layout/LandingNavbar";
 
 // Sub Component
@@ -69,8 +67,6 @@ function BrandCard({ brand, cardRef, imageRef }: BrandCardProps) {
 // Main Component
 export function ChooseResidence() {
   const { brands } = landing;
-  const { setSelectedResidence } = useResidences();
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const leftCardRef = useRef<HTMLAnchorElement>(null);

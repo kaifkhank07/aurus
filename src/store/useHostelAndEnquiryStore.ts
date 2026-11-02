@@ -70,6 +70,12 @@ export interface HostelAndEnquiryState {
   isLoadingPublicHostels: boolean;
   publicHostelsError: string | null;
 
+  // ── Latest Hostel Module State ──
+  latestHostels: SafeHostel[];
+  latestHostelsPagination: PaginationMeta | null;
+  isLoadingLatestHostels: boolean;
+  latestHostelsError: string | null;
+
   // ── Booked Visit Module State ──
   bookedVisits: SafeBookedVisit[];
   bookedVisitsPagination: PaginationMeta | null;
@@ -110,6 +116,12 @@ export interface HostelAndEnquiryState {
 
   // ── Public Hostel Actions ──
   fetchPublicHostels: (
+    params?: Partial<PublicHostelQueryParams>,
+    force?: boolean
+  ) => Promise<{ success: boolean; data?: PublicHostelsResult; message?: string }>;
+
+  // ── Latest Hostel Actions ──
+  fetchLatestHostels: (
     params?: Partial<PublicHostelQueryParams>,
     force?: boolean
   ) => Promise<{ success: boolean; data?: PublicHostelsResult; message?: string }>;
@@ -180,6 +192,11 @@ export const useHostelAndEnquiryStore = create<HostelAndEnquiryState>((set, get)
   isLoadingPublicHostels: false,
   publicHostelsError: null,
 
+  latestHostels: [],
+  latestHostelsPagination: null,
+  isLoadingLatestHostels: false,
+  latestHostelsError: null,
+
   bookedVisits: [],
   bookedVisitsPagination: null,
   isLoadingBookedVisits: false,
@@ -198,6 +215,7 @@ export const useHostelAndEnquiryStore = create<HostelAndEnquiryState>((set, get)
       error: null,
       hostelsError: null,
       publicHostelsError: null,
+      latestHostelsError: null,
       bookedVisitsError: null,
       enquiriesError: null,
     }),
@@ -310,6 +328,83 @@ export const useHostelAndEnquiryStore = create<HostelAndEnquiryState>((set, get)
       } catch (err) {
         const msg = extractErrorMessage(err, "Failed to load public residences from server.");
         set({ isLoadingPublicHostels: false, publicHostelsError: msg });
+        return { success: false, message: msg };
+      }
+    });
+  },
+
+  fetchLatestHostels: async (params = {}, force = false) => {
+    const queryParams: Partial<PublicHostelQueryParams> = {
+      limit: 6,
+      ...params,
+    };
+    const key = `latest_hostels_${JSON.stringify(queryParams)}`;
+    if (!force && inFlightRequests.has(key)) {
+      return inFlightRequests.get(key) as Promise<{
+        success: boolean;
+        data?: PublicHostelsResult;
+        message?: string;
+      }>;
+    }
+
+    set({ isLoadingLatestHostels: true, latestHostelsError: null });
+
+    return getInFlight(key, async () => {
+      try {
+        const res = await publicApiClient.get<
+          ApiResponse<{
+            items: SafeHostel[];
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+          }>
+        >("/api/residences", { params: queryParams });
+
+        if (res.data.success && res.data.data) {
+          const rawData = res.data.data;
+          // Normalize items so both id and _id are available, restricted to 6 entries
+          const items = (rawData.items || [])
+            .slice(0, 6)
+            .map((item: any) => ({
+              ...item,
+              id: item.id || (item._id ? String(item._id) : ""),
+              _id: item._id ? String(item._id) : item.id,
+            }));
+
+          const pagination: PaginationMeta = {
+            total: rawData.total ?? items.length,
+            page: rawData.page ?? 1,
+            limit: 6,
+            totalPages: rawData.totalPages ?? 1,
+            hasNextPage: (rawData.page ?? 1) < (rawData.totalPages ?? 1),
+            hasPrevPage: (rawData.page ?? 1) > 1,
+          };
+
+          set({
+            latestHostels: items,
+            latestHostelsPagination: pagination,
+            isLoadingLatestHostels: false,
+            latestHostelsError: null,
+          });
+
+          return {
+            success: true,
+            data: {
+              ...rawData,
+              items,
+              pagination,
+            },
+            message: res.data.message,
+          };
+        }
+
+        const msg = res.data.message || "Failed to load latest residences.";
+        set({ isLoadingLatestHostels: false, latestHostelsError: msg });
+        return { success: false, message: msg };
+      } catch (err) {
+        const msg = extractErrorMessage(err, "Failed to load latest residences from server.");
+        set({ isLoadingLatestHostels: false, latestHostelsError: msg });
         return { success: false, message: msg };
       }
     });

@@ -3,18 +3,20 @@
 import { Container, Eyebrow } from "@/components/ui/Primitives";
 import { Heading } from "@/components/utils/Heading";
 import { ViewReveal } from "@/components/animation";
-import { CitySummary } from "@/lib/residences/city";
+import { PublicCity } from "@/types/city.types";
 
 interface CityIntroductionProps {
-  city: CitySummary;
+  city: PublicCity;
 }
 
 export function CityIntroduction({ city }: CityIntroductionProps) {
+  const cityName = city.name || city.city || "City";
+
   const highlights = [
     {
       num: "01",
       title: "Prime Proximity",
-      desc: `Centrally positioned in ${city.name}'s key student neighbourhoods, moments away from leading colleges, universities, and transit networks.`,
+      desc: `Centrally positioned in ${cityName}'s key student neighbourhoods, moments away from leading colleges, universities, and transit networks.`,
     },
     {
       num: "02",
@@ -40,7 +42,7 @@ export function CityIntroduction({ city }: CityIntroductionProps) {
           {/* Left Column */}
           <div className="lg:col-span-5 space-y-4">
             <ViewReveal duration={800}>
-              <Eyebrow>LIFE IN {city.name.toUpperCase()}</Eyebrow>
+              <Eyebrow>LIFE IN {cityName.toUpperCase()}</Eyebrow>
               <div className="mt-3">
                 <Heading
                   title1="Crafted for"
@@ -49,7 +51,7 @@ export function CityIntroduction({ city }: CityIntroductionProps) {
                 />
               </div>
               <p className="mt-4 font-sans font-normal text-[15px] sm:text-[17px] leading-[1.5] text-muted">
-                Aurus redefines student living in {city.name}. Beyond accommodation, our Chapters provide an enriching ecosystem designed to help university students thrive academically, socially, and personally.
+                Aurus redefines student living in {cityName}. Beyond accommodation, our Chapters provide an enriching ecosystem designed to help university students thrive academically, socially, and personally.
               </p>
             </ViewReveal>
           </div>
@@ -79,4 +81,3 @@ export function CityIntroduction({ city }: CityIntroductionProps) {
 }
 
 export default CityIntroduction;
-
