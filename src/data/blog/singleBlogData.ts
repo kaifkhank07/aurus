@@ -1,1 +1,1 @@
-export { singleBlogData, type BlogDetailData, type BlogSectionPoint } from "./blogsData";
+export type { BlogDetailData, BlogSectionPoint } from "./blogsData";

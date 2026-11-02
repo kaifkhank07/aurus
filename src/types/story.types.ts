@@ -51,3 +51,19 @@ export interface PaginatedStoriesResult {
   items: SafeStory[];
   pagination: PaginationMeta;
 }
+
+export interface PublicStoryQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  isFeatured?: boolean;
+}
+
+export interface PublicStoriesResult {
+  items: SafeStory[];
+  total: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
+  pagination?: PaginationMeta;
+}

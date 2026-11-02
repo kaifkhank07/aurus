@@ -32,13 +32,13 @@ export default function EnquiryDetails({
 
   const createdFormatted = enquiry.createdAt
     ? new Date(enquiry.createdAt).toLocaleString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
     : "—";
 
   const cleanPhone = enquiry.number.replace(/\D/g, "");
@@ -53,14 +53,13 @@ export default function EnquiryDetails({
         }
       }}
     >
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-8 animate-in zoom-in-95 duration-200">
+      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-8 animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 via-white to-amber-50/20">
           <div className="flex items-center gap-3">
             <div
-              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-2xs ${
-                isQuery ? "bg-amber-100 text-amber-700" : "bg-sky-100 text-sky-700"
-              }`}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-2xs ${isQuery ? "bg-amber-100 text-amber-700" : "bg-sky-100 text-sky-700"
+                }`}
             >
               <Icon name={isQuery ? "mail" : "phone"} size={18} />
             </div>
@@ -95,11 +94,10 @@ export default function EnquiryDetails({
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
               <div
-                className={`w-12 h-12 rounded-2xl text-white font-bold text-lg flex items-center justify-center shadow-sm shrink-0 ${
-                  isQuery
+                className={`w-12 h-12 rounded-2xl text-white font-bold text-lg flex items-center justify-center shadow-sm shrink-0 ${isQuery
                     ? "bg-gradient-to-br from-amber-500 to-orange-600"
                     : "bg-gradient-to-br from-sky-500 to-indigo-600"
-                }`}
+                  }`}
               >
                 {enquiry.name.charAt(0).toUpperCase()}
               </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { SafeBlog } from "@/types/blog.types";
+import { SafeBlog, BLOG_CATEGORY_LABELS } from "@/types/blog.types";
 import { getMediaUrl } from "@/lib/media";
 import { Btn } from "../ui/AdminUI";
 import Icon from "../ui/AdminIcons";
@@ -37,18 +37,18 @@ export default function BlogDetails({
 
   const createdFormatted = blog.createdAt
     ? new Date(blog.createdAt).toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      })
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    })
     : "—";
 
   const updatedFormatted = blog.updatedAt
     ? new Date(blog.updatedAt).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
     : null;
 
   return (
@@ -60,7 +60,7 @@ export default function BlogDetails({
         }
       }}
     >
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] my-auto animate-in zoom-in-95 duration-200">
+      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] my-auto animate-in zoom-in-95 duration-200">
         {/* Cover Banner Header */}
         <div className="relative w-full h-56 bg-slate-900 shrink-0 overflow-hidden">
           {imageUrl ? (
@@ -85,21 +85,26 @@ export default function BlogDetails({
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/30 pointer-events-none" />
 
-          {/* Date & Tags on Banner */}
+          {/* Date, Category & Read Duration on Banner */}
           <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-white text-xs gap-2">
             <span className="font-semibold text-slate-200">Published on {createdFormatted}</span>
-            {blog.tags && blog.tags.length > 0 && (
-              <div className="flex items-center gap-1.5 flex-wrap justify-end">
-                {blog.tags.slice(0, 3).map((t) => (
-                  <span
-                    key={t}
-                    className="px-2 py-0.5 rounded-md bg-white/20 backdrop-blur-xs text-[11px] font-bold text-white"
-                  >
-                    #{t}
-                  </span>
-                ))}
-              </div>
-            )}
+            <div className="flex items-center gap-1.5 flex-wrap justify-end">
+              <span className="px-2.5 py-0.5 rounded-md bg-white/20 backdrop-blur-xs text-[11px] font-bold text-white uppercase tracking-wider">
+                {BLOG_CATEGORY_LABELS[blog.category] || blog.category}
+              </span>
+              <span className="px-2 py-0.5 rounded-md bg-white/20 backdrop-blur-xs text-[11px] font-semibold text-white">
+                ⏱ {blog.readDuration} min read
+              </span>
+              <span
+                className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${
+                  blog.isActive
+                    ? "bg-emerald-500/80 text-white"
+                    : "bg-rose-500/80 text-white"
+                }`}
+              >
+                {blog.isActive ? "Active" : "Draft"}
+              </span>
+            </div>
           </div>
         </div>
 

@@ -1,23 +1,24 @@
 import { z } from "zod";
 import { objectIdSchema } from "./admin.validation";
 import { cityImageSchema as imageSchema, cityMetadataSchema } from "./city.validation";
+import { BLOG_CATEGORIES, BlogCategory, normalizeBlogCategory } from "@/types/blog.types";
 
 export { objectIdSchema };
 
-const normalizeTags = (tags: string[] | undefined): string[] => {
-  if (!tags) return [];
-  const seen = new Set<string>();
-  const result: string[] = [];
-  for (const tag of tags) {
-    const trimmed = tag.trim();
-    const lower = trimmed.toLowerCase();
-    if (trimmed.length > 0 && !seen.has(lower)) {
-      seen.add(lower);
-      result.push(trimmed);
+export const blogCategorySchema = z
+  .string()
+  .trim()
+  .min(1, { message: "Blog category is required." })
+  .superRefine((val, ctx) => {
+    const normalized = normalizeBlogCategory(val);
+    if (!normalized) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Invalid category: "${val}". Allowed categories are: ${BLOG_CATEGORIES.join(", ")}.`,
+      });
     }
-  }
-  return result;
-};
+  })
+  .transform((val) => normalizeBlogCategory(val) as BlogCategory);
 
 export const createBlogSchema = z
   .object({
@@ -28,11 +29,20 @@ export const createBlogSchema = z
       .max(200, { message: "Title cannot exceed 200 characters." }),
     subtitle: z.string().trim().max(300, { message: "Subtitle cannot exceed 300 characters." }).optional(),
     image: imageSchema,
-    tags: z
-      .array(z.string())
+    category: blogCategorySchema,
+    readDuration: z.coerce
+      .number()
+      .int("Read duration must be a whole number of minutes.")
+      .min(1, "Read duration must be at least 1 minute.")
+      .max(180, "Read duration cannot exceed 180 minutes.")
+      .default(5),
+    isActive: z
+      .union([z.boolean(), z.string()])
       .optional()
-      .default([])
-      .transform(normalizeTags),
+      .transform((val) => {
+        if (typeof val === "string") return val === "true";
+        return val ?? true;
+      }),
     description: z
       .string()
       .trim()
@@ -46,10 +56,20 @@ export const updateBlogSchema = z
     title: z.string().trim().min(1).max(200).optional(),
     subtitle: z.string().trim().max(300).optional(),
     image: imageSchema.optional(),
-    tags: z
-      .array(z.string())
+    category: blogCategorySchema.optional(),
+    readDuration: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(180)
+      .optional(),
+    isActive: z
+      .union([z.boolean(), z.string()])
       .optional()
-      .transform(normalizeTags),
+      .transform((val) => {
+        if (typeof val === "string") return val === "true";
+        return val;
+      }),
     description: z.string().trim().min(1).optional(),
     metadata: cityMetadataSchema.optional(),
   })
@@ -77,7 +97,14 @@ export const blogQuerySchema = z.object({
         .max(100, "Limit cannot exceed 100 items per page.")
     ),
   search: z.string().trim().optional(),
-  tag: z.string().trim().optional(),
-  sortBy: z.enum(["createdAt", "updatedAt", "title"]).optional(),
+  category: z.string().trim().optional(),
+  isActive: z
+    .string()
+    .optional()
+    .transform((val) => {
+      if (val === undefined || val === "") return undefined;
+      return val === "true";
+    }),
+  sortBy: z.enum(["createdAt", "updatedAt", "title", "readDuration", "category"]).optional(),
   sortOrderDir: z.enum(["asc", "desc"]).optional(),
 });

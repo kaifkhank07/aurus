@@ -10,7 +10,7 @@ import CreateBlog from "./CreateBlog";
 import EditBlog from "./EditBlog";
 import BlogDetails from "./BlogDetails";
 import DeleteBlog from "./DeleteBlog";
-import { SafeBlog, BlogQueryParams } from "@/types/blog.types";
+import { SafeBlog, BlogQueryParams, BLOG_CATEGORIES, BLOG_CATEGORY_LABELS } from "@/types/blog.types";
 import { getMediaUrl } from "@/lib/media";
 
 const PAGE_LIMIT = 10;
@@ -22,6 +22,7 @@ export default function BlogManage() {
     isLoadingBlogs,
     blogsError,
     fetchBlogs,
+    updateBlog,
   } = useContentStore();
 
   // Dialog states
@@ -30,12 +31,17 @@ export default function BlogManage() {
   const [selectedBlogForDetails, setSelectedBlogForDetails] = useState<SafeBlog | null>(null);
   const [deletingBlog, setDeletingBlog] = useState<SafeBlog | null>(null);
 
-  // Search & Sorting state
+  // Search & Filter state
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [sortBy, setSortBy] = useState<"createdAt" | "title" | "updatedAt">("createdAt");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [sortBy, setSortBy] = useState<"createdAt" | "title" | "updatedAt" | "readDuration">("createdAt");
   const [sortOrderDir, setSortOrderDir] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Status toggle state
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   // Quick feedback toast
   const [feedback, setFeedback] = useState<{
@@ -77,9 +83,19 @@ export default function BlogManage() {
         params.search = debouncedSearch.trim();
       }
 
+      if (selectedCategory !== "all") {
+        params.category = selectedCategory;
+      }
+
+      if (statusFilter === "active") {
+        params.isActive = true;
+      } else if (statusFilter === "inactive") {
+        params.isActive = false;
+      }
+
       await fetchBlogs(params, force);
     },
-    [currentPage, debouncedSearch, sortBy, sortOrderDir, fetchBlogs]
+    [currentPage, debouncedSearch, selectedCategory, statusFilter, sortBy, sortOrderDir, fetchBlogs]
   );
 
   useEffect(() => {
@@ -94,9 +110,30 @@ export default function BlogManage() {
     }, 2000);
   };
 
+  const handleToggleStatus = async (blog: SafeBlog) => {
+    setTogglingId(blog.id);
+    const newStatus = !blog.isActive;
+    const res = await updateBlog(blog.id, { isActive: newStatus });
+    setTogglingId(null);
+
+    if (res.success) {
+      setFeedback({
+        type: "success",
+        message: `Article marked as ${newStatus ? "Active" : "Draft"}.`,
+      });
+    } else {
+      setFeedback({
+        type: "error",
+        message: res.message || "Failed to update article status.",
+      });
+    }
+  };
+
   const handleResetFilters = () => {
     setSearch("");
     setDebouncedSearch("");
+    setSelectedCategory("all");
+    setStatusFilter("all");
     setSortBy("createdAt");
     setSortOrderDir("desc");
     setCurrentPage(1);
@@ -105,10 +142,12 @@ export default function BlogManage() {
   const hasActiveFilters = useMemo(() => {
     return (
       search.trim().length > 0 ||
+      selectedCategory !== "all" ||
+      statusFilter !== "all" ||
       sortBy !== "createdAt" ||
       sortOrderDir !== "desc"
     );
-  }, [search, sortBy, sortOrderDir]);
+  }, [search, selectedCategory, statusFilter, sortBy, sortOrderDir]);
 
   const totalCount = blogsPagination?.total ?? blogs.length;
   const totalPages =
@@ -116,26 +155,24 @@ export default function BlogManage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Header with Title & Create Action */}
       <BlogHeader
-        title="Blog Posts & Articles"
-        sub="Publish, edit, and organize Aurus Journal lifestyle stories, packing guides, and hostel advice."
         totalCount={totalCount}
-        onRefresh={() => loadBlogData(true)}
         refreshing={isLoadingBlogs}
+        onRefresh={() => loadBlogData(true)}
         onCreateOpen={() => setCreateOpen(true)}
       />
 
-      {/* Feedback Toast */}
+      {/* Floating feedback alert */}
       {feedback && (
         <div
-          className={`p-3.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-3 shadow-sm transition-all duration-300 animate-in slide-in-from-top-2 ${
+          className={`p-4 rounded-xl border flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-top-2 duration-200 ${
             feedback.type === "success"
-              ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
-              : "bg-rose-50 border border-rose-200 text-rose-800"
+              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+              : "bg-rose-50 border-rose-200 text-rose-800"
           }`}
         >
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 text-xs font-semibold">
             <span
               className={`w-2 h-2 rounded-full ${
                 feedback.type === "success" ? "bg-emerald-500" : "bg-rose-500"
@@ -180,12 +217,43 @@ export default function BlogManage() {
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap">
+            {/* Category Filter */}
+            <select
+              value={selectedCategory}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300 transition cursor-pointer"
+            >
+              <option value="all">All Categories</option>
+              {BLOG_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {BLOG_CATEGORY_LABELS[cat]}
+                </option>
+              ))}
+            </select>
+
+            {/* Status Filter */}
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value as "all" | "active" | "inactive");
+                setCurrentPage(1);
+              }}
+              className="text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300 transition cursor-pointer"
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active Only</option>
+              <option value="inactive">Drafts Only</option>
+            </select>
+
             {/* Sort Dropdown */}
             <select
               value={`${sortBy}-${sortOrderDir}`}
               onChange={(e) => {
                 const [sb, sod] = e.target.value.split("-") as [
-                  "createdAt" | "title" | "updatedAt",
+                  "createdAt" | "title" | "updatedAt" | "readDuration",
                   "asc" | "desc"
                 ];
                 setSortBy(sb);
@@ -198,6 +266,8 @@ export default function BlogManage() {
               <option value="createdAt-asc">Oldest First</option>
               <option value="title-asc">Title (A → Z)</option>
               <option value="title-desc">Title (Z → A)</option>
+              <option value="readDuration-asc">Shortest Read</option>
+              <option value="readDuration-desc">Longest Read</option>
             </select>
 
             {/* Reset Filters */}
@@ -243,8 +313,10 @@ export default function BlogManage() {
               <tr className="border-b border-slate-200/80 bg-slate-50/75 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 <th className="py-3 px-4 w-20">Banner</th>
                 <th className="py-3 px-4">Article</th>
-                <th className="py-3 px-4 w-48">URL Slug</th>
-                <th className="py-3 px-4 w-40">Tags</th>
+                <th className="py-3 px-4 w-44">URL Slug</th>
+                <th className="py-3 px-4 w-32">Category</th>
+                <th className="py-3 px-4 w-24">Read Time</th>
+                <th className="py-3 px-4 w-24">Status</th>
                 <th className="py-3 px-4 w-28">Published</th>
                 <th className="py-3 px-4 text-right w-32">Actions</th>
               </tr>
@@ -252,7 +324,7 @@ export default function BlogManage() {
             <tbody className="divide-y divide-slate-100">
               {isLoadingBlogs && blogs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-14 text-center">
+                  <td colSpan={8} className="py-14 text-center">
                     <div className="flex flex-col items-center justify-center gap-2 text-slate-400">
                       <span className="inline-block animate-spin text-orange-500">
                         <Icon name="refresh" size={20} />
@@ -263,7 +335,7 @@ export default function BlogManage() {
                 </tr>
               ) : blogs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-14 text-center">
+                  <td colSpan={8} className="py-14 text-center">
                     <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto text-slate-400">
                       <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-1">
                         <Icon name="fileText" size={24} />
@@ -347,7 +419,7 @@ export default function BlogManage() {
                       {/* URL Slug */}
                       <td className="py-3 px-4 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-mono text-slate-700 text-[11px] truncate max-w-[140px]">
+                          <span className="font-mono text-slate-700 text-[11px] truncate max-w-[130px]">
                             /{blog.slug}
                           </span>
                           <button
@@ -365,27 +437,37 @@ export default function BlogManage() {
                         </div>
                       </td>
 
-                      {/* Tags */}
-                      <td className="py-3 px-4">
-                        {blog.tags && blog.tags.length > 0 ? (
-                          <div className="flex items-center gap-1 flex-wrap">
-                            {blog.tags.slice(0, 2).map((tag) => (
-                              <span
-                                key={tag}
-                                className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200"
-                              >
-                                #{tag}
-                              </span>
-                            ))}
-                            {blog.tags.length > 2 && (
-                              <span className="text-[10px] text-slate-400 font-bold">
-                                +{blog.tags.length - 2}
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-slate-400 text-[11px]">—</span>
-                        )}
+                      {/* Category */}
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                          {BLOG_CATEGORY_LABELS[blog.category] || blog.category}
+                        </span>
+                      </td>
+
+                      {/* Read Time */}
+                      <td className="py-3 px-4 text-slate-600 text-[11px] font-medium whitespace-nowrap">
+                        {blog.readDuration} min
+                      </td>
+
+                      {/* Active Status */}
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleStatus(blog)}
+                          disabled={togglingId === blog.id}
+                          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold border transition cursor-pointer ${
+                            blog.isActive
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                              : "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100"
+                          }`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              blog.isActive ? "bg-emerald-500" : "bg-rose-500"
+                            }`}
+                          />
+                          <span>{blog.isActive ? "Active" : "Draft"}</span>
+                        </button>
                       </td>
 
                       {/* Published Date */}
@@ -400,30 +482,30 @@ export default function BlogManage() {
                           <button
                             type="button"
                             onClick={() => setSelectedBlogForDetails(blog)}
-                            title="Preview article"
-                            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-orange-600 hover:bg-orange-50 hover:border-orange-200 transition cursor-pointer"
+                            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition cursor-pointer"
+                            title="View blog article details"
                           >
-                            <Icon name="eye" size={13} />
+                            <Icon name="eye" size={14} />
                           </button>
 
-                          {/* Edit */}
+                          {/* Edit Post */}
                           <button
                             type="button"
                             onClick={() => setEditingBlog(blog)}
-                            title="Edit article"
-                            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 hover:border-slate-300 transition cursor-pointer"
+                            className="p-1.5 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition cursor-pointer"
+                            title="Edit blog post"
                           >
-                            <Icon name="pen" size={13} />
+                            <Icon name="pen" size={14} />
                           </button>
 
-                          {/* Delete */}
+                          {/* Delete Post */}
                           <button
                             type="button"
                             onClick={() => setDeletingBlog(blog)}
-                            title="Delete article"
-                            className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition cursor-pointer"
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer"
+                            title="Delete blog post"
                           >
-                            <Icon name="trash" size={13} />
+                            <Icon name="trash" size={14} />
                           </button>
                         </div>
                       </td>
@@ -435,40 +517,28 @@ export default function BlogManage() {
           </table>
         </div>
 
-        {/* Pagination Footer */}
-        {totalCount > 0 && (
-          <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/40 text-xs text-slate-500">
-            <div>
-              Showing{" "}
-              <strong className="text-slate-800 font-semibold">
-                {Math.min(1 + (currentPage - 1) * PAGE_LIMIT, totalCount)}
-              </strong>{" "}
-              to{" "}
-              <strong className="text-slate-800 font-semibold">
-                {Math.min(currentPage * PAGE_LIMIT, totalCount)}
-              </strong>{" "}
-              of <strong className="text-slate-800 font-semibold">{totalCount}</strong> articles
-            </div>
+        {/* Pagination Bar */}
+        {totalPages > 1 && (
+          <div className="p-4 border-t border-slate-100 flex items-center justify-between text-xs bg-slate-50/50">
+            <span className="text-slate-500 font-medium">
+              Page <span className="font-bold text-slate-800">{currentPage}</span> of{" "}
+              <span className="font-bold text-slate-800">{totalPages}</span>
+            </span>
 
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage <= 1 || isLoadingBlogs}
-                className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                disabled={currentPage === 1 || isLoadingBlogs}
+                className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-medium"
               >
                 Previous
               </button>
-
-              <div className="px-3 py-1.5 font-bold text-slate-700 bg-slate-100 rounded-lg">
-                {currentPage} / {totalPages}
-              </div>
-
               <button
                 type="button"
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage >= totalPages || isLoadingBlogs}
-                className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 font-semibold transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-medium"
               >
                 Next
               </button>
@@ -477,7 +547,8 @@ export default function BlogManage() {
         )}
       </Card>
 
-      {/* Create Modal */}
+      {/* Dialog Modals */}
+      {/* 1. Create Modal */}
       {createOpen && (
         <CreateBlog
           open={createOpen}
@@ -485,14 +556,14 @@ export default function BlogManage() {
           onSuccess={() => {
             setFeedback({
               type: "success",
-              message: "Article published successfully to the Aurus Journal.",
+              message: "Article published successfully.",
             });
             loadBlogData(true);
           }}
         />
       )}
 
-      {/* Edit Modal */}
+      {/* 2. Edit Modal */}
       {editingBlog && (
         <EditBlog
           key={editingBlog.id}
@@ -509,7 +580,7 @@ export default function BlogManage() {
         />
       )}
 
-      {/* Details / Preview Modal */}
+      {/* 3. Details Modal */}
       {selectedBlogForDetails && (
         <BlogDetails
           open={!!selectedBlogForDetails}
@@ -528,7 +599,7 @@ export default function BlogManage() {
         />
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* 4. Delete Confirmation Modal */}
       {deletingBlog && (
         <DeleteBlog
           open={!!deletingBlog}
@@ -546,4 +617,3 @@ export default function BlogManage() {
     </div>
   );
 }
-

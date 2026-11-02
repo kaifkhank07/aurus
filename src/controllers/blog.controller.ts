@@ -34,7 +34,9 @@ function formatSafeBlog(doc: IBlogDocument): SafeBlog {
       url: doc.image?.url || getMediaUrl(doc.image?.publickey) || "",
       publickey: doc.image?.publickey || "",
     },
-    tags: doc.tags ?? [],
+    category: doc.category,
+    readDuration: doc.readDuration ?? 5,
+    isActive: doc.isActive ?? true,
     description: doc.description,
     metadata: doc.metadata
       ? {
@@ -110,14 +112,15 @@ export async function list(request: NextRequest): Promise<NextResponse> {
     });
 
     const validatedQuery = blogQuerySchema.parse(rawQuery);
-    const { page, limit, search, tag, sortBy, sortOrderDir } = validatedQuery;
+    const { page, limit, search, category, isActive, sortBy, sortOrderDir } = validatedQuery;
 
     logger.info("Listing blogs started", {
       operation,
       page,
       limit,
       search,
-      tag,
+      category,
+      isActive,
       sortBy,
       sortOrderDir,
     });
@@ -126,8 +129,12 @@ export async function list(request: NextRequest): Promise<NextResponse> {
 
     const filter: Record<string, unknown> = {};
 
-    if (tag) {
-      filter.tags = { $regex: new RegExp(`^${tag}$`, "i") };
+    if (category) {
+      filter.category = { $regex: new RegExp(`^${category.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") };
+    }
+
+    if (isActive !== undefined) {
+      filter.isActive = isActive;
     }
 
     if (search) {
@@ -136,7 +143,8 @@ export async function list(request: NextRequest): Promise<NextResponse> {
         { title: searchRegex },
         { subtitle: searchRegex },
         { slug: searchRegex },
-        { tags: searchRegex },
+        { category: searchRegex },
+        { description: searchRegex },
       ];
     }
 
@@ -209,7 +217,9 @@ export async function create(request: NextRequest): Promise<NextResponse> {
       slug,
       subtitle: validated.subtitle?.trim(),
       image: validated.image,
-      tags: validated.tags ?? [],
+      category: validated.category,
+      readDuration: validated.readDuration ?? 5,
+      isActive: validated.isActive ?? true,
       description: validated.description.trim(),
       metadata: validated.metadata ?? {},
     });
@@ -307,8 +317,16 @@ export async function update(
       blog.image = validated.image;
     }
 
-    if (validated.tags !== undefined) {
-      blog.tags = validated.tags;
+    if (validated.category !== undefined) {
+      blog.category = validated.category;
+    }
+
+    if (validated.readDuration !== undefined) {
+      blog.readDuration = validated.readDuration;
+    }
+
+    if (validated.isActive !== undefined) {
+      blog.isActive = validated.isActive;
     }
 
     if (validated.description !== undefined) {
@@ -377,3 +395,70 @@ export async function deleteBlog(
     return handleError(error, operation);
   }
 }
+
+/**
+ * GET /api/blogs
+ * Public endpoint to retrieve active blog posts with optional search, category filter, slug filter, and pagination
+ */
+export async function listPublic(request: NextRequest): Promise<NextResponse> {
+  const operation = "listPublic";
+  try {
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get("search")?.trim();
+    const category = searchParams.get("category")?.trim();
+    const slug = searchParams.get("slug")?.trim();
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20", 10) || 20));
+
+    await connectToDatabase();
+
+    const filter: Record<string, unknown> = { isActive: true };
+
+    if (slug) {
+      filter.slug = slug.toLowerCase().trim();
+    }
+
+    if (category) {
+      filter.category = { $regex: new RegExp(`^${category.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") };
+    }
+
+    if (search) {
+      const searchRegex = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      filter.$or = [
+        { title: searchRegex },
+        { subtitle: searchRegex },
+        { slug: searchRegex },
+        { category: searchRegex },
+        { description: searchRegex },
+      ];
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [total, blogDocs] = await Promise.all([
+      Blog.countDocuments(filter),
+      Blog.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+    ]);
+
+    const items = blogDocs.map(formatSafeBlog);
+    const totalPages = Math.ceil(total / limit) || 1;
+
+    return apiSuccess(
+      {
+        items,
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+      "Blogs retrieved successfully."
+    );
+  } catch (error) {
+    return handleError(error, operation);
+  }
+}
+

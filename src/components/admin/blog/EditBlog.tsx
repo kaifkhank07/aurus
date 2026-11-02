@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useContentStore } from "@/store/useContentStore";
 import { Btn, FormField, TextInput } from "../ui/AdminUI";
 import Icon from "../ui/AdminIcons";
-import { SafeBlog, UpdateBlogInput } from "@/types/blog.types";
+import { SafeBlog, UpdateBlogInput, BLOG_CATEGORIES, BLOG_CATEGORY_LABELS, BlogCategory } from "@/types/blog.types";
 import { getMediaUrl } from "@/lib/media";
 
 export interface EditBlogProps {
@@ -20,8 +20,9 @@ export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogPro
   const [title, setTitle] = useState(blog?.title || "");
   const [subtitle, setSubtitle] = useState(blog?.subtitle || "");
   const [description, setDescription] = useState(blog?.description || "");
-  const [tags, setTags] = useState<string[]>(blog?.tags || []);
-  const [tagInput, setTagInput] = useState("");
+  const [category, setCategory] = useState<BlogCategory>(blog?.category || "city guides");
+  const [readDuration, setReadDuration] = useState<number>(blog?.readDuration || 5);
+  const [isActive, setIsActive] = useState<boolean>(blog?.isActive ?? true);
 
   // Existing image from S3
   const existingImageUrl = getMediaUrl(blog?.image?.url || blog?.image?.publickey);
@@ -89,18 +90,6 @@ export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogPro
     }
   };
 
-  const handleAddTag = () => {
-    const trimmed = tagInput.trim().replace(/^#/, "");
-    if (trimmed && !tags.includes(trimmed)) {
-      setTags([...tags, trimmed]);
-      setTagInput("");
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter((t) => t !== tagToRemove));
-  };
-
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
 
@@ -112,6 +101,16 @@ export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogPro
 
     if (subtitle.trim().length > 300) {
       errors.subtitle = "Subtitle cannot exceed 300 characters.";
+    }
+
+    if (!category) {
+      errors.category = "Please select a category.";
+    }
+
+    if (!readDuration || readDuration < 1) {
+      errors.readDuration = "Read duration must be at least 1 minute.";
+    } else if (readDuration > 180) {
+      errors.readDuration = "Read duration cannot exceed 180 minutes.";
     }
 
     if (!description.trim()) {
@@ -149,8 +148,10 @@ export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogPro
       formData.append("title", title.trim());
       formData.append("subtitle", subtitle.trim());
       formData.append("description", description.trim());
+      formData.append("category", category);
+      formData.append("readDuration", String(readDuration));
+      formData.append("isActive", String(isActive));
       formData.append("image", selectedFile);
-      formData.append("tags", JSON.stringify(tags));
       formData.append("metadata", JSON.stringify(metadata));
 
       res = await updateBlog(blog.id, formData);
@@ -159,7 +160,9 @@ export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogPro
         title: title.trim(),
         subtitle: subtitle.trim() || undefined,
         description: description.trim(),
-        tags,
+        category,
+        readDuration,
+        isActive,
         metadata,
       };
       res = await updateBlog(blog.id, payload);
@@ -171,7 +174,7 @@ export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogPro
       onSuccess();
       onClose();
     } else {
-      setApiError(res.message || "Failed to update blog post. Please try again.");
+      setApiError(res.message || "Failed to update blog post.");
     }
   };
 
@@ -184,18 +187,16 @@ export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogPro
         }
       }}
     >
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] my-auto animate-in zoom-in-95 duration-200">
-        {/* Header */}
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/70">
+      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] my-auto animate-in zoom-in-95 duration-200">
+        {/* Modal Header */}
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
-              <Icon name="pen" size={18} />
+            <div className="w-10 h-10 rounded-xl bg-orange-100/70 text-orange-600 flex items-center justify-center shrink-0">
+              <Icon name="pen" size={17} />
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900 tracking-tight">Edit Blog Post</h3>
-              <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                Update article contents, cover banner, tags, or search metadata.
-              </p>
+              <p className="text-xs text-slate-500 font-medium">Update article details, cover, category, and metadata</p>
             </div>
           </div>
 
@@ -219,10 +220,10 @@ export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogPro
             </div>
           )}
 
-          {/* Cover Image Upload / Replacement */}
+          {/* Cover Image Section */}
           <FormField
             label="Cover Image"
-            hint="Replace current banner or leave as is (JPEG, PNG, WebP up to 10MB)."
+            hint="Leave unchanged to keep the existing banner, or upload a new image to replace it."
             error={clientErrors.image}
           >
             {previewUrl ? (
@@ -236,24 +237,29 @@ export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogPro
                   className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-slate-900/80 hover:bg-slate-900 text-white text-xs font-semibold backdrop-blur-xs flex items-center gap-1.5 transition cursor-pointer"
                 >
                   <Icon name="x" size={12} />
-                  <span>Revert Image</span>
+                  <span>Remove New Image</span>
                 </button>
               </div>
             ) : existingImageUrl ? (
-              <div className="relative w-full h-44 rounded-xl border border-slate-200 bg-slate-50 overflow-hidden group">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={existingImageUrl} alt={blog.title} className="w-full h-full object-cover" />
-                <label className="absolute bottom-2.5 right-2.5 px-3 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-900 text-white text-xs font-semibold backdrop-blur-xs flex items-center gap-1.5 transition cursor-pointer shadow-sm">
-                  <Icon name="pen" size={12} />
-                  <span>Change Cover Image</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    disabled={isSubmitting}
-                    className="hidden"
-                  />
-                </label>
+              <div className="space-y-3">
+                <div className="relative w-full h-44 rounded-xl border border-slate-200 bg-slate-50 overflow-hidden group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={existingImageUrl} alt={blog.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <label className="px-3 py-1.5 rounded-xl bg-white text-slate-800 text-xs font-bold shadow-lg hover:bg-slate-100 cursor-pointer flex items-center gap-1.5 transition">
+                      <Icon name="upload" size={13} />
+                      <span>Replace Cover</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        disabled={isSubmitting}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-400 font-medium">Hover over the image to replace it with a new file.</p>
               </div>
             ) : (
               <label className="border-2 border-dashed border-slate-200 hover:border-orange-400 hover:bg-orange-50/20 rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors group">
@@ -278,7 +284,7 @@ export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogPro
           {/* Title */}
           <FormField
             label="Article Title *"
-            hint="Clear, engaging title for the blog post."
+            hint="Updating the title will automatically recalculate the URL slug."
             error={clientErrors.title}
           >
             <TextInput
@@ -294,7 +300,7 @@ export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogPro
           {/* Subtitle */}
           <FormField
             label="Subtitle / Summary (Optional)"
-            hint="Short preview description displayed on cards."
+            hint="Short summary displayed on cards."
             error={clientErrors.subtitle}
           >
             <TextInput
@@ -307,58 +313,72 @@ export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogPro
             />
           </FormField>
 
-          {/* Tags */}
-          <FormField
-            label="Tags & Topics"
-            hint="Add keyword tags to categorize the post."
-          >
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <TextInput
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleAddTag();
-                    }
-                  }}
-                  placeholder="Type a tag and press Add…"
-                  disabled={isSubmitting}
-                  className="flex-1"
-                />
-                <Btn
-                  variant="ghost"
-                  size="md"
-                  onClick={handleAddTag}
-                  disabled={!tagInput.trim() || isSubmitting}
-                >
-                  <Icon name="plus" size={13} />
-                  <span>Add Tag</span>
-                </Btn>
-              </div>
+          {/* Category & Read Duration Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField
+              label="Category *"
+              hint="Select the single category for this post."
+              error={clientErrors.category}
+            >
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as BlogCategory)}
+                disabled={isSubmitting}
+                className={`w-full px-3.5 py-2.5 bg-white border ${
+                  clientErrors.category
+                    ? "border-rose-400 focus:ring-rose-500/20"
+                    : "border-slate-200 focus:ring-slate-400/20"
+                } rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 transition-all cursor-pointer`}
+              >
+                {BLOG_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {BLOG_CATEGORY_LABELS[cat]}
+                  </option>
+                ))}
+              </select>
+            </FormField>
 
-              {tags.length > 0 && (
-                <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                  {tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200"
-                    >
-                      <span>#{tag}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveTag(tag)}
-                        className="text-slate-400 hover:text-slate-700 cursor-pointer ml-0.5"
-                      >
-                        <Icon name="x" size={11} />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
+            <FormField
+              label="Read Duration (in minutes) *"
+              hint="Estimated reading time in minutes."
+              error={clientErrors.readDuration}
+            >
+              <TextInput
+                type="number"
+                min={1}
+                max={180}
+                value={String(readDuration)}
+                onChange={(e) => setReadDuration(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                placeholder="5"
+                error={!!clientErrors.readDuration}
+                disabled={isSubmitting}
+              />
+            </FormField>
+          </div>
+
+          {/* Active Status Checkbox */}
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+            <div>
+              <span className="text-xs font-bold text-slate-800 block">
+                Publishing Status
+              </span>
+              <span className="text-[11px] text-slate-500">
+                {isActive
+                  ? "Article is active and publicly visible."
+                  : "Article is inactive (saved as draft)."}
+              </span>
             </div>
-          </FormField>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isActive}
+                onChange={(e) => setIsActive(e.target.checked)}
+                disabled={isSubmitting}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+            </label>
+          </div>
 
           {/* Content / Description */}
           <FormField
@@ -380,47 +400,52 @@ export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogPro
             />
           </FormField>
 
-          {/* SEO Metadata Collapsible */}
-          <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/40">
+          {/* SEO Metadata Accordion */}
+          <div className="border border-slate-200/90 rounded-xl overflow-hidden bg-slate-50/50">
             <button
               type="button"
               onClick={() => setShowSeo(!showSeo)}
-              className="w-full px-4 py-3 flex items-center justify-between text-left text-xs font-bold text-slate-700 hover:bg-slate-100/60 transition cursor-pointer"
+              className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-slate-50 transition cursor-pointer"
             >
-              <div className="flex items-center gap-2">
-                <Icon name="flag" size={13} className="text-slate-400" />
-                <span>SEO & Search Engine Metadata</span>
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
+                <Icon name="search" size={13} />
+                <span>Search Engine Optimization (SEO Metadata)</span>
               </div>
-              <span className={`transform transition-transform duration-200 ${showSeo ? "rotate-180" : ""}`}>
-                <Icon name="chev" size={12} />
+              <span className="text-slate-400 text-xs">
+                {showSeo ? "▲ Collapse" : "▼ Expand"}
               </span>
             </button>
 
             {showSeo && (
-              <div className="p-4 border-t border-slate-200 space-y-3.5 bg-white">
-                <FormField label="Meta Title" hint="Overrides article title in Google search results.">
+              <div className="p-4 pt-2 border-t border-slate-100 bg-white space-y-3.5">
+                <FormField label="Meta Title" hint="Custom title tag for search engines.">
                   <TextInput
                     value={metaTitle}
                     onChange={(e) => setMetaTitle(e.target.value)}
-                    placeholder="Search engine optimized title…"
+                    placeholder="SEO title…"
                     disabled={isSubmitting}
                   />
                 </FormField>
 
-                <FormField label="Meta Description" hint="Snippet shown beneath search engine results.">
-                  <TextInput
+                <FormField label="Meta Description" hint="Search snippet description.">
+                  <textarea
+                    rows={3}
                     value={metaDescription}
                     onChange={(e) => setMetaDescription(e.target.value)}
-                    placeholder="Short description for search preview…"
+                    placeholder="Search snippet description…"
                     disabled={isSubmitting}
+                    className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 text-xs focus:outline-none focus:ring-2 focus:ring-slate-400/20 transition-all"
                   />
                 </FormField>
 
-                <FormField label="Meta Keywords" hint="Comma-separated keywords for SEO indexing.">
+                <FormField
+                  label="Keywords (Comma separated)"
+                  hint="e.g. student housing, packing tips, mumbai hostel"
+                >
                   <TextInput
                     value={metaKeywordsInput}
                     onChange={(e) => setMetaKeywordsInput(e.target.value)}
-                    placeholder="e.g. aurus hostel, co-living bangalore, student accommodation"
+                    placeholder="hostel tips, student life"
                     disabled={isSubmitting}
                   />
                 </FormField>
@@ -429,15 +454,15 @@ export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogPro
           </div>
         </form>
 
-        {/* Footer */}
-        <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5 shrink-0">
+        {/* Modal Footer */}
+        <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-end gap-3 shrink-0">
           <Btn variant="ghost" size="md" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Btn>
           <Btn variant="brand" size="md" onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? (
               <>
-                <span className="inline-block animate-spin">
+                <span className="inline-block animate-spin mr-1.5">
                   <Icon name="refresh" size={13} />
                 </span>
                 <span>Saving…</span>
@@ -454,4 +479,3 @@ export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogPro
     </div>
   );
 }
-

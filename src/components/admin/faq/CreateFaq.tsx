@@ -199,7 +199,7 @@ export default function CreateFaq({
         }
       }}
     >
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200">
+      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <div className="flex items-center gap-3">
@@ -236,11 +236,10 @@ export default function CreateFaq({
                 <button
                   type="button"
                   onClick={() => setMode("batch")}
-                  className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    mode === "batch"
+                  className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${mode === "batch"
                       ? "bg-white text-orange-600 shadow-xs"
                       : "text-slate-600 hover:text-slate-900"
-                  }`}
+                    }`}
                 >
                   <Icon name="flow" size={13} />
                   <span>Multiple for Category (Batch)</span>
@@ -248,11 +247,10 @@ export default function CreateFaq({
                 <button
                   type="button"
                   onClick={() => setMode("single")}
-                  className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    mode === "single"
+                  className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${mode === "single"
                       ? "bg-white text-orange-600 shadow-xs"
                       : "text-slate-600 hover:text-slate-900"
-                  }`}
+                    }`}
                 >
                   <Icon name="fileText" size={13} />
                   <span>Single FAQ</span>
@@ -507,8 +505,8 @@ export default function CreateFaq({
                   {isSubmitting
                     ? "Saving…"
                     : mode === "batch"
-                    ? `Save FAQs for ${FAQ_CATEGORY_LABELS[category]}`
-                    : "Save FAQ"}
+                      ? `Save FAQs for ${FAQ_CATEGORY_LABELS[category]}`
+                      : "Save FAQ"}
                 </span>
               </Btn>
             </div>

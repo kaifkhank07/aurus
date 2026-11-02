@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import axios from "axios";
 import { adminApiClient } from "@/lib/admin-api";
+import { publicApiClient } from "@/lib/public-api";
 import { ApiResponse, PaginationMeta } from "@/types/general.types";
 import {
   SafeBlog,
@@ -8,6 +9,8 @@ import {
   UpdateBlogInput,
   BlogQueryParams,
   PaginatedBlogsResult,
+  PublicBlogQueryParams,
+  PublicBlogsResult,
 } from "@/types/blog.types";
 import {
   SafeStory,
@@ -15,6 +18,8 @@ import {
   UpdateStoryInput,
   StoryQueryParams,
   PaginatedStoriesResult,
+  PublicStoryQueryParams,
+  PublicStoriesResult,
 } from "@/types/story.types";
 import {
   SafeFaq,
@@ -23,6 +28,9 @@ import {
   BulkUpdateFaqItem,
   FaqQueryParams,
   PaginatedFaqsResult,
+  PublicFaqQueryParams,
+  PublicFaqsResult,
+  GroupedFaqCategory,
 } from "@/types/faq.types";
 
 /**
@@ -62,17 +70,42 @@ export interface ContentState {
   isLoadingBlogs: boolean;
   blogsError: string | null;
 
+  // ── Public Blog Module State ──
+  publicBlogs: SafeBlog[];
+  publicBlogsPagination: PaginationMeta | null;
+  isLoadingPublicBlogs: boolean;
+  publicBlogsError: string | null;
+
+  // ── Latest Blog Module State (Limit 3) ──
+  latestBlogs: SafeBlog[];
+  latestBlogsPagination: PaginationMeta | null;
+  isLoadingLatestBlogs: boolean;
+  latestBlogsError: string | null;
+
   // ── Story Module State ──
   stories: SafeStory[];
   storiesPagination: PaginationMeta | null;
   isLoadingStories: boolean;
   storiesError: string | null;
 
+  // ── Public Story Module State ──
+  publicStories: SafeStory[];
+  publicStoriesPagination: PaginationMeta | null;
+  isLoadingPublicStories: boolean;
+  publicStoriesError: string | null;
+
   // ── FAQ Module State ──
   faqs: SafeFaq[];
   faqsPagination: PaginationMeta | null;
   isLoadingFaqs: boolean;
   faqsError: string | null;
+
+  // ── Public FAQ Module State ──
+  publicFaqs: SafeFaq[];
+  publicFaqCategories: GroupedFaqCategory[];
+  publicFaqsTotal: number;
+  isLoadingPublicFaqs: boolean;
+  publicFaqsError: string | null;
 
   // ── Global Mutation State ──
   isMutating: boolean;
@@ -86,6 +119,17 @@ export interface ContentState {
     params?: Partial<BlogQueryParams>,
     force?: boolean
   ) => Promise<{ success: boolean; data?: PaginatedBlogsResult; message?: string }>;
+  fetchPublicBlogs: (
+    params?: Partial<PublicBlogQueryParams>,
+    force?: boolean
+  ) => Promise<{ success: boolean; data?: PublicBlogsResult; message?: string }>;
+  fetchLatestBlogs: (
+    params?: Partial<PublicBlogQueryParams>,
+    force?: boolean
+  ) => Promise<{ success: boolean; data?: PublicBlogsResult; message?: string }>;
+  getPublicBlogBySlug: (
+    slug: string
+  ) => Promise<{ success: boolean; data?: SafeBlog; message?: string }>;
   getBlogById: (
     id: string
   ) => Promise<{ success: boolean; data?: SafeBlog; message?: string }>;
@@ -105,6 +149,10 @@ export interface ContentState {
     params?: Partial<StoryQueryParams>,
     force?: boolean
   ) => Promise<{ success: boolean; data?: PaginatedStoriesResult; message?: string }>;
+  fetchPublicStories: (
+    params?: Partial<PublicStoryQueryParams>,
+    force?: boolean
+  ) => Promise<{ success: boolean; data?: PublicStoriesResult; message?: string }>;
   getStoryById: (
     id: string
   ) => Promise<{ success: boolean; data?: SafeStory; message?: string }>;
@@ -124,6 +172,10 @@ export interface ContentState {
     params?: Partial<FaqQueryParams>,
     force?: boolean
   ) => Promise<{ success: boolean; data?: PaginatedFaqsResult; message?: string }>;
+  fetchPublicFaqs: (
+    params?: Partial<PublicFaqQueryParams>,
+    force?: boolean
+  ) => Promise<{ success: boolean; data?: PublicFaqsResult; message?: string }>;
   getFaqById: (
     id: string
   ) => Promise<{ success: boolean; data?: SafeFaq; message?: string }>;
@@ -160,22 +212,43 @@ function getInFlight<T>(key: string, fn: () => Promise<T>): Promise<T> {
   return promise;
 }
 
-export const useContentStore = create<ContentState>((set) => ({
+export const useContentStore = create<ContentState>((set, get) => ({
   // Initial States
   blogs: [],
   blogsPagination: null,
   isLoadingBlogs: false,
   blogsError: null,
 
+  publicBlogs: [],
+  publicBlogsPagination: null,
+  isLoadingPublicBlogs: false,
+  publicBlogsError: null,
+
+  latestBlogs: [],
+  latestBlogsPagination: null,
+  isLoadingLatestBlogs: false,
+  latestBlogsError: null,
+
   stories: [],
   storiesPagination: null,
   isLoadingStories: false,
   storiesError: null,
 
+  publicStories: [],
+  publicStoriesPagination: null,
+  isLoadingPublicStories: false,
+  publicStoriesError: null,
+
   faqs: [],
   faqsPagination: null,
   isLoadingFaqs: false,
   faqsError: null,
+
+  publicFaqs: [],
+  publicFaqCategories: [],
+  publicFaqsTotal: 0,
+  isLoadingPublicFaqs: false,
+  publicFaqsError: null,
 
   isMutating: false,
   error: null,
@@ -184,8 +257,12 @@ export const useContentStore = create<ContentState>((set) => ({
     set({
       error: null,
       blogsError: null,
+      publicBlogsError: null,
+      latestBlogsError: null,
       storiesError: null,
+      publicStoriesError: null,
       faqsError: null,
+      publicFaqsError: null,
     }),
 
   // =========================================================================
@@ -228,6 +305,170 @@ export const useContentStore = create<ContentState>((set) => ({
         return { success: false, message: msg };
       }
     });
+  },
+
+  fetchPublicBlogs: async (params = {}, force = false) => {
+    const key = `public_blogs_${JSON.stringify(params)}`;
+    if (!force && inFlightRequests.has(key)) {
+      return inFlightRequests.get(key) as Promise<{
+        success: boolean;
+        data?: PublicBlogsResult;
+        message?: string;
+      }>;
+    }
+
+    set({ isLoadingPublicBlogs: true, publicBlogsError: null });
+
+    return getInFlight(key, async () => {
+      try {
+        const res = await publicApiClient.get<ApiResponse<PublicBlogsResult>>("/api/blogs", {
+          params,
+        });
+
+        if (res.data.success && res.data.data) {
+          const rawData = res.data.data;
+          const items = (rawData.items || []).map((item: any) => ({
+            ...item,
+            id: item.id || (item._id ? String(item._id) : ""),
+            _id: item._id ? String(item._id) : item.id,
+          }));
+
+          const pagination: PaginationMeta = {
+            total: rawData.total ?? items.length,
+            page: rawData.page ?? 1,
+            limit: rawData.limit ?? (items.length || 20),
+            totalPages: rawData.totalPages ?? 1,
+            hasNextPage: (rawData.page ?? 1) < (rawData.totalPages ?? 1),
+            hasPrevPage: (rawData.page ?? 1) > 1,
+          };
+
+          set({
+            publicBlogs: items,
+            publicBlogsPagination: pagination,
+            latestBlogs: get().latestBlogs.length === 0 ? items.slice(0, 3) : get().latestBlogs,
+            isLoadingPublicBlogs: false,
+            publicBlogsError: null,
+          });
+
+          return {
+            success: true,
+            data: {
+              ...rawData,
+              items,
+              pagination,
+            },
+            message: res.data.message,
+          };
+        }
+
+        const msg = res.data.message || "Failed to load public blogs.";
+        set({ isLoadingPublicBlogs: false, publicBlogsError: msg });
+        return { success: false, message: msg };
+      } catch (err) {
+        const msg = extractErrorMessage(err, "Failed to load public blogs from server.");
+        set({ isLoadingPublicBlogs: false, publicBlogsError: msg });
+        return { success: false, message: msg };
+      }
+    });
+  },
+
+  fetchLatestBlogs: async (params = {}, force = false) => {
+    const queryParams: Partial<PublicBlogQueryParams> = {
+      ...params,
+      limit: 3,
+    };
+    const key = `latest_blogs_${JSON.stringify(queryParams)}`;
+    if (!force && inFlightRequests.has(key)) {
+      return inFlightRequests.get(key) as Promise<{
+        success: boolean;
+        data?: PublicBlogsResult;
+        message?: string;
+      }>;
+    }
+
+    set({ isLoadingLatestBlogs: true, latestBlogsError: null });
+
+    return getInFlight(key, async () => {
+      try {
+        const res = await publicApiClient.get<ApiResponse<PublicBlogsResult>>("/api/blogs", {
+          params: queryParams,
+        });
+
+        if (res.data.success && res.data.data) {
+          const rawData = res.data.data;
+          const items = (rawData.items || []).slice(0, 3).map((item: any) => ({
+            ...item,
+            id: item.id || (item._id ? String(item._id) : ""),
+            _id: item._id ? String(item._id) : item.id,
+          }));
+
+          const pagination: PaginationMeta = {
+            total: rawData.total ?? items.length,
+            page: rawData.page ?? 1,
+            limit: 3,
+            totalPages: rawData.totalPages ?? 1,
+            hasNextPage: (rawData.page ?? 1) < (rawData.totalPages ?? 1),
+            hasPrevPage: (rawData.page ?? 1) > 1,
+          };
+
+          set({
+            latestBlogs: items,
+            latestBlogsPagination: pagination,
+            isLoadingLatestBlogs: false,
+            latestBlogsError: null,
+          });
+
+          return {
+            success: true,
+            data: {
+              ...rawData,
+              items,
+              pagination,
+            },
+            message: res.data.message,
+          };
+        }
+
+        const msg = res.data.message || "Failed to load latest blogs.";
+        set({ isLoadingLatestBlogs: false, latestBlogsError: msg });
+        return { success: false, message: msg };
+      } catch (err) {
+        const msg = extractErrorMessage(err, "Failed to load latest blogs from server.");
+        set({ isLoadingLatestBlogs: false, latestBlogsError: msg });
+        return { success: false, message: msg };
+      }
+    });
+  },
+
+  getPublicBlogBySlug: async (slug: string) => {
+    try {
+      const state = get();
+      const existing =
+        state.publicBlogs.find((b: SafeBlog) => b.slug.toLowerCase() === slug.toLowerCase()) ||
+        state.latestBlogs.find((b: SafeBlog) => b.slug.toLowerCase() === slug.toLowerCase()) ||
+        state.blogs.find((b: SafeBlog) => b.slug.toLowerCase() === slug.toLowerCase());
+      if (existing) {
+        return { success: true, data: existing };
+      }
+
+      const res = await publicApiClient.get<ApiResponse<PublicBlogsResult>>("/api/blogs", {
+        params: { slug },
+      });
+
+      if (res.data.success && res.data.data?.items?.length) {
+        const raw = res.data.data.items[0];
+        const item: SafeBlog = {
+          ...raw,
+          id: raw.id || ((raw as any)._id ? String((raw as any)._id) : ""),
+        };
+        return { success: true, data: item, message: res.data.message };
+      }
+
+      return { success: false, message: res.data.message || "Blog not found." };
+    } catch (err) {
+      const msg = extractErrorMessage(err, "Failed to fetch blog by slug.");
+      return { success: false, message: msg };
+    }
   },
 
   getBlogById: async (id: string) => {
@@ -379,6 +620,70 @@ export const useContentStore = create<ContentState>((set) => ({
     });
   },
 
+  fetchPublicStories: async (params = {}, force = false) => {
+    const key = `public_stories_${JSON.stringify(params)}`;
+    if (!force && inFlightRequests.has(key)) {
+      return inFlightRequests.get(key) as Promise<{
+        success: boolean;
+        data?: PublicStoriesResult;
+        message?: string;
+      }>;
+    }
+
+    set({ isLoadingPublicStories: true, publicStoriesError: null });
+
+    return getInFlight(key, async () => {
+      try {
+        const res = await publicApiClient.get<ApiResponse<PublicStoriesResult>>("/api/stories", {
+          params,
+        });
+
+        if (res.data.success && res.data.data) {
+          const rawData = res.data.data;
+          const items = (rawData.items || []).map((item: any) => ({
+            ...item,
+            id: item.id || (item._id ? String(item._id) : ""),
+            _id: item._id ? String(item._id) : item.id,
+          }));
+
+          const pagination: PaginationMeta = {
+            total: rawData.total ?? items.length,
+            page: rawData.page ?? 1,
+            limit: rawData.limit ?? (items.length || 20),
+            totalPages: rawData.totalPages ?? 1,
+            hasNextPage: (rawData.page ?? 1) < (rawData.totalPages ?? 1),
+            hasPrevPage: (rawData.page ?? 1) > 1,
+          };
+
+          set({
+            publicStories: items,
+            publicStoriesPagination: pagination,
+            isLoadingPublicStories: false,
+            publicStoriesError: null,
+          });
+
+          return {
+            success: true,
+            data: {
+              ...rawData,
+              items,
+              pagination,
+            },
+            message: res.data.message,
+          };
+        }
+
+        const msg = res.data.message || "Failed to load public stories.";
+        set({ isLoadingPublicStories: false, publicStoriesError: msg });
+        return { success: false, message: msg };
+      } catch (err) {
+        const msg = extractErrorMessage(err, "Failed to load public stories from server.");
+        set({ isLoadingPublicStories: false, publicStoriesError: msg });
+        return { success: false, message: msg };
+      }
+    });
+  },
+
   getStoryById: async (id: string) => {
     try {
       const res = await adminApiClient.get<ApiResponse<{ story: SafeStory }>>(`/stories/${id}`);
@@ -489,7 +794,6 @@ export const useContentStore = create<ContentState>((set) => ({
   // ──────────────────────────────────────────────
   // FAQ Module Implementations
   // ──────────────────────────────────────────────
-
   fetchFaqs: async (params = {}, force = false) => {
     const serializedKey = `faqs-${JSON.stringify(params)}`;
 
@@ -529,6 +833,65 @@ export const useContentStore = create<ContentState>((set) => ({
     };
 
     return getInFlight(serializedKey, fetcher);
+  },
+
+  fetchPublicFaqs: async (params = {}, force = false) => {
+    const key = `public_faqs_${JSON.stringify(params)}`;
+    if (!force && inFlightRequests.has(key)) {
+      return inFlightRequests.get(key) as Promise<{
+        success: boolean;
+        data?: PublicFaqsResult;
+        message?: string;
+      }>;
+    }
+
+    set({ isLoadingPublicFaqs: true, publicFaqsError: null });
+
+    return getInFlight(key, async () => {
+      try {
+        const res = await publicApiClient.get<ApiResponse<PublicFaqsResult>>("/api/faqs", {
+          params,
+        });
+
+        if (res.data.success && res.data.data) {
+          const rawData = res.data.data;
+          const faqs = (rawData.faqs || []).map((f: any) => ({
+            ...f,
+            id: f.id || (f._id ? String(f._id) : ""),
+            _id: f._id ? String(f._id) : f.id,
+          }));
+          const categories = rawData.categories || [];
+          const total = rawData.total ?? (faqs.length || 0);
+
+          set({
+            publicFaqs: faqs,
+            publicFaqCategories: categories,
+            publicFaqsTotal: total,
+            isLoadingPublicFaqs: false,
+            publicFaqsError: null,
+          });
+
+          return {
+            success: true,
+            data: {
+              ...rawData,
+              faqs,
+              categories,
+              total,
+            },
+            message: res.data.message,
+          };
+        }
+
+        const msg = res.data.message || "Failed to load public FAQs.";
+        set({ isLoadingPublicFaqs: false, publicFaqsError: msg });
+        return { success: false, message: msg };
+      } catch (err) {
+        const msg = extractErrorMessage(err, "Failed to load public FAQs from server.");
+        set({ isLoadingPublicFaqs: false, publicFaqsError: msg });
+        return { success: false, message: msg };
+      }
+    });
   },
 
   getFaqById: async (id: string) => {

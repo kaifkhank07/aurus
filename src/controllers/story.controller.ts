@@ -375,3 +375,66 @@ export async function deleteStory(
     return handleError(error, operation);
   }
 }
+
+/**
+ * GET /api/stories
+ * Public endpoint to retrieve active stories with optional search, isFeatured filter, and pagination
+ */
+export async function listPublic(request: NextRequest): Promise<NextResponse> {
+  const operation = "listPublic";
+  try {
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get("search")?.trim();
+    const isFeaturedParam = searchParams.get("isFeatured");
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20", 10) || 20));
+
+    await connectToDatabase();
+
+    const filter: Record<string, unknown> = { isActive: true };
+
+    if (isFeaturedParam === "true") {
+      filter.isFeatured = true;
+    } else if (isFeaturedParam === "false") {
+      filter.isFeatured = false;
+    }
+
+    if (search) {
+      const searchRegex = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      filter.$or = [
+        { name: searchRegex },
+        { profession: searchRegex },
+        { location: searchRegex },
+        { description: searchRegex },
+      ];
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [total, storyDocs] = await Promise.all([
+      Story.countDocuments(filter),
+      Story.find(filter)
+        .sort({ isFeatured: -1, createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+    ]);
+
+    const items = storyDocs.map(formatSafeStory);
+    const totalPages = Math.ceil(total / limit) || 1;
+
+    return apiSuccess(
+      {
+        items,
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+      "Stories retrieved successfully."
+    );
+  } catch (error) {
+    return handleError(error, operation);
+  }
+}
+

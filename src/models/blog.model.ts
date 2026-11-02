@@ -1,12 +1,15 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 import { IFileOption, ISeoMetadata } from "@/types/general.types";
+import { BLOG_CATEGORIES, BlogCategory } from "@/types/blog.types";
 
 export interface IBlogDocument extends Document {
   title: string;
   slug: string;
   subtitle?: string;
   image: IFileOption;
-  tags: string[];
+  category: BlogCategory;
+  readDuration: number;
+  isActive: boolean;
   description: string;
   metadata?: ISeoMetadata;
   createdAt: Date;
@@ -55,9 +58,27 @@ const BlogSchema = new Schema<IBlogDocument>(
       type: BlogImageSchema,
       required: [true, "Blog primary image is required"],
     },
-    tags: {
-      type: [String],
-      default: [],
+    category: {
+      type: String,
+      enum: {
+        values: BLOG_CATEGORIES,
+        message: "Invalid blog category: `{VALUE}`. Allowed categories: " + BLOG_CATEGORIES.join(", "),
+      },
+      required: [true, "Blog category is required"],
+      trim: true,
+      lowercase: true,
+      index: true,
+    },
+    readDuration: {
+      type: Number,
+      required: [true, "Read duration is required"],
+      min: [1, "Read duration must be at least 1 minute"],
+      max: [180, "Read duration cannot exceed 180 minutes"],
+      default: 5,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
       index: true,
     },
     description: {
@@ -77,6 +98,8 @@ const BlogSchema = new Schema<IBlogDocument>(
 
 // Indexes
 BlogSchema.index({ createdAt: -1 });
+BlogSchema.index({ isActive: 1, createdAt: -1 });
+BlogSchema.index({ isActive: 1, category: 1 });
 
 if (process.env.NODE_ENV !== "production" && mongoose.models.Blog) {
   mongoose.deleteModel("Blog");

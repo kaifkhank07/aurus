@@ -144,56 +144,6 @@ export default function FaqDetails({ open, faq, onClose, onEdit }: FaqDetailsPro
 
         {/* Content Body */}
         <div className="p-6 overflow-y-auto space-y-6">
-          {/* Status Bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
-            <div>
-              <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-0.5">
-                Status
-              </span>
-              <span
-                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold ${
-                  faq.isActive
-                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                    : "bg-rose-50 text-rose-700 border border-rose-200"
-                }`}
-              >
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    faq.isActive ? "bg-emerald-500" : "bg-rose-500"
-                  }`}
-                />
-                {faq.isActive ? "Published (Active)" : "Draft (Inactive)"}
-              </span>
-            </div>
-
-            <div>
-              <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-0.5">
-                Sort Order
-              </span>
-              <span className="text-xs font-bold text-slate-800 font-mono">
-                #{faq.sortOrder}
-              </span>
-            </div>
-
-            <div>
-              <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-0.5">
-                Created
-              </span>
-              <span className="text-xs font-medium text-slate-600 truncate block">
-                {formattedCreated}
-              </span>
-            </div>
-
-            <div>
-              <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-0.5">
-                Last Updated
-              </span>
-              <span className="text-xs font-medium text-slate-600 truncate block">
-                {formattedUpdated}
-              </span>
-            </div>
-          </div>
-
           {/* Question Section */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -254,10 +204,52 @@ export default function FaqDetails({ open, faq, onClose, onEdit }: FaqDetailsPro
             </div>
           </div>
 
-          {/* Technical Metadata */}
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-mono">
-            <span>ID: {faq.id}</span>
-            <span>Category: {faq.category}</span>
+          {/* Status Bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+            <div>
+              <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-0.5">
+                Status
+              </span>
+              <span
+                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold ${faq.isActive
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  : "bg-rose-50 text-rose-700 border border-rose-200"
+                  }`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${faq.isActive ? "bg-emerald-500" : "bg-rose-500"
+                    }`}
+                />
+                {faq.isActive ? "Published (Active)" : "Draft (Inactive)"}
+              </span>
+            </div>
+
+            <div>
+              <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-0.5">
+                Sort Order
+              </span>
+              <span className="text-xs font-bold text-slate-800 font-mono">
+                #{faq.sortOrder}
+              </span>
+            </div>
+
+            <div>
+              <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-0.5">
+                Created
+              </span>
+              <span className="text-xs font-medium text-slate-600 truncate block">
+                {formattedCreated}
+              </span>
+            </div>
+
+            <div>
+              <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-0.5">
+                Last Updated
+              </span>
+              <span className="text-xs font-medium text-slate-600 truncate block">
+                {formattedUpdated}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -266,6 +258,7 @@ export default function FaqDetails({ open, faq, onClose, onEdit }: FaqDetailsPro
           <Btn variant="ghost" size="sm" onClick={onClose}>
             Close
           </Btn>
+          
           {onEdit && (
             <Btn
               variant="brand"

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useContentStore } from "@/store/useContentStore";
 import { Btn, FormField, TextInput } from "../ui/AdminUI";
 import Icon from "../ui/AdminIcons";
+import { BLOG_CATEGORIES, BLOG_CATEGORY_LABELS, BlogCategory } from "@/types/blog.types";
 
 export interface CreateBlogProps {
   open: boolean;
@@ -17,10 +18,9 @@ export default function CreateBlog({ open, onClose, onSuccess }: CreateBlogProps
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [description, setDescription] = useState("");
-
-  // Tags
-  const [tagInput, setTagInput] = useState("");
-  const [tags, setTags] = useState<string[]>([]);
+  const [category, setCategory] = useState<BlogCategory>("city guides");
+  const [readDuration, setReadDuration] = useState<number>(5);
+  const [isActive, setIsActive] = useState<boolean>(true);
 
   // Cover Image
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -83,18 +83,6 @@ export default function CreateBlog({ open, onClose, onSuccess }: CreateBlogProps
     }
   };
 
-  const handleAddTag = () => {
-    const trimmed = tagInput.trim().replace(/^#/, "");
-    if (trimmed && !tags.includes(trimmed)) {
-      setTags([...tags, trimmed]);
-      setTagInput("");
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter((t) => t !== tagToRemove));
-  };
-
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
 
@@ -110,6 +98,16 @@ export default function CreateBlog({ open, onClose, onSuccess }: CreateBlogProps
 
     if (!selectedFile) {
       errors.image = "A cover image is required for blog posts.";
+    }
+
+    if (!category) {
+      errors.category = "Please select a category.";
+    }
+
+    if (!readDuration || readDuration < 1) {
+      errors.readDuration = "Read duration must be at least 1 minute.";
+    } else if (readDuration > 180) {
+      errors.readDuration = "Read duration cannot exceed 180 minutes.";
     }
 
     if (!description.trim()) {
@@ -136,13 +134,12 @@ export default function CreateBlog({ open, onClose, onSuccess }: CreateBlogProps
       formData.append("subtitle", subtitle.trim());
     }
     formData.append("description", description.trim());
+    formData.append("category", category);
+    formData.append("readDuration", String(readDuration));
+    formData.append("isActive", String(isActive));
 
     if (selectedFile) {
       formData.append("image", selectedFile);
-    }
-
-    if (tags.length > 0) {
-      formData.append("tags", JSON.stringify(tags));
     }
 
     const keywords = metaKeywordsInput
@@ -166,7 +163,7 @@ export default function CreateBlog({ open, onClose, onSuccess }: CreateBlogProps
       onSuccess();
       onClose();
     } else {
-      setApiError(res.message || "Failed to publish blog post. Please check the fields and try again.");
+      setApiError(res.message || "Failed to publish blog post.");
     }
   };
 
@@ -179,17 +176,19 @@ export default function CreateBlog({ open, onClose, onSuccess }: CreateBlogProps
         }
       }}
     >
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] my-auto animate-in zoom-in-95 duration-200">
-        {/* Header */}
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/70">
+      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] my-auto animate-in zoom-in-95 duration-200">
+        {/* Modal Header */}
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-orange-100/70 text-orange-600 flex items-center justify-center shrink-0">
               <Icon name="fileText" size={18} />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900 tracking-tight">Write New Blog Post</h3>
-              <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                Publish a new article, lifestyle guide, or story to the Aurus Journal.
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                Write New Journal Article
+              </h3>
+              <p className="text-xs text-slate-500 font-medium">
+                Publish a new blog post, student guide, or lifestyle article
               </p>
             </div>
           </div>
@@ -286,58 +285,72 @@ export default function CreateBlog({ open, onClose, onSuccess }: CreateBlogProps
             />
           </FormField>
 
-          {/* Tags */}
-          <FormField
-            label="Tags & Topics"
-            hint="Add keyword tags to categorize the post (e.g. HostelLife, Tips, Bangalore)."
-          >
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <TextInput
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleAddTag();
-                    }
-                  }}
-                  placeholder="Type a tag and press Add…"
-                  disabled={isSubmitting}
-                  className="flex-1"
-                />
-                <Btn
-                  variant="ghost"
-                  size="md"
-                  onClick={handleAddTag}
-                  disabled={!tagInput.trim() || isSubmitting}
-                >
-                  <Icon name="plus" size={13} />
-                  <span>Add Tag</span>
-                </Btn>
-              </div>
+          {/* Category & Read Duration Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField
+              label="Category *"
+              hint="Select the single category for this post."
+              error={clientErrors.category}
+            >
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as BlogCategory)}
+                disabled={isSubmitting}
+                className={`w-full px-3.5 py-2.5 bg-white border ${
+                  clientErrors.category
+                    ? "border-rose-400 focus:ring-rose-500/20"
+                    : "border-slate-200 focus:ring-slate-400/20"
+                } rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 transition-all cursor-pointer`}
+              >
+                {BLOG_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {BLOG_CATEGORY_LABELS[cat]}
+                  </option>
+                ))}
+              </select>
+            </FormField>
 
-              {tags.length > 0 && (
-                <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                  {tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200"
-                    >
-                      <span>#{tag}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveTag(tag)}
-                        className="text-slate-400 hover:text-slate-700 cursor-pointer ml-0.5"
-                      >
-                        <Icon name="x" size={11} />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
+            <FormField
+              label="Read Duration (in minutes) *"
+              hint="Estimated reading time in minutes."
+              error={clientErrors.readDuration}
+            >
+              <TextInput
+                type="number"
+                min={1}
+                max={180}
+                value={String(readDuration)}
+                onChange={(e) => setReadDuration(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                placeholder="5"
+                error={!!clientErrors.readDuration}
+                disabled={isSubmitting}
+              />
+            </FormField>
+          </div>
+
+          {/* Active Status Checkbox */}
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+            <div>
+              <span className="text-xs font-bold text-slate-800 block">
+                Publishing Status
+              </span>
+              <span className="text-[11px] text-slate-500">
+                {isActive
+                  ? "Article will be published and visible publicly immediately."
+                  : "Article will be saved as an inactive draft."}
+              </span>
             </div>
-          </FormField>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isActive}
+                onChange={(e) => setIsActive(e.target.checked)}
+                disabled={isSubmitting}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+            </label>
+          </div>
 
           {/* Content / Description */}
           <FormField
@@ -359,47 +372,52 @@ export default function CreateBlog({ open, onClose, onSuccess }: CreateBlogProps
             />
           </FormField>
 
-          {/* SEO Metadata Collapsible */}
-          <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/40">
+          {/* SEO Metadata Accordion */}
+          <div className="border border-slate-200/90 rounded-xl overflow-hidden bg-slate-50/50">
             <button
               type="button"
               onClick={() => setShowSeo(!showSeo)}
-              className="w-full px-4 py-3 flex items-center justify-between text-left text-xs font-bold text-slate-700 hover:bg-slate-100/60 transition cursor-pointer"
+              className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-slate-50 transition cursor-pointer"
             >
-              <div className="flex items-center gap-2">
-                <Icon name="flag" size={13} className="text-slate-400" />
-                <span>SEO & Search Engine Metadata (Optional)</span>
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
+                <Icon name="search" size={13} />
+                <span>Search Engine Optimization (SEO Metadata)</span>
               </div>
-              <span className={`transform transition-transform duration-200 ${showSeo ? "rotate-180" : ""}`}>
-                <Icon name="chev" size={12} />
+              <span className="text-slate-400 text-xs">
+                {showSeo ? "▲ Collapse" : "▼ Expand"}
               </span>
             </button>
 
             {showSeo && (
-              <div className="p-4 border-t border-slate-200 space-y-3.5 bg-white">
-                <FormField label="Meta Title" hint="Overrides article title in Google search results.">
+              <div className="p-4 pt-2 border-t border-slate-100 bg-white space-y-3.5">
+                <FormField label="Meta Title (Optional)" hint="Custom title tag for search engines.">
                   <TextInput
                     value={metaTitle}
                     onChange={(e) => setMetaTitle(e.target.value)}
-                    placeholder="Search engine optimized title…"
+                    placeholder="e.g. 10 Essential Packing Tips | Aurus Journal"
                     disabled={isSubmitting}
                   />
                 </FormField>
 
-                <FormField label="Meta Description" hint="Snippet shown beneath search engine results.">
-                  <TextInput
+                <FormField label="Meta Description (Optional)" hint="Search result snippet description.">
+                  <textarea
+                    rows={3}
                     value={metaDescription}
                     onChange={(e) => setMetaDescription(e.target.value)}
-                    placeholder="Short description for search preview…"
+                    placeholder="Brief description for Google search snippet…"
                     disabled={isSubmitting}
+                    className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 text-xs focus:outline-none focus:ring-2 focus:ring-slate-400/20 transition-all"
                   />
                 </FormField>
 
-                <FormField label="Meta Keywords" hint="Comma-separated keywords for SEO indexing.">
+                <FormField
+                  label="Keywords (Comma separated)"
+                  hint="e.g. student housing, packing tips, mumbai hostel"
+                >
                   <TextInput
                     value={metaKeywordsInput}
                     onChange={(e) => setMetaKeywordsInput(e.target.value)}
-                    placeholder="e.g. aurus hostel, co-living bangalore, student accommodation"
+                    placeholder="hostel tips, student life, packing guide"
                     disabled={isSubmitting}
                   />
                 </FormField>
@@ -408,15 +426,15 @@ export default function CreateBlog({ open, onClose, onSuccess }: CreateBlogProps
           </div>
         </form>
 
-        {/* Footer */}
-        <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5 shrink-0">
+        {/* Modal Footer */}
+        <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-end gap-3 shrink-0">
           <Btn variant="ghost" size="md" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Btn>
           <Btn variant="brand" size="md" onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? (
               <>
-                <span className="inline-block animate-spin">
+                <span className="inline-block animate-spin mr-1.5">
                   <Icon name="refresh" size={13} />
                 </span>
                 <span>Publishing…</span>
@@ -424,7 +442,7 @@ export default function CreateBlog({ open, onClose, onSuccess }: CreateBlogProps
             ) : (
               <>
                 <Icon name="check" size={13} />
-                <span>Publish Post</span>
+                <span>Publish Article</span>
               </>
             )}
           </Btn>
@@ -433,4 +451,3 @@ export default function CreateBlog({ open, onClose, onSuccess }: CreateBlogProps
     </div>
   );
 }
-

@@ -1,31 +1,56 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { blogsData } from "@/data/blog";
 import { Container, ArrowRight } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
+import { useContentStore } from "@/store/useContentStore";
+import { BLOG_CATEGORY_LABELS } from "@/types/blog.types";
 
-// Declared limit of 6 articles per page in pagination
+// Limit of 6 articles per page in pagination
 const PAGE_LIMIT = 6;
+
+function formatDate(isoString?: string): string {
+  if (!isoString) return "";
+  try {
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return "";
+    return d
+      .toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+      })
+      .toUpperCase();
+  } catch {
+    return "";
+  }
+}
 
 export function AurusJournalBlog() {
   const data = blogsData.journalSection;
   const bannerData = blogsData.communityBanner;
+
+  const { publicBlogs, isLoadingPublicBlogs, fetchPublicBlogs } = useContentStore();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
   const gridTopRef = useRef<HTMLDivElement>(null);
 
-  const totalArticles = data.articles.length;
+  useEffect(() => {
+    fetchPublicBlogs({ limit: 60 });
+  }, [fetchPublicBlogs]);
+
+  const totalArticles = publicBlogs.length;
   const totalPages = Math.max(1, Math.ceil(totalArticles / PAGE_LIMIT));
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   const startIndex = (currentPage - 1) * PAGE_LIMIT;
-  const currentArticles = data.articles.slice(startIndex, startIndex + PAGE_LIMIT);
+  const currentArticles = publicBlogs.slice(startIndex, startIndex + PAGE_LIMIT);
 
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages || page === currentPage) return;
@@ -61,116 +86,166 @@ export function AurusJournalBlog() {
 
         {/* Articles Grid (Max 6 per page) */}
         <ViewReveal duration={800} startDelay={100}>
-          <div className="mt-10 sm:mt-12 lg:mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
-            {currentArticles.map((article) => (
-              <div
-                key={article.id}
-                className="rounded-[22px] bg-[#FAF8F5] border border-ink/[0.06] flex flex-col justify-start group transition-all duration-300 hover:shadow-lg hover:border-ink/15 hover:-translate-y-1"
-              >
-                {/* Article Card Top: Image */}
-                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-t-[16px]">
-                  <Image
-                    src={article.image}
-                    alt={article.alt}
-                    fill
-                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                  />
-                </div>
-
-                {/* Meta info text & pill button */}
-                <div className="p-4 sm:p-6">
-                  <p className="font-mono text-[10px] sm:text-[11px] tracking-[1.5px] uppercase text-muted">
-                    {article.category} • {article.date} • {article.readTime}
-                  </p>
-
-                  <h3 className="font-sans font-semibold text-[15px] sm:text-[17px] leading-[1.35] text-ink mt-2.5 transition-colors group-hover:text-neutral-700">
-                    {article.title}
-                  </h3>
-
-                  <p className="font-sans font-regular text-[12px] sm:text-[13px] leading-[1.5] text-muted mt-2">
-                    {article.excerpt}
-                  </p>
-
-                  <div className="mt-2.5 flex justify-end sm:justify-start items-center">
-                    <Link
-                      href={article.href}
-                      className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[1.5px] inline-flex items-center gap-2 rounded-full border border-ink/25 px-4 py-2 text-ink transition-all duration-300 hover:bg-ink hover:text-paper hover:border-ink w-fit"
-                    >
-                      <span>{article.ctaText}</span>
-                      <ArrowRight className="w-3 h-3 shrink-0" />
-                    </Link>
+          {isLoadingPublicBlogs && publicBlogs.length === 0 ? (
+            <div className="mt-10 sm:mt-12 lg:mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+              {Array.from({ length: PAGE_LIMIT }).map((_, idx) => (
+                <div
+                  key={`skeleton-${idx}`}
+                  className="rounded-[22px] bg-[#FAF8F5] border border-ink/[0.06] flex flex-col justify-start animate-pulse"
+                >
+                  <div className="relative aspect-[16/10] w-full bg-ink/5 rounded-t-[16px]" />
+                  <div className="p-4 sm:p-6 space-y-3">
+                    <div className="h-3 w-1/2 bg-ink/10 rounded" />
+                    <div className="h-5 w-3/4 bg-ink/10 rounded" />
+                    <div className="h-3.5 w-full bg-ink/10 rounded" />
+                    <div className="h-3.5 w-2/3 bg-ink/10 rounded" />
+                    <div className="pt-2 flex justify-start">
+                      <div className="h-8 w-28 bg-ink/10 rounded-full" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : publicBlogs.length === 0 ? (
+            <div className="mt-10 sm:mt-12 lg:mt-14 py-16 text-center rounded-[22px] bg-[#FAF8F5] border border-ink/[0.06]">
+              <p className="font-serif italic text-2xl text-ink">No journal articles found</p>
+              <p className="mt-2 font-mono text-[11px] uppercase tracking-[1.5px] text-muted">
+                Check back soon for insights, stories, and guides.
+              </p>
+            </div>
+          ) : (
+            <div className="mt-10 sm:mt-12 lg:mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+              {currentArticles.map((article) => {
+                const categoryLabel =
+                  BLOG_CATEGORY_LABELS[article.category] ||
+                  (article.category ? article.category.toUpperCase() : "JOURNAL");
+                const dateText = formatDate(article.createdAt);
+                const readTimeText = `${article.readDuration || 3} MIN READ`;
+                const imageUrl = article.image?.url || "/images/blog01.png";
+                const excerpt =
+                  article.subtitle ||
+                  (article.description
+                    ? article.description.length > 120
+                      ? `${article.description.slice(0, 120)}...`
+                      : article.description
+                    : "");
+
+                return (
+                  <div
+                    key={article.id}
+                    className="rounded-[22px] bg-[#FAF8F5] border border-ink/[0.06] flex flex-col justify-start group transition-all duration-300 hover:shadow-lg hover:border-ink/15 hover:-translate-y-1"
+                  >
+                    {/* Article Card Top: Image */}
+                    <div className="relative aspect-[16/10] w-full overflow-hidden rounded-t-[16px] bg-ink/5">
+                      <Image
+                        src={imageUrl}
+                        alt={article.title}
+                        fill
+                        sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                      />
+                    </div>
+
+                    {/* Meta info text & pill button */}
+                    <div className="p-4 sm:p-6 flex flex-col flex-1 justify-between">
+                      <div>
+                        <p className="font-mono text-[10px] sm:text-[11px] tracking-[1.5px] uppercase text-muted">
+                          {categoryLabel} • {dateText} • {readTimeText}
+                        </p>
+
+                        <h3 className="font-sans font-semibold text-[15px] sm:text-[17px] leading-[1.35] text-ink mt-2.5 transition-colors group-hover:text-neutral-700">
+                          {article.title}
+                        </h3>
+
+                        <p className="font-sans font-regular text-[12px] sm:text-[13px] leading-[1.5] text-muted mt-2 line-clamp-3">
+                          {excerpt}
+                        </p>
+                      </div>
+
+                      <div className="mt-4 flex justify-end sm:justify-start items-center">
+                        <Link
+                          href={`/blog/${article.slug}`}
+                          className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[1.5px] inline-flex items-center gap-2 rounded-full border border-ink/25 px-4 py-2 text-ink transition-all duration-300 hover:bg-ink hover:text-paper hover:border-ink w-fit"
+                        >
+                          <span>READ GUIDE</span>
+                          <ArrowRight className="w-3 h-3 shrink-0" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </ViewReveal>
 
         {/* Pagination Controls */}
-        <ViewReveal duration={800} startDelay={150}>
-          <div className="mt-12 sm:mt-16 lg:mt-20">
-            {/* Top divider hairline rule */}
-            <div className="w-full border-t border-ink/15" />
+        {publicBlogs.length > 0 && (
+          <ViewReveal duration={800} startDelay={150}>
+            <div className="mt-12 sm:mt-16 lg:mt-20">
+              {/* Top divider hairline rule */}
+              <div className="w-full border-t border-ink/15" />
 
-            {/* Pagination Controls Row */}
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-y-3 pt-6 sm:pt-8">
-              {/* Previous Button */}
-              <div className="order-2 lg:order-1 flex justify-start items-center">
-                <button
-                  type="button"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  aria-label="Previous Page"
-                  className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[1.5px] rounded-full border px-4 sm:px-6 py-2 sm:py-2.5 transition-all duration-300 disabled:opacity-30 disabled:border-ink/10 disabled:cursor-not-allowed border-ink/30 text-ink hover:enabled:bg-ink hover:enabled:text-paper cursor-pointer"
-                >
-                  <span className="flex items-center gap-1.5">
-                    <span aria-hidden="true">&larr;</span>
-                    <span>PREVIOUS</span>
-                  </span>
-                </button>
-              </div>
+              {/* Pagination Controls Row */}
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-y-3 pt-6 sm:pt-8">
+                {/* Previous Button */}
+                <div className="order-2 lg:order-1 flex justify-start items-center">
+                  <button
+                    type="button"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    aria-label="Previous Page"
+                    className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[1.5px] rounded-full border px-4 sm:px-6 py-2 sm:py-2.5 transition-all duration-300 disabled:opacity-30 disabled:border-ink/10 disabled:cursor-not-allowed border-ink/30 text-ink hover:enabled:bg-ink hover:enabled:text-paper cursor-pointer"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <span aria-hidden="true">&larr;</span>
+                      <span>PREVIOUS</span>
+                    </span>
+                  </button>
+                </div>
 
-              {/* Numbered Page Circles */}
-              <div className="order-1 lg:order-2 col-span-2 lg:col-span-1 flex justify-center items-center gap-2 sm:gap-3 lg:px-3">
-                {pageNumbers.map((page) => {
-                  const isActive = page === currentPage;
-                  return (
-                    <button
-                      key={page}
-                      type="button"
-                      onClick={() => handlePageChange(page)}
-                      aria-current={isActive ? "page" : undefined}
-                      aria-label={`Page ${page}`}
-                      className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full font-mono text-[11px] sm:text-[12px] font-medium flex items-center justify-center transition-all duration-200 ${isActive
-                        ? "bg-ink text-paper"
-                        : "border border-ink/25 text-ink hover:border-ink hover:bg-ink hover:text-paper cursor-pointer"
+                {/* Numbered Page Circles */}
+                <div className="order-1 lg:order-2 col-span-2 lg:col-span-1 flex justify-center items-center gap-2 sm:gap-3 lg:px-3">
+                  {pageNumbers.map((page) => {
+                    const isActive = page === currentPage;
+                    return (
+                      <button
+                        key={page}
+                        type="button"
+                        onClick={() => handlePageChange(page)}
+                        aria-current={isActive ? "page" : undefined}
+                        aria-label={`Page ${page}`}
+                        className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full font-mono text-[11px] sm:text-[12px] font-medium flex items-center justify-center transition-all duration-200 ${
+                          isActive
+                            ? "bg-ink text-paper"
+                            : "border border-ink/25 text-ink hover:border-ink hover:bg-ink hover:text-paper cursor-pointer"
                         }`}
-                    >
-                      {page}
-                    </button>
-                  );
-                })}
-              </div>
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+                </div>
 
-              {/* Next Button */}
-              <div className="order-3 flex justify-end items-center">
-                <button
-                  type="button"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  aria-label="Next Page"
-                  className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[1.5px] rounded-full border px-4 sm:px-6 py-2 sm:py-2.5 transition-all duration-300 disabled:opacity-30 disabled:border-ink/10 disabled:cursor-not-allowed border-ink/30 text-ink hover:enabled:bg-ink hover:enabled:text-paper cursor-pointer"
-                >
-                  <span className="flex items-center gap-1.5">
-                    <span>NEXT</span>
-                    <span aria-hidden="true">&rarr;</span>
-                  </span>
-                </button>
+                {/* Next Button */}
+                <div className="order-3 flex justify-end items-center">
+                  <button
+                    type="button"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    aria-label="Next Page"
+                    className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[1.5px] rounded-full border px-4 sm:px-6 py-2 sm:py-2.5 transition-all duration-300 disabled:opacity-30 disabled:border-ink/10 disabled:cursor-not-allowed border-ink/30 text-ink hover:enabled:bg-ink hover:enabled:text-paper cursor-pointer"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <span>NEXT</span>
+                      <span aria-hidden="true">&rarr;</span>
+                    </span>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </ViewReveal>
+          </ViewReveal>
+        )}
 
         {/* Subscribe Banner CTA */}
         <ViewReveal duration={800} startDelay={200}>

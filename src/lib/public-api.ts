@@ -3,6 +3,9 @@ import { ApiResponse } from "@/types/general.types";
 import { PublicCity, PublicCityQueryParams } from "@/types/city.types";
 import { PublicHostelQueryParams, PublicHostelsResult } from "@/types/hostel.types";
 import { SafeOccupancy, PublicOccupancyQueryParams } from "@/types/occupancy.types";
+import { PublicFaqQueryParams, PublicFaqsResult } from "@/types/faq.types";
+import { PublicStoryQueryParams, PublicStoriesResult } from "@/types/story.types";
+import { PublicBlogQueryParams, PublicBlogsResult } from "@/types/blog.types";
 
 /**
  * Pre-configured Axios client instance for public Aurus APIs.
@@ -49,5 +52,38 @@ export async function getPublicOccupancies(
   return res.data;
 }
 
+/**
+ * Fetches public FAQs with optional category or grouped filtering.
+ */
+export async function getPublicFaqs(
+  params?: PublicFaqQueryParams
+): Promise<ApiResponse<PublicFaqsResult>> {
+  const res = await publicApiClient.get<ApiResponse<PublicFaqsResult>>("/api/faqs", {
+    params,
+  });
+  return res.data;
+}
 
+/**
+ * Fetches public stories with optional search, featured flag, and pagination.
+ */
+export async function getPublicStories(
+  params?: PublicStoryQueryParams
+): Promise<ApiResponse<PublicStoriesResult>> {
+  const res = await publicApiClient.get<ApiResponse<PublicStoriesResult>>("/api/stories", {
+    params,
+  });
+  return res.data;
+}
 
+/**
+ * Fetches public blog posts with optional search, tag, slug, and pagination.
+ */
+export async function getPublicBlogs(
+  params?: PublicBlogQueryParams
+): Promise<ApiResponse<PublicBlogsResult>> {
+  const res = await publicApiClient.get<ApiResponse<PublicBlogsResult>>("/api/blogs", {
+    params,
+  });
+  return res.data;
+}

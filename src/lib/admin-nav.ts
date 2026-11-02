@@ -21,7 +21,7 @@ export const adminNav: AdminNavItem[] = [
   { href: "/admin/enquiry", label: "Enquiries", icon: "mail", mobile: true },
 
   { href: "/admin/blog", label: "Blogs", icon: "fileText", section: "Content Management", mobile: true },
-  { href: "/admin/story", label: "Stories", icon: "star", mobile: true },
+  // { href: "/admin/story", label: "Stories", icon: "star", mobile: true },
   { href: "/admin/faq", label: "FAQs", icon: "info", mobile: true },
   // { href: "/admin/admins", label: "Staff & Admins", icon: "head", section: "Administration", mobile: true },
   // { href: "/admin/settings", label: "Settings", icon: "cog" },

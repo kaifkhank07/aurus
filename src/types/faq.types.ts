@@ -178,3 +178,14 @@ export interface GroupedFaqCategory {
   items: SafeFaq[];
 }
 
+export interface PublicFaqQueryParams {
+  category?: string;
+  grouped?: boolean;
+}
+
+export interface PublicFaqsResult {
+  faqs?: SafeFaq[];
+  categories?: GroupedFaqCategory[];
+  total: number;
+}
+

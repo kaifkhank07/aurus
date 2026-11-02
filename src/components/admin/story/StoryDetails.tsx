@@ -25,28 +25,37 @@ export default function StoryDetails({
 
   const imageUrl = getMediaUrl(story.image?.url || story.image?.publickey);
 
-  const createdFormatted = story.createdAt
-    ? new Date(story.createdAt).toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    })
-    : "—";
+  const formattedCreated = new Date(story.createdAt).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const formattedUpdated = new Date(story.updatedAt).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
         }
       }}
     >
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-8 animate-in zoom-in-95 duration-200">
+      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 via-white to-amber-50/30">
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 shadow-2xs">
+            <div className="w-10 h-10 rounded-xl bg-orange-100/70 text-orange-600 flex items-center justify-center shrink-0">
               <Icon name="star" size={18} />
             </div>
             <div>
@@ -59,12 +68,12 @@ export default function StoryDetails({
                     ★ Featured
                   </Chip>
                 )}
-                <Chip tone={story.isActive ? "mint" : "rose"} dot>
+                {/* <Chip tone={story.isActive ? "mint" : "rose"} dot>
                   {story.isActive ? "Active" : "Inactive"}
-                </Chip>
+                </Chip> */}
               </div>
               <p className="text-xs text-slate-500 font-medium">
-                Story ID: <span className="font-mono text-slate-700">{story.id.slice(-8)}</span>
+                Detailed view of story, and publishing status
               </p>
             </div>
           </div>
@@ -80,7 +89,7 @@ export default function StoryDetails({
         </div>
 
         {/* Content Body */}
-        <div className="p-6 space-y-5 overflow-y-auto max-h-[70vh]">
+        <div className="p-6 overflow-y-auto space-y-6">
           {/* Resident Overview Card */}
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white font-bold text-base flex items-center justify-center shrink-0 shadow-2xs">
@@ -172,39 +181,70 @@ export default function StoryDetails({
             </div>
           </div>
 
-          {/* Timestamps */}
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-medium">
-            <span>Published on: {createdFormatted}</span>
-            <span className="font-mono text-slate-400">ID: {story.id}</span>
+          {/* Status Bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+            <div>
+              <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-0.5">
+                Status
+              </span>
+              <span
+                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold ${story.isActive
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  : "bg-rose-50 text-rose-700 border border-rose-200"
+                  }`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${story.isActive ? "bg-emerald-500" : "bg-rose-500"
+                    }`}
+                />
+                {story.isActive ? "Published (Active)" : "Draft (Inactive)"}
+              </span>
+            </div>
+
+            {/* <div>
+              <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-0.5">
+                Sort Order
+              </span>
+              <span className="text-xs font-bold text-slate-800 font-mono">
+                #{faq.sortOrder}
+              </span>
+            </div> */}
+
+            <div>
+              <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-0.5">
+                Created
+              </span>
+              <span className="text-xs font-medium text-slate-600 truncate block">
+                {formattedCreated}
+              </span>
+            </div>
+
+            <div>
+              <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-0.5">
+                Last Updated
+              </span>
+              <span className="text-xs font-medium text-slate-600 truncate block">
+                {formattedUpdated}
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3 shrink-0">
-          <div>
-            {onDelete && (
-              <button
-                type="button"
-                onClick={onDelete}
-                className="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-3 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5"
-              >
-                <Icon name="trash" size={13} />
-                <span>Delete Story</span>
-              </button>
-            )}
-          </div>
+        <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-end gap-2.5">
+          <Btn variant="ghost" size="sm" onClick={onClose}>
+            Close
+          </Btn>
 
-          <div className="flex items-center gap-2">
-            {onEdit && (
-              <Btn variant="brand" size="md" onClick={onEdit}>
-                <Icon name="pen" size={13} />
-                <span>Edit Story</span>
-              </Btn>
-            )}
-            <Btn variant="ghost" size="md" onClick={onClose}>
-              Close
+          {onEdit && (
+            <Btn
+              variant="brand"
+              size="sm"
+              onClick={onEdit}>
+              <Icon name="pen" size={12} />
+              <span>Edit Story</span>
             </Btn>
-          </div>
+          )}
         </div>
       </div>
     </div>
