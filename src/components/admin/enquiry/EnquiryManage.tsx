@@ -3,15 +3,22 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useHostelAndEnquiryStore } from "@/store/useHostelAndEnquiryStore";
-import { Card, Chip, Btn, TextInput } from "../ui/AdminUI";
+import { Card, Btn, TextInput } from "../ui/AdminUI";
 import Icon from "../ui/AdminIcons";
 import EnquiryHeader from "./EnquiryHeader";
 import EnquiryDetails from "./EnquiryDetails";
+import CreateEnquiry from "./CreateEnquiry";
+import EditEnquiry from "./EditEnquiry";
 import DeleteEnquiry from "./DeleteEnquiry";
-import { SafeEnquiry, EnquiryQueryParams, EnquiryType } from "@/types/enquiry.types";
+import {
+  SafeEnquiry,
+  EnquiryQueryParams,
+  EnquiryStatus,
+  ENQUIRY_STATUS_LABELS,
+} from "@/types/enquiry.types";
 
 const PAGE_LIMIT = 10;
-type FilterType = "all" | EnquiryType;
+type StatusFilter = "all" | EnquiryStatus;
 
 export default function EnquiryManage() {
   const {
@@ -20,18 +27,24 @@ export default function EnquiryManage() {
     isLoadingEnquiries,
     enquiriesError,
     fetchEnquiries,
+    updateEnquiry,
   } = useHostelAndEnquiryStore();
 
   // Dialog states
   const [selectedEnquiryForDetails, setSelectedEnquiryForDetails] = useState<SafeEnquiry | null>(null);
+  const [editingEnquiry, setEditingEnquiry] = useState<SafeEnquiry | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deletingEnquiry, setDeletingEnquiry] = useState<SafeEnquiry | null>(null);
 
   // Search & Filter & Sorting state
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<FilterType>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sortOrderDir, setSortOrderDir] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Status updating indicator
+  const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
 
   // Quick feedback toast
   const [feedback, setFeedback] = useState<{
@@ -73,13 +86,13 @@ export default function EnquiryManage() {
         params.search = debouncedSearch.trim();
       }
 
-      if (typeFilter !== "all") {
-        params.type = typeFilter;
+      if (statusFilter !== "all") {
+        params.status = statusFilter;
       }
 
       await fetchEnquiries(params, force);
     },
-    [currentPage, debouncedSearch, typeFilter, sortOrderDir, fetchEnquiries]
+    [currentPage, debouncedSearch, statusFilter, sortOrderDir, fetchEnquiries]
   );
 
   useEffect(() => {
@@ -94,10 +107,40 @@ export default function EnquiryManage() {
     }, 2000);
   };
 
+  const handleInlineStatusChange = async (enquiry: SafeEnquiry, newStatus: EnquiryStatus) => {
+    if (enquiry.status === newStatus || updatingStatusId) return;
+
+    setUpdatingStatusId(enquiry.id);
+    try {
+      const res = await updateEnquiry(enquiry.id, { status: newStatus });
+      if (res.success) {
+        setFeedback({
+          type: "success",
+          message: `Status for "${enquiry.name}" changed to ${ENQUIRY_STATUS_LABELS[newStatus]}.`,
+        });
+        if (selectedEnquiryForDetails?.id === enquiry.id) {
+          setSelectedEnquiryForDetails({ ...selectedEnquiryForDetails, status: newStatus });
+        }
+      } else {
+        setFeedback({
+          type: "error",
+          message: res.message || "Failed to update enquiry status.",
+        });
+      }
+    } catch {
+      setFeedback({
+        type: "error",
+        message: "An unexpected error occurred while updating status.",
+      });
+    } finally {
+      setUpdatingStatusId(null);
+    }
+  };
+
   const handleResetFilters = () => {
     setSearch("");
     setDebouncedSearch("");
-    setTypeFilter("all");
+    setStatusFilter("all");
     setSortOrderDir("desc");
     setCurrentPage(1);
   };
@@ -105,10 +148,10 @@ export default function EnquiryManage() {
   const hasActiveFilters = useMemo(() => {
     return (
       search.trim().length > 0 ||
-      typeFilter !== "all" ||
+      statusFilter !== "all" ||
       sortOrderDir !== "desc"
     );
-  }, [search, typeFilter, sortOrderDir]);
+  }, [search, statusFilter, sortOrderDir]);
 
   const totalCount = enquiriesPagination?.total ?? enquiries.length;
   const totalPages =
@@ -119,10 +162,11 @@ export default function EnquiryManage() {
       {/* Header */}
       <EnquiryHeader
         title="Enquiries"
-        sub="Review incoming queries, prospective tenant questions, and callback requests."
+        sub="Review incoming queries, prospective tenant questions, and contact messages."
         totalCount={totalCount}
         onRefresh={() => loadEnquiryData(true)}
         refreshing={isLoadingEnquiries}
+        onAdd={() => setIsCreateOpen(true)}
       />
 
       {/* Feedback Toast */}
@@ -179,32 +223,20 @@ export default function EnquiryManage() {
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap">
-            {/* Type Filter Tabs */}
-            <div className="inline-flex rounded-xl bg-slate-200/60 p-1 text-xs font-semibold text-slate-600">
-              {(
-                [
-                  { value: "all", label: "All" },
-                  { value: "query", label: "Queries" },
-                  { value: "request", label: "Requests" },
-                ] as const
-              ).map((tab) => (
-                <button
-                  key={tab.value}
-                  type="button"
-                  onClick={() => {
-                    setTypeFilter(tab.value);
-                    setCurrentPage(1);
-                  }}
-                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                    typeFilter === tab.value
-                      ? "bg-white text-slate-900 shadow-2xs font-bold"
-                      : "hover:text-slate-900 text-slate-600"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+            {/* Status Filter */}
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value as StatusFilter);
+                setCurrentPage(1);
+              }}
+              className="text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300 transition cursor-pointer"
+            >
+              <option value="all">All Statuses</option>
+              <option value="new">New</option>
+              <option value="read">Read</option>
+              <option value="complete">Complete</option>
+            </select>
 
             {/* Sort Direction Dropdown */}
             <select
@@ -260,12 +292,12 @@ export default function EnquiryManage() {
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="border-b border-slate-200/80 bg-slate-50/75 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <th className="py-3 px-4 w-28">Type</th>
                 <th className="py-3 px-4">Sender</th>
                 <th className="py-3 px-4">Contact</th>
                 <th className="py-3 px-4">Location</th>
                 <th className="py-3 px-4">Message Snippet</th>
-                <th className="py-3 px-4 w-32">Received</th>
+                <th className="py-3 px-4 w-36">Status</th>
+                <th className="py-3 px-4 w-28">Received</th>
                 <th className="py-3 px-4 text-right w-28">Actions</th>
               </tr>
             </thead>
@@ -304,7 +336,6 @@ export default function EnquiryManage() {
                 </tr>
               ) : (
                 enquiries.map((enquiry) => {
-                  const isQuery = enquiry.type === "query";
                   const receivedFormatted = enquiry.createdAt
                     ? new Date(enquiry.createdAt).toLocaleDateString("en-US", {
                         month: "short",
@@ -314,27 +345,23 @@ export default function EnquiryManage() {
                     : "—";
 
                   const cleanPhone = enquiry.number.replace(/\D/g, "");
+                  const isUpdatingThis = updatingStatusId === enquiry.id;
 
                   return (
                     <tr
                       key={enquiry.id}
                       className="hover:bg-slate-50/70 transition-colors group select-text"
                     >
-                      {/* Enquiry Type Badge */}
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <Chip tone={isQuery ? "amber" : "sea"}>
-                          {isQuery ? "Query" : "Request"}
-                        </Chip>
-                      </td>
-
                       {/* Sender Name & Role */}
                       <td className="py-3 px-4 min-w-[180px]">
                         <div className="flex items-center gap-3">
                           <div
                             className={`w-8 h-8 rounded-xl font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs text-white ${
-                              isQuery
+                              enquiry.status === "new"
                                 ? "bg-gradient-to-br from-amber-500 to-orange-600"
-                                : "bg-gradient-to-br from-sky-500 to-indigo-600"
+                                : enquiry.status === "read"
+                                ? "bg-gradient-to-br from-sky-500 to-indigo-600"
+                                : "bg-gradient-to-br from-emerald-500 to-teal-600"
                             }`}
                           >
                             {enquiry.name.charAt(0).toUpperCase()}
@@ -400,9 +427,39 @@ export default function EnquiryManage() {
                           </button>
                         ) : (
                           <span className="text-slate-400 italic text-[11px]">
-                            {isQuery ? "No message" : "Callback request"}
+                            No message
                           </span>
                         )}
+                      </td>
+
+                      {/* Status Management */}
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        <div className="relative inline-flex items-center">
+                          <select
+                            value={enquiry.status || "new"}
+                            disabled={isUpdatingThis}
+                            onChange={(e) =>
+                              handleInlineStatusChange(
+                                enquiry,
+                                e.target.value as EnquiryStatus
+                              )
+                            }
+                            className={`text-xs font-semibold rounded-lg px-2.5 py-1 border transition cursor-pointer appearance-none pr-6 ${
+                              enquiry.status === "new"
+                                ? "bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100"
+                                : enquiry.status === "read"
+                                ? "bg-sky-50 text-sky-800 border-sky-300 hover:bg-sky-100"
+                                : "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100"
+                            } ${isUpdatingThis ? "opacity-50 cursor-wait" : ""}`}
+                          >
+                            <option value="new">New</option>
+                            <option value="read">Read</option>
+                            <option value="complete">Complete</option>
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1.5 text-slate-500">
+                            <Icon name="down" size={10} />
+                          </div>
+                        </div>
                       </td>
 
                       {/* Received Date */}
@@ -420,7 +477,17 @@ export default function EnquiryManage() {
                             title="View enquiry details"
                             className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-amber-600 hover:bg-amber-50 hover:border-amber-200 transition cursor-pointer"
                           >
-                            <Icon name="eye" size={14} />
+                            <Icon name="eye" size={13} />
+                          </button>
+
+                          {/* Edit Button */}
+                          <button
+                            type="button"
+                            onClick={() => setEditingEnquiry(enquiry)}
+                            title="Edit enquiry"
+                            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-amber-600 hover:bg-amber-50 hover:border-amber-200 transition cursor-pointer"
+                          >
+                            <Icon name="pen" size={13} />
                           </button>
 
                           {/* Delete Button */}
@@ -430,7 +497,7 @@ export default function EnquiryManage() {
                             title="Delete enquiry"
                             className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition cursor-pointer"
                           >
-                            <Icon name="trash" size={14} />
+                            <Icon name="trash" size={13} />
                           </button>
                         </div>
                       </td>
@@ -484,16 +551,60 @@ export default function EnquiryManage() {
         )}
       </Card>
 
+      {/* Create Modal */}
+      <CreateEnquiry
+        open={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        onSuccess={() => {
+          setFeedback({
+            type: "success",
+            message: "New enquiry created successfully.",
+          });
+          loadEnquiryData(true);
+        }}
+      />
+
+      {/* Edit Modal */}
+      {editingEnquiry && (
+        <EditEnquiry
+          open={!!editingEnquiry}
+          enquiry={editingEnquiry}
+          onClose={() => setEditingEnquiry(null)}
+          onSuccess={() => {
+            setFeedback({
+              type: "success",
+              message: "Enquiry updated successfully.",
+            });
+            loadEnquiryData(true);
+          }}
+        />
+      )}
+
       {/* Details Modal */}
       {selectedEnquiryForDetails && (
         <EnquiryDetails
           open={!!selectedEnquiryForDetails}
           enquiry={selectedEnquiryForDetails}
           onClose={() => setSelectedEnquiryForDetails(null)}
+          onEdit={() => {
+            const e = selectedEnquiryForDetails;
+            setSelectedEnquiryForDetails(null);
+            setEditingEnquiry(e);
+          }}
           onDelete={() => {
             const e = selectedEnquiryForDetails;
             setSelectedEnquiryForDetails(null);
             setDeletingEnquiry(e);
+          }}
+          onStatusChange={(newStatus) => {
+            setSelectedEnquiryForDetails((prev) =>
+              prev ? { ...prev, status: newStatus } : null
+            );
+            setFeedback({
+              type: "success",
+              message: `Status updated to ${ENQUIRY_STATUS_LABELS[newStatus]}.`,
+            });
+            loadEnquiryData(true);
           }}
         />
       )}
@@ -516,4 +627,3 @@ export default function EnquiryManage() {
     </div>
   );
 }
-

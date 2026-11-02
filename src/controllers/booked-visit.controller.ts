@@ -29,12 +29,13 @@ function formatSafeBookedVisit(doc: IBookedVisitDocument): SafeBookedVisit {
     id: doc._id.toString(),
     name: doc.name,
     number: doc.number,
+    email: doc.email,
+    college: doc.college,
     location: doc.location,
-    iam: doc.iam,
+    status: doc.status || "new",
     preferredDate: doc.preferredDate
       ? doc.preferredDate.toISOString()
       : new Date().toISOString(),
-    preferredTime: doc.preferredTime,
     createdAt: doc.createdAt ? doc.createdAt.toISOString() : new Date().toISOString(),
     updatedAt: doc.updatedAt ? doc.updatedAt.toISOString() : new Date().toISOString(),
   };
@@ -91,7 +92,8 @@ export async function list(request: NextRequest): Promise<NextResponse> {
     });
 
     const validatedQuery = bookedVisitQuerySchema.parse(rawQuery);
-    const { page, limit, search, location, preferredDate, sortBy, sortOrderDir } = validatedQuery;
+    const { page, limit, search, location, status, preferredDate, sortBy, sortOrderDir } =
+      validatedQuery;
 
     logger.info("Listing booked visits started", {
       operation,
@@ -99,6 +101,7 @@ export async function list(request: NextRequest): Promise<NextResponse> {
       limit,
       search,
       location,
+      status,
       preferredDate,
       sortBy,
       sortOrderDir,
@@ -110,6 +113,10 @@ export async function list(request: NextRequest): Promise<NextResponse> {
 
     if (location) {
       filter.location = { $regex: new RegExp(`^${location}$`, "i") };
+    }
+
+    if (status && status !== "all") {
+      filter.status = status;
     }
 
     if (preferredDate) {
@@ -124,8 +131,14 @@ export async function list(request: NextRequest): Promise<NextResponse> {
     }
 
     if (search) {
-      const searchRegex = new RegExp(search, "i");
-      filter.$or = [{ name: searchRegex }, { number: searchRegex }];
+      const searchRegex = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      filter.$or = [
+        { name: searchRegex },
+        { number: searchRegex },
+        { email: searchRegex },
+        { college: searchRegex },
+        { location: searchRegex },
+      ];
     }
 
     const sortOptions: Record<string, 1 | -1> = {};
@@ -175,10 +188,11 @@ async function createBookedVisitDoc(body: unknown): Promise<SafeBookedVisit> {
   const newDoc = new BookedVisit({
     name: validated.name.trim(),
     number: validated.number.trim(),
+    email: validated.email.trim().toLowerCase(),
+    college: validated.college.trim(),
     location: validated.location.trim(),
-    iam: validated.iam.trim(),
+    status: validated.status || "new",
     preferredDate: new Date(validated.preferredDate),
-    preferredTime: validated.preferredTime.trim(),
   });
 
   await newDoc.save();
@@ -228,7 +242,13 @@ export async function createPublic(request: NextRequest): Promise<NextResponse> 
 
     logger.info("Public visit booking submission received", { operation });
 
-    const bookedVisit = await createBookedVisitDoc(body);
+    // Ensure status is always "new" when created from public site
+    const publicPayload = {
+      ...(typeof body === "object" && body !== null ? body : {}),
+      status: "new",
+    };
+
+    const bookedVisit = await createBookedVisitDoc(publicPayload);
 
     logger.info("Public visit booking submitted successfully", { operation, id: bookedVisit.id });
     return apiSuccess(
@@ -304,17 +324,20 @@ export async function update(
     if (validated.number !== undefined) {
       doc.number = validated.number.trim();
     }
+    if (validated.email !== undefined) {
+      doc.email = validated.email.trim().toLowerCase();
+    }
+    if (validated.college !== undefined) {
+      doc.college = validated.college.trim();
+    }
     if (validated.location !== undefined) {
       doc.location = validated.location.trim();
     }
-    if (validated.iam !== undefined) {
-      doc.iam = validated.iam.trim();
+    if (validated.status !== undefined) {
+      doc.status = validated.status;
     }
     if (validated.preferredDate !== undefined) {
       doc.preferredDate = new Date(validated.preferredDate);
-    }
-    if (validated.preferredTime !== undefined) {
-      doc.preferredTime = validated.preferredTime.trim();
     }
 
     await doc.save();

@@ -1,14 +1,23 @@
 import { PaginationMeta } from "./general.types";
 
+export const BOOKED_VISIT_STATUSES = ["new", "read", "complete"] as const;
+export type BookedVisitStatus = (typeof BOOKED_VISIT_STATUSES)[number];
+
+export const BOOKED_VISIT_STATUS_LABELS: Record<BookedVisitStatus, string> = {
+  new: "New",
+  read: "Read",
+  complete: "Complete",
+};
 
 export interface SafeBookedVisit {
   id: string;
   name: string;
   number: string;
+  email: string;
+  college: string;
   location: string;
-  iam: string;
+  status: BookedVisitStatus;
   preferredDate: string;
-  preferredTime: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -16,19 +25,21 @@ export interface SafeBookedVisit {
 export interface CreateBookedVisitInput {
   name: string;
   number: string;
+  email: string;
+  college: string;
   location: string;
-  iam: string;
   preferredDate: string;
-  preferredTime: string;
+  status?: BookedVisitStatus;
 }
 
 export interface UpdateBookedVisitInput {
   name?: string;
   number?: string;
+  email?: string;
+  college?: string;
   location?: string;
-  iam?: string;
   preferredDate?: string;
-  preferredTime?: string;
+  status?: BookedVisitStatus;
 }
 
 export interface BookedVisitQueryParams {
@@ -36,8 +47,9 @@ export interface BookedVisitQueryParams {
   limit: number;
   search?: string;
   location?: string;
+  status?: BookedVisitStatus | "all" | string;
   preferredDate?: string;
-  sortBy?: "createdAt" | "preferredDate";
+  sortBy?: "createdAt" | "preferredDate" | "name" | "status";
   sortOrderDir?: "asc" | "desc";
 }
 

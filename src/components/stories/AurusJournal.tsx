@@ -7,7 +7,7 @@ import { storiesData } from "@/data/stories";
 import { Container, ArrowRight } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
-import ScheduleVisitModal from "../residences/ScheduleVisitModal";
+import ScheduleVisitModal from "../shared/ScheduleVisitModal";
 import { useContentStore } from "@/store/useContentStore";
 import { BLOG_CATEGORY_LABELS } from "@/types/blog.types";
 

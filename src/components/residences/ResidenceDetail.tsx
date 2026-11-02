@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState, useEffect, useMemo } from "react";
 import { Container } from "@/components/ui/Primitives";
 import { Heading } from "../utils/Heading";
-import { ScheduleVisitModal } from "./ScheduleVisitModal";
+import { ScheduleVisitModal } from "../shared/ScheduleVisitModal";
 import { useHostelAndEnquiryStore } from "@/store/useHostelAndEnquiryStore";
 import { SafeHostel } from "@/types/hostel.types";
 
@@ -128,23 +128,23 @@ export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailPro
     hostel.tenantType === "girls"
       ? "GIRLS ONLY"
       : hostel.tenantType === "boys"
-      ? "BOYS ONLY"
-      : "CO-ED LIVING";
+        ? "BOYS ONLY"
+        : "CO-ED LIVING";
 
   // 2. Locality & City
   const localityName =
     typeof hostel.location?.locality === "object" && hostel.location?.locality !== null
       ? hostel.location.locality.name
       : typeof hostel.location?.locality === "string"
-      ? hostel.location.locality
-      : "";
+        ? hostel.location.locality
+        : "";
 
   const cityName =
     typeof hostel.location?.city === "object" && hostel.location?.city !== null
       ? hostel.location.city.city
       : typeof hostel.location?.city === "string"
-      ? hostel.location.city
-      : "";
+        ? hostel.location.city
+        : "";
 
   const locationBadge =
     localityName && cityName
@@ -165,28 +165,28 @@ export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailPro
     allGalleryUrls.length >= 2
       ? allGalleryUrls
       : allGalleryUrls.length === 1
-      ? [allGalleryUrls[0], heroImage]
-      : [heroImage, heroImage];
+        ? [allGalleryUrls[0], heroImage]
+        : [heroImage, heroImage];
 
   // 4. Room & Occupancies
   const occupanciesList = Array.isArray(hostel.occupancy)
     ? hostel.occupancy
-        .map((o) => (typeof o === "object" && o !== null ? o.name : String(o)))
-        .filter(Boolean)
+      .map((o) => (typeof o === "object" && o !== null ? o.name : String(o)))
+      .filter(Boolean)
     : [];
 
   const roomsList = Array.isArray(hostel.room)
     ? hostel.room
-        .map((r) => (typeof r === "object" && r !== null ? r.name : String(r)))
-        .filter(Boolean)
+      .map((r) => (typeof r === "object" && r !== null ? r.name : String(r)))
+      .filter(Boolean)
     : [];
 
   const roomsSpecValue =
     occupanciesList.length > 0
       ? occupanciesList.join(", ")
       : roomsList.length > 0
-      ? roomsList.join(", ")
-      : "Single, Double Sharing";
+        ? roomsList.join(", ")
+        : "Single, Double Sharing";
 
   // 5. Pricing & Frequency
   const rentAmount = Number(hostel.rent?.amount || 0);
@@ -197,8 +197,8 @@ export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailPro
     typeof hostel.rent?.frequency === "object" && hostel.rent?.frequency !== null
       ? hostel.rent.frequency.name
       : typeof hostel.rent?.frequency === "string"
-      ? hostel.rent.frequency
-      : "Monthly";
+        ? hostel.rent.frequency
+        : "Monthly";
 
   const period = freqName.toLowerCase().includes("year") ? "/ year" : "/ month";
 
@@ -219,16 +219,16 @@ export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailPro
   const roomOptions =
     occupanciesList.length > 0
       ? occupanciesList.map((name) => ({
-          type:
-            name.toLowerCase().includes("sharing") || name.toLowerCase().includes("occupancy")
-              ? name
-              : `${name} Sharing`,
-          status: "Available",
-        }))
+        type:
+          name.toLowerCase().includes("sharing") || name.toLowerCase().includes("occupancy")
+            ? name
+            : `${name} Sharing`,
+        status: "Available",
+      }))
       : [
-          { type: "Single Occupancy", status: "Available" },
-          { type: "Double Sharing", status: "Available" },
-        ];
+        { type: "Single Occupancy", status: "Available" },
+        { type: "Double Sharing", status: "Available" },
+      ];
 
   // roomOptions.push({
   //   type: "Meals, Wi-Fi, Housekeeping",
@@ -238,22 +238,22 @@ export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailPro
   // 8. Included in your stay (Amenities only)
   const amenitiesList = Array.isArray(hostel.amenities)
     ? hostel.amenities
-        .map((a) => (typeof a === "object" && a !== null ? a.name : String(a)))
-        .filter(Boolean)
+      .map((a) => (typeof a === "object" && a !== null ? a.name : String(a)))
+      .filter(Boolean)
     : [];
 
   // 9. Every Aurus Chapter includes (Services only)
   const servicesList = Array.isArray(hostel.services)
     ? hostel.services
-        .map((s) => (typeof s === "object" && s !== null ? s.name : String(s)))
-        .filter(Boolean)
+      .map((s) => (typeof s === "object" && s !== null ? s.name : String(s)))
+      .filter(Boolean)
     : [];
 
   // 10. Near campus (Institutes only)
   const instituteList = Array.isArray(hostel.institute)
     ? hostel.institute
-        .map((inst) => (typeof inst === "object" && inst !== null ? inst.name : String(inst)))
-        .filter(Boolean)
+      .map((inst) => (typeof inst === "object" && inst !== null ? inst.name : String(inst)))
+      .filter(Boolean)
     : [];
 
   // 10. Location
@@ -336,9 +336,8 @@ export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailPro
               {keySpecs.map((spec, index) => (
                 <div
                   key={spec.label}
-                  className={`p-4 sm:p-5 flex flex-col justify-center border-r border-ink/15 ${
-                    index < 2 ? "border-b lg:border-b-0 border-ink/15" : "border-b-0"
-                  }`}
+                  className={`p-4 sm:p-5 flex flex-col justify-center border-r border-ink/15 ${index < 2 ? "border-b lg:border-b-0 border-ink/15" : "border-b-0"
+                    }`}
                 >
                   <span className="font-mono uppercase text-[10px] sm:text-[11px] lg:text-[14px] tracking-[2px] text-[#88847C] block mb-1 font-medium">
                     {spec.label}

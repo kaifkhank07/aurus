@@ -4,7 +4,7 @@ import Link from "next/link";
 import { journey } from "@/data";
 import { ArrowRight, Container } from "@/components/ui/Primitives";
 import { Heading } from "../utils/Heading";
-import ScheduleVisitModal from "../residences/ScheduleVisitModal";
+import ScheduleVisitModal from "./ScheduleVisitModal";
 import { useState } from "react";
 
 export function Journey() {
@@ -117,8 +117,6 @@ export function Journey() {
       <ScheduleVisitModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-      // residenceTitle={data.title}
-      // residenceLocation={data.location?.label || data.location?.address || data.title}
       />
     </section>
   );

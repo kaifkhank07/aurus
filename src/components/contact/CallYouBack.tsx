@@ -1,42 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
-import { contactData, ContactPageData } from "@/data/contact";
+import { contactData } from "@/data/contact";
 import { Container } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
-
+import { CallbackForm } from "./CallbackForm";
 
 export function CallYouBack() {
   const data = contactData.callback;
-  const [submitted, setSubmitted] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: "",
-    mobileNumber: "",
-    city: "",
-    role: "",
-    message: "",
-    agreed: false,
-  });
-
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.fullName || !formData.mobileNumber || !formData.agreed) return;
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({
-        fullName: "",
-        mobileNumber: "",
-        city: "",
-        role: "",
-        message: "",
-        agreed: false,
-      });
-    }, 5000);
-  };
 
   return (
     <section className="py-10 sm:py-14 lg:py-18">
@@ -56,153 +29,7 @@ export function CallYouBack() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 mt-10 sm:mt-12 lg:mt-16 items-start">
             {/* Left Column: Callback Form */}
             <div className="lg:col-span-6">
-              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-4.5">
-                {/* Row 1: Full Name & Mobile Number */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="font-mono uppercase text-[10px] sm:text-[11px] lg:text-[14px] text-muted mb-2 block">
-                      FULL NAME *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.fullName}
-                      onChange={(e) =>
-                        setFormData({ ...formData, fullName: e.target.value })
-                      }
-                      className="w-full rounded-[10px] sm:rounded-[12px] bg-white/70 border border-ink/15 px-4 py-3 font-sans text-[13px] sm:text-[14px] text-ink focus:bg-white focus:outline-none focus:border-ink transition-all"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="font-mono uppercase text-[10px] sm:text-[11px] lg:text-[14px] text-muted mb-2 block">
-                      MOBILE NUMBER *
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      value={formData.mobileNumber}
-                      onChange={(e) =>
-                        setFormData({ ...formData, mobileNumber: e.target.value })
-                      }
-                      className="w-full rounded-[10px] sm:rounded-[12px] bg-white/70 border border-ink/15 px-4 py-3 font-sans text-[13px] sm:text-[14px] text-ink focus:bg-white focus:outline-none focus:border-ink transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* Row 2: City & I Am A */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="font-mono uppercase text-[10px] sm:text-[11px] lg:text-[14px] text-muted mb-2 block">
-                      CITY
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={formData.city}
-                        onChange={(e) =>
-                          setFormData({ ...formData, city: e.target.value })
-                        }
-                        className="w-full rounded-[10px] sm:rounded-[12px] bg-white/70 border border-ink/15 px-4 py-3 font-sans text-[13px] sm:text-[14px] text-ink focus:bg-white focus:outline-none focus:border-ink appearance-none cursor-pointer transition-all"
-                      >
-                        <option value="">Select City</option>
-                        <option value="Mumbai">Mumbai</option>
-                        <option value="Noida">Noida</option>
-                        <option value="Ahmedabad">Ahmedabad</option>
-                        <option value="Pune">Pune</option>
-                        <option value="Jalandhar">Jalandhar</option>
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-ink/60">
-                        <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                          <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="font-mono uppercase text-[10px] sm:text-[11px] lg:text-[14px] text-muted mb-2 block">
-                      I AM A
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={formData.role}
-                        onChange={(e) =>
-                          setFormData({ ...formData, role: e.target.value })
-                        }
-                        className="w-full rounded-[10px] sm:rounded-[12px] bg-white/70 border border-ink/15 px-4 py-3 font-sans text-[13px] sm:text-[14px] text-ink focus:bg-white focus:outline-none focus:border-ink appearance-none cursor-pointer transition-all"
-                      >
-                        <option value="">Select Category</option>
-                        <option value="Student">Student</option>
-                        <option value="Parent">Parent</option>
-                        <option value="Working Professional">Working Professional</option>
-                        <option value="Other">Other</option>
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-ink/60">
-                        <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                          <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Row 3: Message */}
-                <div>
-                  <label className="font-mono uppercase text-[10px] sm:text-[11px] lg:text-[14px] text-muted mb-2 block">
-                    MESSAGE
-                  </label>
-                  <textarea
-                    rows={4}
-                    value={formData.message}
-                    onChange={(e) =>
-                      setFormData({ ...formData, message: e.target.value })
-                    }
-                    className="w-full rounded-[10px] sm:rounded-[12px] bg-white/70 border border-ink/15 px-4 py-3 font-sans text-[13px] sm:text-[14px] text-ink focus:bg-white focus:outline-none focus:border-ink resize-none transition-all"
-                  />
-                </div>
-
-                {/* Row 4: Checkbox Agreement */}
-                <div className="pt-1">
-                  <label className="flex items-start gap-2.5 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      required
-                      checked={formData.agreed}
-                      onChange={(e) =>
-                        setFormData({ ...formData, agreed: e.target.checked })
-                      }
-                      className="h-4 w-4 rounded border-ink/30 text-ink focus:ring-ink"
-                    />
-                    <span className="font-sans uppercase text-[10px] lg:text-[14px] text-muted leading-tight">
-                      I AGREE TO THE{" "}
-                      <Link href="/terms" className="underline hover:text-ink">
-                        TERMS
-                      </Link>{" "}
-                      AND{" "}
-                      <Link href="/privacy" className="underline hover:text-ink">
-                        PRIVACY POLICY
-                      </Link>{" "}
-                      AND TO BE CONTACTED BY AURUS
-                    </span>
-                  </label>
-                </div>
-
-                {/* Row 5: Submit Button */}
-                <div className="pt-2">
-                  <button
-                    type="submit"
-                    className="w-full font-mono uppercase text-[11px] sm:text-[12px] tracking-[2px] font-medium rounded-full bg-ink text-paper py-3.5 sm:py-4 hover:bg-neutral-800 transition-all duration-300 shadow-sm active:scale-[0.99] cursor-pointer"
-                  >
-                    REQUEST CALLBACK
-                  </button>
-                </div>
-
-                {submitted && (
-                  <p className="font-mono text-[11px] tracking-[1px] text-[#C5A059] text-center pt-1">
-                    Thank you! Our concierge will call you back shortly.
-                  </p>
-                )}
-              </form>
+              <CallbackForm />
             </div>
 
             {/* Right Column: Where To Find Us Directory */}

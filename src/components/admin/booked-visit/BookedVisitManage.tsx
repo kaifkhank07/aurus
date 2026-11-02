@@ -7,10 +7,18 @@ import { Card, Chip, Btn, TextInput } from "../ui/AdminUI";
 import Icon from "../ui/AdminIcons";
 import BookedVisitHeader from "./BookedVisitHeader";
 import BookedVisitDetails from "./BookedVisitDetails";
+import CreateBookedVisit from "./CreateBookedVisit";
+import EditBookedVisit from "./EditBookedVisit";
 import DeleteBookedVisit from "./DeleteBookedVisit";
-import { SafeBookedVisit, BookedVisitQueryParams } from "@/types/booked-visit.types";
+import {
+  SafeBookedVisit,
+  BookedVisitQueryParams,
+  BookedVisitStatus,
+  BOOKED_VISIT_STATUS_LABELS,
+} from "@/types/booked-visit.types";
 
 const PAGE_LIMIT = 10;
+type StatusFilter = "all" | BookedVisitStatus;
 
 export default function BookedVisitManage() {
   const {
@@ -19,18 +27,25 @@ export default function BookedVisitManage() {
     isLoadingBookedVisits,
     bookedVisitsError,
     fetchBookedVisits,
+    updateBookedVisit,
   } = useHostelAndEnquiryStore();
 
   // Dialog states
   const [selectedVisitForDetails, setSelectedVisitForDetails] = useState<SafeBookedVisit | null>(null);
+  const [editingVisit, setEditingVisit] = useState<SafeBookedVisit | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deletingVisit, setDeletingVisit] = useState<SafeBookedVisit | null>(null);
 
   // Search & Filter & Sorting state
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sortBy, setSortBy] = useState<"createdAt" | "preferredDate">("createdAt");
   const [sortOrderDir, setSortOrderDir] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Status updating indicator
+  const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
 
   // Quick feedback toast
   const [feedback, setFeedback] = useState<{
@@ -72,9 +87,13 @@ export default function BookedVisitManage() {
         params.search = debouncedSearch.trim();
       }
 
+      if (statusFilter !== "all") {
+        params.status = statusFilter;
+      }
+
       await fetchBookedVisits(params, force);
     },
-    [currentPage, debouncedSearch, sortBy, sortOrderDir, fetchBookedVisits]
+    [currentPage, debouncedSearch, statusFilter, sortBy, sortOrderDir, fetchBookedVisits]
   );
 
   useEffect(() => {
@@ -89,9 +108,40 @@ export default function BookedVisitManage() {
     }, 2000);
   };
 
+  const handleInlineStatusChange = async (visit: SafeBookedVisit, newStatus: BookedVisitStatus) => {
+    if (visit.status === newStatus || updatingStatusId) return;
+
+    setUpdatingStatusId(visit.id);
+    try {
+      const res = await updateBookedVisit(visit.id, { status: newStatus });
+      if (res.success) {
+        setFeedback({
+          type: "success",
+          message: `Status for "${visit.name}" changed to ${BOOKED_VISIT_STATUS_LABELS[newStatus]}.`,
+        });
+        if (selectedVisitForDetails?.id === visit.id) {
+          setSelectedVisitForDetails({ ...selectedVisitForDetails, status: newStatus });
+        }
+      } else {
+        setFeedback({
+          type: "error",
+          message: res.message || "Failed to update visit status.",
+        });
+      }
+    } catch {
+      setFeedback({
+        type: "error",
+        message: "An unexpected error occurred while updating status.",
+      });
+    } finally {
+      setUpdatingStatusId(null);
+    }
+  };
+
   const handleResetFilters = () => {
     setSearch("");
     setDebouncedSearch("");
+    setStatusFilter("all");
     setSortBy("createdAt");
     setSortOrderDir("desc");
     setCurrentPage(1);
@@ -100,14 +150,21 @@ export default function BookedVisitManage() {
   const hasActiveFilters = useMemo(() => {
     return (
       search.trim().length > 0 ||
+      statusFilter !== "all" ||
       sortBy !== "createdAt" ||
       sortOrderDir !== "desc"
     );
-  }, [search, sortBy, sortOrderDir]);
+  }, [search, statusFilter, sortBy, sortOrderDir]);
 
   const totalCount = bookedVisitsPagination?.total ?? bookedVisits.length;
   const totalPages =
     bookedVisitsPagination?.totalPages ?? Math.max(1, Math.ceil(totalCount / PAGE_LIMIT));
+
+  const statusToneMap: Record<BookedVisitStatus, "amber" | "sea" | "mint"> = {
+    new: "amber",
+    read: "sea",
+    complete: "mint",
+  };
 
   return (
     <div className="space-y-6">
@@ -118,22 +175,21 @@ export default function BookedVisitManage() {
         totalCount={totalCount}
         onRefresh={() => loadVisitData(true)}
         refreshing={isLoadingBookedVisits}
+        onAdd={() => setIsCreateOpen(true)}
       />
 
       {/* Feedback Toast */}
       {feedback && (
         <div
-          className={`p-3.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-3 shadow-sm transition-all duration-300 animate-in slide-in-from-top-2 ${
-            feedback.type === "success"
-              ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
-              : "bg-rose-50 border border-rose-200 text-rose-800"
-          }`}
+          className={`p-3.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-3 shadow-sm transition-all duration-300 animate-in slide-in-from-top-2 ${feedback.type === "success"
+            ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
+            : "bg-rose-50 border border-rose-200 text-rose-800"
+            }`}
         >
           <div className="flex items-center gap-2.5">
             <span
-              className={`w-2 h-2 rounded-full ${
-                feedback.type === "success" ? "bg-emerald-500" : "bg-rose-500"
-              }`}
+              className={`w-2 h-2 rounded-full ${feedback.type === "success" ? "bg-emerald-500" : "bg-rose-500"
+                }`}
             />
             <span>{feedback.message}</span>
           </div>
@@ -158,7 +214,7 @@ export default function BookedVisitManage() {
             <TextInput
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by visitor name or phone number…"
+              placeholder="Search by visitor name, phone, email, college…"
               className="pl-9 pr-9"
             />
             {search && (
@@ -174,6 +230,21 @@ export default function BookedVisitManage() {
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap">
+            {/* Status Filter */}
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value as StatusFilter);
+                setCurrentPage(1);
+              }}
+              className="text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300 transition cursor-pointer"
+            >
+              <option value="all">All Statuses</option>
+              <option value="new">New</option>
+              <option value="read">Read</option>
+              <option value="complete">Complete</option>
+            </select>
+
             {/* Sort Dropdown */}
             <select
               value={`${sortBy}-${sortOrderDir}`}
@@ -237,16 +308,17 @@ export default function BookedVisitManage() {
               <tr className="border-b border-slate-200/80 bg-slate-50/75 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 <th className="py-3 px-4">Visitor</th>
                 <th className="py-3 px-4">Contact</th>
-                <th className="py-3 px-4">Property / Location</th>
+                <th className="py-3 px-4">Location</th>
                 <th className="py-3 px-4">Scheduled Visit</th>
-                <th className="py-3 px-4 w-32">Booked On</th>
+                <th className="py-3 px-4 w-36">Status</th>
+                <th className="py-3 px-4 w-28">Booked On</th>
                 <th className="py-3 px-4 text-right w-28">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {isLoadingBookedVisits && bookedVisits.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-14 text-center">
+                  <td colSpan={7} className="py-14 text-center">
                     <div className="flex flex-col items-center justify-center gap-2 text-slate-400">
                       <span className="inline-block animate-spin text-sky-500">
                         <Icon name="refresh" size={20} />
@@ -257,7 +329,7 @@ export default function BookedVisitManage() {
                 </tr>
               ) : bookedVisits.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-14 text-center">
+                  <td colSpan={7} className="py-14 text-center">
                     <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto text-slate-400">
                       <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-1">
                         <Icon name="calendar" size={24} />
@@ -265,7 +337,7 @@ export default function BookedVisitManage() {
                       <p className="text-sm font-bold text-slate-700">No booked visits found</p>
                       <p className="text-xs text-slate-400">
                         {hasActiveFilters
-                          ? "No booked visit appointments match your search criteria."
+                          ? "No booked visit appointments match your search or filter criteria."
                           : "Scheduled property visit appointments from website visitors will appear here."}
                       </p>
                       {hasActiveFilters && (
@@ -282,10 +354,10 @@ export default function BookedVisitManage() {
                   const isValidDate = visitDateObj && !isNaN(visitDateObj.getTime());
                   const formattedVisitDate = isValidDate
                     ? visitDateObj.toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
                     : visit.preferredDate || "—";
 
                   const isUpcoming = isValidDate
@@ -294,32 +366,36 @@ export default function BookedVisitManage() {
 
                   const bookedOnFormatted = visit.createdAt
                     ? new Date(visit.createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
                     : "—";
 
                   const cleanPhone = visit.number.replace(/\D/g, "");
+                  const isUpdatingThis = updatingStatusId === visit.id;
 
                   return (
                     <tr
                       key={visit.id}
                       className="hover:bg-slate-50/70 transition-colors group select-text"
                     >
-                      {/* Visitor Name & Role */}
-                      <td className="py-3 px-4 min-w-[190px]">
+                      {/* Visitor Name, Email & College */}
+                      <td className="py-3 px-4 min-w-[210px]">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
                             {visit.name.charAt(0).toUpperCase()}
                           </div>
-                          <div>
-                            <div className="font-bold text-slate-900 group-hover:text-sky-600 transition-colors">
+                          <div className="min-w-0">
+                            <div className="font-bold text-slate-900 group-hover:text-sky-600 transition-colors truncate">
                               {visit.name}
                             </div>
-                            <div className="text-[11px] font-medium text-slate-500">
-                              {visit.iam || "Visitor"}
+                            <div className="text-[11px] text-slate-500 truncate" title={visit.email}>
+                              {visit.email}
                             </div>
+                            {/*   <div className="text-[10px] text-slate-400 truncate" title={visit.college}>
+                              {visit.college}
+                            </div> */}
                           </div>
                         </div>
                       </td>
@@ -350,26 +426,51 @@ export default function BookedVisitManage() {
                       </td>
 
                       {/* Target Location */}
-                      <td className="py-3 px-4 min-w-[160px]">
+                      <td className="py-3 px-4 min-w-[150px]">
                         <div className="flex items-center gap-1.5 text-slate-700 font-medium">
                           <span className="text-slate-400 shrink-0">
                             <Icon name="pin" size={12} />
                           </span>
-                          <span className="truncate max-w-[180px]">{visit.location || "General Visit"}</span>
+                          <span className="truncate max-w-[170px]" title={visit.location}>
+                            {visit.location || "General Visit"}
+                          </span>
                         </div>
                       </td>
 
-                      {/* Scheduled Visit Date & Time */}
+                      {/* Scheduled Visit Date */}
                       <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-1.5">
-                            <Chip tone={isUpcoming ? "mint" : "slate"}>
-                              {formattedVisitDate}
-                            </Chip>
-                          </div>
-                          <div className="text-[11px] text-slate-500 flex items-center gap-1 font-medium pl-1">
-                            <Icon name="clock" size={11} />
-                            <span>{visit.preferredTime || "Any Time"}</span>
+                        <div className="flex items-center gap-1.5">
+                          <Chip tone={isUpcoming ? "mint" : "slate"}>
+                            {formattedVisitDate}
+                          </Chip>
+                        </div>
+                      </td>
+
+                      {/* Status Management */}
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        <div className="relative inline-flex items-center">
+                          <select
+                            value={visit.status}
+                            disabled={isUpdatingThis}
+                            onChange={(e) =>
+                              handleInlineStatusChange(
+                                visit,
+                                e.target.value as BookedVisitStatus
+                              )
+                            }
+                            className={`text-xs font-semibold rounded-lg px-2.5 py-1 border transition cursor-pointer appearance-none pr-6 ${visit.status === "new"
+                              ? "bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100"
+                              : visit.status === "read"
+                                ? "bg-sky-50 text-sky-800 border-sky-300 hover:bg-sky-100"
+                                : "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100"
+                              } ${isUpdatingThis ? "opacity-50 cursor-wait" : ""}`}
+                          >
+                            <option value="new">New</option>
+                            <option value="read">Read</option>
+                            <option value="complete">Complete</option>
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1.5 text-slate-500">
+                            <Icon name="down" size={10} />
                           </div>
                         </div>
                       </td>
@@ -389,7 +490,17 @@ export default function BookedVisitManage() {
                             title="View appointment details"
                             className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-sky-600 hover:bg-sky-50 hover:border-sky-200 transition cursor-pointer"
                           >
-                            <Icon name="eye" size={14} />
+                            <Icon name="eye" size={13} />
+                          </button>
+
+                          {/* Edit Button */}
+                          <button
+                            type="button"
+                            onClick={() => setEditingVisit(visit)}
+                            title="Edit appointment"
+                            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-sky-600 hover:bg-sky-50 hover:border-sky-200 transition cursor-pointer"
+                          >
+                            <Icon name="pen" size={13} />
                           </button>
 
                           {/* Delete Button */}
@@ -399,7 +510,7 @@ export default function BookedVisitManage() {
                             title="Delete booked visit"
                             className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition cursor-pointer"
                           >
-                            <Icon name="trash" size={14} />
+                            <Icon name="trash" size={13} />
                           </button>
                         </div>
                       </td>
@@ -459,10 +570,52 @@ export default function BookedVisitManage() {
           open={!!selectedVisitForDetails}
           visit={selectedVisitForDetails}
           onClose={() => setSelectedVisitForDetails(null)}
+          onEdit={() => {
+            const v = selectedVisitForDetails;
+            setSelectedVisitForDetails(null);
+            setEditingVisit(v);
+          }}
           onDelete={() => {
             const v = selectedVisitForDetails;
             setSelectedVisitForDetails(null);
             setDeletingVisit(v);
+          }}
+          onStatusChange={(newStatus) => {
+            setSelectedVisitForDetails((prev) =>
+              prev ? { ...prev, status: newStatus } : null
+            );
+            loadVisitData(true);
+          }}
+        />
+      )}
+
+      {/* Create Modal */}
+      {isCreateOpen && (
+        <CreateBookedVisit
+          open={isCreateOpen}
+          onClose={() => setIsCreateOpen(false)}
+          onSuccess={() => {
+            setFeedback({
+              type: "success",
+              message: "Booked visit appointment created successfully.",
+            });
+            loadVisitData(true);
+          }}
+        />
+      )}
+
+      {/* Edit Modal */}
+      {editingVisit && (
+        <EditBookedVisit
+          open={!!editingVisit}
+          visit={editingVisit}
+          onClose={() => setEditingVisit(null)}
+          onSuccess={() => {
+            setFeedback({
+              type: "success",
+              message: "Booked visit appointment updated successfully.",
+            });
+            loadVisitData(true);
           }}
         />
       )}
@@ -485,4 +638,3 @@ export default function BookedVisitManage() {
     </div>
   );
 }
-

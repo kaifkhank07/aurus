@@ -17,7 +17,7 @@ export const footer = {
         { label: "About Us", href: "/about" },
         { label: "Boutique Workspaces", href: "/workspaces" },
         { label: "Life @ Aurus", href: "/life-at-aurus" },
-        { label: "Hostels", href: "/hostels" },
+        { label: "Hostels", href: "/residences" },
         { label: "Real Stories", href: "/stories" },
         { label: "FAQ", href: "/faq" },
         { label: "Blogs", href: "/blog" },

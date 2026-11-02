@@ -27,12 +27,12 @@ const logger = createLogger("EnquiryController");
 function formatSafeEnquiry(doc: IEnquiryDocument): SafeEnquiry {
   return {
     id: doc._id.toString(),
-    type: doc.type,
     name: doc.name,
     number: doc.number,
     location: doc.location ?? null,
     iam: doc.iam ?? null,
     message: doc.message ?? null,
+    status: doc.status || "new",
     createdAt: doc.createdAt ? doc.createdAt.toISOString() : new Date().toISOString(),
     updatedAt: doc.updatedAt ? doc.updatedAt.toISOString() : new Date().toISOString(),
   };
@@ -75,7 +75,7 @@ function handleError(error: unknown, operation = "general"): NextResponse {
 
 /**
  * GET /api/admin/enquiries
- * Retrieves a paginated list of enquiries with search, type filter, and sorting
+ * Retrieves a paginated list of enquiries with search, status filter, and sorting
  */
 export async function list(request: NextRequest): Promise<NextResponse> {
   const operation = "list";
@@ -89,14 +89,16 @@ export async function list(request: NextRequest): Promise<NextResponse> {
     });
 
     const validatedQuery = enquiryQuerySchema.parse(rawQuery);
-    const { page, limit, type, search, sortOrderDir } = validatedQuery;
+    const { page, limit, status, search, location, sortBy, sortOrderDir } = validatedQuery;
 
     logger.info("Listing enquiries started", {
       operation,
       page,
       limit,
-      type,
+      status,
       search,
+      location,
+      sortBy,
       sortOrderDir,
     });
 
@@ -104,23 +106,28 @@ export async function list(request: NextRequest): Promise<NextResponse> {
 
     const filter: Record<string, unknown> = {};
 
-    if (type) {
-      filter.type = type;
+    if (status && status !== "all") {
+      filter.status = status;
+    }
+
+    if (location) {
+      filter.location = { $regex: new RegExp(`^${location}$`, "i") };
     }
 
     if (search) {
-      const searchRegex = new RegExp(search, "i");
+      const searchRegex = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
       filter.$or = [
         { name: searchRegex },
         { number: searchRegex },
         { location: searchRegex },
+        { iam: searchRegex },
         { message: searchRegex },
       ];
     }
 
-    const sortOptions: Record<string, 1 | -1> = {
-      createdAt: sortOrderDir === "asc" ? 1 : -1,
-    };
+    const sortOptions: Record<string, 1 | -1> = {};
+    const sortField = sortBy || "createdAt";
+    sortOptions[sortField] = sortOrderDir === "asc" ? 1 : -1;
 
     const skip = (page - 1) * limit;
 
@@ -163,12 +170,12 @@ async function createEnquiryDoc(body: unknown): Promise<SafeEnquiry> {
   await connectToDatabase();
 
   const newDoc = new Enquiry({
-    type: validated.type,
     name: validated.name.trim(),
     number: validated.number.trim(),
-    location: validated.location ? validated.location.trim() : null,
-    iam: validated.iam ? validated.iam.trim() : null,
-    message: validated.message ? validated.message.trim() : null,
+    location: validated.location.trim(),
+    iam: validated.iam.trim(),
+    message: validated.message.trim(),
+    status: validated.status || "new",
   });
 
   await newDoc.save();
@@ -218,7 +225,13 @@ export async function createPublic(request: NextRequest): Promise<NextResponse> 
 
     logger.info("Public enquiry submission received", { operation });
 
-    const enquiry = await createEnquiryDoc(body);
+    // Always enforce status: "new" when created from public site
+    const publicPayload = {
+      ...(typeof body === "object" && body !== null ? body : {}),
+      status: "new",
+    };
+
+    const enquiry = await createEnquiryDoc(publicPayload);
 
     logger.info("Public enquiry submitted successfully", { operation, id: enquiry.id });
     return apiSuccess(
@@ -288,34 +301,6 @@ export async function update(
       throw new AppError("Enquiry not found.", 404);
     }
 
-    // Crucial: Validate final merged state for conditional rules
-    const finalType = validated.type !== undefined ? validated.type : doc.type;
-    const finalLocation =
-      validated.location !== undefined ? validated.location : doc.location;
-    const finalIam = validated.iam !== undefined ? validated.iam : doc.iam;
-    const finalMessage =
-      validated.message !== undefined ? validated.message : doc.message;
-
-    if (finalType === "query") {
-      const errors: { field: string; message: string }[] = [];
-      if (!finalLocation || finalLocation.trim().length === 0) {
-        errors.push({ field: "location", message: "Location is required for query enquiries." });
-      }
-      if (!finalIam || finalIam.trim().length === 0) {
-        errors.push({ field: "iam", message: "I am selection is required for query enquiries." });
-      }
-      if (!finalMessage || finalMessage.trim().length === 0) {
-        errors.push({ field: "message", message: "Message is required for query enquiries." });
-      }
-
-      if (errors.length > 0) {
-        throw new AppError("Validation failed for query enquiry.", 400, errors);
-      }
-    }
-
-    if (validated.type !== undefined) {
-      doc.type = validated.type;
-    }
     if (validated.name !== undefined) {
       doc.name = validated.name.trim();
     }
@@ -323,13 +308,16 @@ export async function update(
       doc.number = validated.number.trim();
     }
     if (validated.location !== undefined) {
-      doc.location = validated.location ? validated.location.trim() : null;
+      doc.location = validated.location.trim();
     }
     if (validated.iam !== undefined) {
-      doc.iam = validated.iam ? validated.iam.trim() : null;
+      doc.iam = validated.iam.trim();
     }
     if (validated.message !== undefined) {
-      doc.message = validated.message ? validated.message.trim() : null;
+      doc.message = validated.message.trim();
+    }
+    if (validated.status !== undefined) {
+      doc.status = validated.status;
     }
 
     await doc.save();

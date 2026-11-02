@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { SafeBookedVisit } from "@/types/booked-visit.types";
+import { useHostelAndEnquiryStore } from "@/store/useHostelAndEnquiryStore";
+import {
+  SafeBookedVisit,
+  BookedVisitStatus,
+  BOOKED_VISIT_STATUSES,
+  BOOKED_VISIT_STATUS_LABELS,
+} from "@/types/booked-visit.types";
 import { Chip, Btn } from "../ui/AdminUI";
 import Icon from "../ui/AdminIcons";
 
@@ -9,16 +15,22 @@ export interface BookedVisitDetailsProps {
   open: boolean;
   visit: SafeBookedVisit | null;
   onClose: () => void;
+  onEdit?: () => void;
   onDelete?: () => void;
+  onStatusChange?: (newStatus: BookedVisitStatus) => void;
 }
 
 export default function BookedVisitDetails({
   open,
   visit,
   onClose,
+  onEdit,
   onDelete,
+  onStatusChange,
 }: BookedVisitDetailsProps) {
+  const { updateBookedVisit } = useHostelAndEnquiryStore();
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   if (!open || !visit) return null;
 
@@ -30,35 +42,65 @@ export default function BookedVisitDetails({
     }, 2000);
   };
 
+  const handleStatusUpdate = async (newStatus: BookedVisitStatus) => {
+    if (newStatus === visit.status || isUpdatingStatus) return;
+    setIsUpdatingStatus(true);
+    try {
+      const res = await updateBookedVisit(visit.id, { status: newStatus });
+      if (res.success && onStatusChange) {
+        onStatusChange(newStatus);
+      }
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
   // Date parsing & upcoming/past calculation
   const visitDateObj = visit.preferredDate ? new Date(visit.preferredDate) : null;
   const isDateValid = visitDateObj && !isNaN(visitDateObj.getTime());
 
   const formattedVisitDate = isDateValid
     ? visitDateObj.toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
     : visit.preferredDate || "Not specified";
 
   const isUpcoming = isDateValid
     ? new Date(visitDateObj.toDateString()) >= new Date(new Date().toDateString())
     : false;
 
-  const createdFormatted = visit.createdAt
+  const formattedCreated = visit.createdAt
     ? new Date(visit.createdAt).toLocaleString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
+    : "—";
+
+  const formattedUpdated = visit.updatedAt
+    ? new Date(visit.updatedAt).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
     : "—";
 
   const cleanPhone = visit.number.replace(/\D/g, "");
+
+  const statusToneMap: Record<BookedVisitStatus, "amber" | "sea" | "mint"> = {
+    new: "amber",
+    read: "sea",
+    complete: "mint",
+  };
 
   return (
     <div
@@ -71,7 +113,7 @@ export default function BookedVisitDetails({
     >
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-8 animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 via-white to-sky-50/30">
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center shrink-0 shadow-2xs">
               <Icon name="calendar" size={18} />
@@ -81,12 +123,16 @@ export default function BookedVisitDetails({
                 <h3 className="text-base font-bold text-slate-900 tracking-tight">
                   Visit Appointment Details
                 </h3>
-                <Chip tone={isUpcoming ? "mint" : "slate"} dot>
-                  {isUpcoming ? "Upcoming" : "Past Appointment"}
+                <Chip tone={statusToneMap[visit.status] || "slate"} dot>
+                  {BOOKED_VISIT_STATUS_LABELS[visit.status] || visit.status}
+                </Chip>
+                <Chip tone={isUpcoming ? "mint" : "slate"}>
+                  {isUpcoming ? "Upcoming" : "Past"}
                 </Chip>
               </div>
+
               <p className="text-xs text-slate-500 font-medium">
-                Appointment ID: <span className="font-mono text-slate-700">{visit.id.slice(-8)}</span>
+                Detailed view of the visit appointment details
               </p>
             </div>
           </div>
@@ -114,17 +160,47 @@ export default function BookedVisitDetails({
                   {visit.name}
                 </h4>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-slate-500 font-medium">Role / Profile:</span>
+                  <span className="text-xs text-slate-500 font-medium">College:</span>
                   <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-white border border-slate-200 text-slate-700">
-                    {visit.iam || "Visitor"}
+                    {visit.college}
                   </span>
                 </div>
+              </div>
+            </div>
+
+            {/* Status Quick Changer */}
+            <div className="flex flex-col items-end gap-1.5">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Status
+              </span>
+              <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200">
+                {BOOKED_VISIT_STATUSES.map((s) => {
+                  const isActive = visit.status === s;
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      disabled={isUpdatingStatus}
+                      onClick={() => handleStatusUpdate(s)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold capitalize transition cursor-pointer ${isActive
+                        ? s === "new"
+                          ? "bg-amber-100 text-amber-800"
+                          : s === "read"
+                            ? "bg-sky-100 text-sky-800"
+                            : "bg-emerald-100 text-emerald-800"
+                        : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
+                        }`}
+                    >
+                      {BOOKED_VISIT_STATUS_LABELS[s]}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
 
           {/* Contact Details Grid */}
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Phone & Communication */}
             <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-3">
               <div className="flex items-center justify-between">
@@ -138,47 +214,83 @@ export default function BookedVisitDetails({
                 )}
               </div>
 
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <div className="text-base font-bold text-slate-900 font-mono tracking-tight">
-                  {visit.number}
-                </div>
+              <div className="text-sm font-bold text-slate-900 font-mono tracking-tight">
+                {visit.number}
+              </div>
 
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => handleCopy(visit.number, "phone")}
-                    title="Copy phone number"
-                    className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition cursor-pointer flex items-center gap-1"
-                  >
-                    <Icon name="copy" size={12} />
-                    <span>Copy</span>
-                  </button>
+              <div className="flex items-center gap-1.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleCopy(visit.number, "phone")}
+                  title="Copy phone number"
+                  className="px-2 py-1 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition cursor-pointer flex items-center gap-1"
+                >
+                  <Icon name="copy" size={11} />
+                  <span>Copy</span>
+                </button>
 
+                <a
+                  href={`tel:${cleanPhone}`}
+                  className="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 text-xs font-semibold transition flex items-center gap-1"
+                >
+                  <Icon name="phone" size={11} />
+                  <span>Call</span>
+                </a>
+
+                {cleanPhone.length >= 10 && (
                   <a
-                    href={`tel:${cleanPhone}`}
-                    className="px-3 py-1.5 rounded-lg bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 text-xs font-semibold transition flex items-center gap-1"
+                    href={`https://wa.me/${cleanPhone.startsWith("91") ? cleanPhone : `91${cleanPhone}`}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 text-xs font-semibold transition flex items-center gap-1"
                   >
-                    <Icon name="phone" size={12} />
-                    <span>Call</span>
+                    <Icon name="chat" size={11} />
+                    <span>WhatsApp</span>
                   </a>
+                )}
+              </div>
+            </div>
 
-                  {cleanPhone.length >= 10 && (
-                    <a
-                      href={`https://wa.me/${cleanPhone.startsWith("91") ? cleanPhone : `91${cleanPhone}`}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 text-xs font-semibold transition flex items-center gap-1"
-                    >
-                      <Icon name="chat" size={12} />
-                      <span>WhatsApp</span>
-                    </a>
-                  )}
-                </div>
+            {/* Email Address */}
+            <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Icon name="mail" size={12} /> Email Address
+                </span>
+                {copiedField === "email" && (
+                  <span className="text-[11px] font-semibold text-emerald-600 animate-in fade-in">
+                    Copied!
+                  </span>
+                )}
+              </div>
+
+              <div className="text-sm font-bold text-slate-900 truncate" title={visit.email}>
+                {visit.email}
+              </div>
+
+              <div className="flex items-center gap-1.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleCopy(visit.email, "email")}
+                  title="Copy email address"
+                  className="px-2 py-1 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition cursor-pointer flex items-center gap-1"
+                >
+                  <Icon name="copy" size={11} />
+                  <span>Copy</span>
+                </button>
+
+                <a
+                  href={`mailto:${visit.email}`}
+                  className="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 text-xs font-semibold transition flex items-center gap-1"
+                >
+                  <Icon name="mail" size={11} />
+                  <span>Email</span>
+                </a>
               </div>
             </div>
           </div>
 
-          {/* Appointment Details */}
+          {/* Appointment Date & Location Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Preferred Date */}
             <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-1">
@@ -190,56 +302,81 @@ export default function BookedVisitDetails({
               </div>
             </div>
 
-            {/* Preferred Time */}
+            {/* Location / Property */}
             <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-1">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Icon name="clock" size={12} /> Preferred Time
+                <Icon name="pin" size={12} /> Location
               </span>
-              <div className="text-sm font-bold text-slate-800 pt-0.5">
-                {visit.preferredTime || "Any Time"}
+              <div className="text-sm font-bold text-slate-800 pt-0.5 truncate" title={visit.location}>
+                {visit.location}
               </div>
             </div>
           </div>
 
-          {/* Location / Property */}
-          <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-1.5">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Icon name="pin" size={12} /> Target Residence / Property Location
-            </span>
-            <div className="text-sm font-bold text-slate-800 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />
-              <span>{visit.location || "General Property Visit"}</span>
+          {/* Status Bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+            <div>
+              <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-0.5">
+                Status
+              </span>
+              <Chip tone={statusToneMap[visit.status] || "slate"} dot>
+                {BOOKED_VISIT_STATUS_LABELS[visit.status] || visit.status}
+              </Chip>
             </div>
-          </div>
 
-          {/* Submission Timestamps */}
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-medium">
-            <span>Submitted on: {createdFormatted}</span>
-            <span className="font-mono text-slate-400">ID: {visit.id}</span>
+
+            <div>
+              <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-0.5">
+                Created
+              </span>
+              <span className="text-xs font-medium text-slate-600 truncate block">
+                {formattedCreated}
+              </span>
+            </div>
+
+            <div>
+              <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-0.5">
+                Last Updated
+              </span>
+              <span className="text-xs font-medium text-slate-600 truncate block">
+                {formattedUpdated}
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3">
-          {onDelete ? (
-            <button
-              type="button"
-              onClick={onDelete}
-              className="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-3 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5"
-            >
-              <Icon name="trash" size={13} />
-              <span>Delete Lead</span>
-            </button>
-          ) : (
-            <div />
-          )}
+        <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3 shrink-0">
+          <div>
+            {onDelete && (
+              <button
+                type="button"
+                onClick={onDelete}
+                className="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-3 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5"
+              >
+                <Icon name="trash" size={13} />
+                <span>Delete Lead</span>
+              </button>
+            )}
+          </div>
 
-          <Btn variant="dark" size="md" onClick={onClose}>
-            Close
-          </Btn>
+          <div className="flex items-center gap-2">
+            {onEdit && (
+              <Btn
+                variant="brand"
+                size="sm"
+                onClick={onEdit}
+              >
+                <Icon name="pen" size={12} />
+                <span>Edit Lead</span>
+              </Btn>
+            )}
+            <Btn variant="ghost" size="sm" onClick={onClose}>
+              Close
+            </Btn>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-

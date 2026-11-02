@@ -10,6 +10,7 @@ export interface BookedVisitHeaderProps {
   totalCount?: number;
   onRefresh?: () => void;
   refreshing?: boolean;
+  onAdd?: () => void;
 }
 
 export default function BookedVisitHeader({
@@ -18,6 +19,7 @@ export default function BookedVisitHeader({
   totalCount,
   onRefresh,
   refreshing = false,
+  onAdd,
 }: BookedVisitHeaderProps) {
   const todayFormatted = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -56,9 +58,15 @@ export default function BookedVisitHeader({
               <span>{refreshing ? "Refreshing…" : "Refresh"}</span>
             </Btn>
           )}
+
+          {onAdd && (
+            <Btn variant="brand" size="sm" onClick={onAdd}>
+              <Icon name="plus" size={14} />
+              <span>New Visit</span>
+            </Btn>
+          )}
         </div>
       }
     />
   );
 }
-

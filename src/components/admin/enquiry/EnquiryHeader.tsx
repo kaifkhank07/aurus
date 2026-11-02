@@ -10,6 +10,7 @@ export interface EnquiryHeaderProps {
   totalCount?: number;
   onRefresh?: () => void;
   refreshing?: boolean;
+  onAdd?: () => void;
 }
 
 export default function EnquiryHeader({
@@ -18,6 +19,7 @@ export default function EnquiryHeader({
   totalCount,
   onRefresh,
   refreshing = false,
+  onAdd,
 }: EnquiryHeaderProps) {
   const todayFormatted = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -56,9 +58,15 @@ export default function EnquiryHeader({
               <span>{refreshing ? "Refreshing…" : "Refresh"}</span>
             </Btn>
           )}
+
+          {onAdd && (
+            <Btn variant="brand" size="sm" onClick={onAdd}>
+              <Icon name="plus" size={14} />
+              <span>New Enquiry</span>
+            </Btn>
+          )}
         </div>
       }
     />
   );
 }
-

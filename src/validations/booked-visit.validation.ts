@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { objectIdSchema } from "./admin.validation";
+import { BOOKED_VISIT_STATUSES } from "@/types/booked-visit.types";
 
 export { objectIdSchema };
 
@@ -12,16 +13,21 @@ export const phoneSchema = z
     message: "Phone number contains invalid characters.",
   });
 
-const timeRegex = /^(0?[1-9]|1[0-2]):[0-5][0-9]\s*(AM|PM|am|pm)$|^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-
-export const visitTimeSchema = z
+export const emailSchema = z
   .string()
   .trim()
-  .min(1, { message: "Preferred time is required." })
-  .max(30, { message: "Preferred time cannot exceed 30 characters." })
-  .regex(timeRegex, {
-    message: "Preferred time must be in a valid format (e.g., '10:30 AM' or '14:30').",
-  });
+  .min(1, { message: "Email is required." })
+  .max(255, { message: "Email cannot exceed 255 characters." })
+  .email({ message: "Please provide a valid email address." })
+  .toLowerCase();
+
+export const collegeSchema = z
+  .string()
+  .trim()
+  .min(1, { message: "College is required." })
+  .max(200, { message: "College cannot exceed 200 characters." });
+
+export const bookedVisitStatusSchema = z.enum(BOOKED_VISIT_STATUSES);
 
 export const visitDateSchema = z
   .string()
@@ -43,18 +49,15 @@ export const createBookedVisitSchema = z
       .min(1, { message: "Name is required." })
       .max(100, { message: "Name cannot exceed 100 characters." }),
     number: phoneSchema,
+    email: emailSchema,
+    college: collegeSchema,
     location: z
       .string()
       .trim()
       .min(1, { message: "Location is required." })
       .max(100, { message: "Location cannot exceed 100 characters." }),
-    iam: z
-      .string()
-      .trim()
-      .min(1, { message: "I am selection is required." })
-      .max(100, { message: "I am selection cannot exceed 100 characters." }),
     preferredDate: visitDateSchema,
-    preferredTime: visitTimeSchema,
+    status: bookedVisitStatusSchema.optional().default("new"),
   })
   .strict();
 
@@ -62,10 +65,11 @@ export const updateBookedVisitSchema = z
   .object({
     name: z.string().trim().min(1).max(100).optional(),
     number: phoneSchema.optional(),
+    email: emailSchema.optional(),
+    college: collegeSchema.optional(),
     location: z.string().trim().min(1).max(100).optional(),
-    iam: z.string().trim().min(1).max(100).optional(),
     preferredDate: visitDateSchema.optional(),
-    preferredTime: visitTimeSchema.optional(),
+    status: bookedVisitStatusSchema.optional(),
   })
   .strict()
   .refine(
@@ -92,7 +96,8 @@ export const bookedVisitQuerySchema = z.object({
     ),
   search: z.string().trim().optional(),
   location: z.string().trim().optional(),
+  status: z.enum(["new", "read", "complete", "all"]).optional(),
   preferredDate: z.string().trim().optional(),
-  sortBy: z.enum(["createdAt", "preferredDate"]).optional(),
+  sortBy: z.enum(["createdAt", "preferredDate", "name", "status"]).optional(),
   sortOrderDir: z.enum(["asc", "desc"]).optional(),
 });

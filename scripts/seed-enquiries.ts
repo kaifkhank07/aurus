@@ -4,70 +4,71 @@ dotenv.config();
 import mongoose from "mongoose";
 import connectToDatabase from "../src/lib/mongodb";
 import { Enquiry } from "../src/models/enquiry.model";
+import { EnquiryStatus } from "../src/types/enquiry.types";
 
 interface SeedEnquiryItem {
-  type: "query" | "request";
   name: string;
   number: string;
-  location?: string | null;
-  iam?: string | null;
-  message?: string | null;
+  location: string;
+  iam: string;
+  message: string;
+  status: EnquiryStatus;
 }
 
 const sampleEnquiries: SeedEnquiryItem[] = [
   {
-    type: "query",
     name: "Aarav Sharma",
     number: "+91 98765 11223",
-    location: "Koramangala, Bangalore",
+    location: "Pune",
     iam: "Working Professional",
     message:
       "Looking for a private single occupancy room with dedicated workspace starting next month. Does the monthly rent include housekeeping, laundry, and high-speed Wi-Fi?",
+    status: "new",
   },
   {
-    type: "query",
     name: "Sneha Patel",
     number: "+91 98220 33445",
-    location: "Viman Nagar, Pune",
+    location: "Pune",
     iam: "Student",
     message:
       "Looking for twin sharing accommodation near Symbiosis campus. Could you please share the security deposit details and notice period policy?",
+    status: "read",
   },
   {
-    type: "request",
     name: "Rohan Verma",
     number: "+91 97112 55667",
-    location: "Andheri West, Mumbai",
+    location: "Mumbai",
     iam: "Working Professional",
     message:
       "Please arrange a callback regarding long-term corporate booking options and group discounts.",
+    status: "complete",
   },
   {
-    type: "query",
     name: "Kavya Nair",
     number: "+91 90080 99001",
-    location: "Indiranagar, Bangalore",
+    location: "Bangalore",
     iam: "Intern",
     message:
       "Do you provide short-term stays (3 months) for summer internship students? Please share available options and check-in procedure.",
+    status: "new",
   },
   {
-    type: "request",
     name: "Dr. Meenakshi Sundaram",
     number: "+91 94440 77889",
-    location: "Sector 62, Noida",
+    location: "Noida",
     iam: "Parent",
     message:
       "Requesting a callback from the residence warden to understand 24/7 security, biometric access, and meal plans for my daughter.",
+    status: "read",
   },
   {
-    type: "request",
     name: "Vikramaditya Roy",
     number: "+91 98300 22334",
-    location: "North Campus, Delhi",
+    location: "Delhi",
     iam: "Student",
     message:
       "Immediate move-in needed this weekend near Delhi University. Please call me back with available bed availability.",
+    status: "complete",
   },
 ];
 
@@ -87,45 +88,48 @@ async function runSeed() {
 
     // 2. Iterate and insert sample enquiries
     for (const enquiry of sampleEnquiries) {
-      // Check if an enquiry with this phone number and type already exists
       const existing = await Enquiry.findOne({
         number: enquiry.number,
-        type: enquiry.type,
+        name: enquiry.name,
       });
 
       if (existing) {
         console.log(
-          `ℹ️  Enquiry from "${enquiry.name}" (${enquiry.type}: ${enquiry.number}) already exists. Skipping.`
+          `ℹ️  Enquiry from "${enquiry.name}" (${enquiry.number}) already exists. Skipping.`
         );
         existingCount++;
       } else {
-        const doc = new Enquiry(enquiry);
-        await doc.save();
+        await Enquiry.create({
+          name: enquiry.name,
+          number: enquiry.number,
+          location: enquiry.location,
+          iam: enquiry.iam,
+          message: enquiry.message,
+          status: enquiry.status,
+        });
+
         console.log(
-          `✅ Created enquiry [${enquiry.type.toUpperCase()}]: "${enquiry.name}" (${enquiry.number}) — Location: ${enquiry.location || "N/A"}`
+          `✅ Created enquiry from: "${enquiry.name}" (${enquiry.number}) [Status: ${enquiry.status}]`
         );
         createdCount++;
       }
     }
 
-    console.log("\n----------------------------------------");
-    console.log(`Summary: ${createdCount} created, ${existingCount} already existed.`);
-    console.log("----------------------------------------\n");
+    console.log("\n========================================");
+    console.log("             Seed Summary               ");
+    console.log("========================================");
+    console.log(`Total sample records: ${sampleEnquiries.length}`);
+    console.log(`Newly created:        ${createdCount}`);
+    console.log(`Already existed:      ${existingCount}`);
+    console.log("========================================\n");
 
-    // 3. Disconnect cleanly
-    await mongoose.disconnect();
-    console.log("Database connection closed cleanly.\n");
     process.exit(0);
   } catch (error) {
-    console.error("❌ Fatal error during enquiries seeding:", error);
-    try {
-      await mongoose.disconnect();
-    } catch {
-      // ignore
-    }
+    console.error("❌ Seeding failed with error:", error);
     process.exit(1);
+  } finally {
+    await mongoose.disconnect();
   }
 }
 
 runSeed();
-

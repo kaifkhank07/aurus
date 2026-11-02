@@ -104,11 +104,19 @@ export default function DeleteBookedVisit({
             </p>
             <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-1">
               <div>
-                <span className="text-slate-400 font-medium">Scheduled Date: </span>
-                <span className="font-semibold text-slate-700">{formattedDate} ({visit.preferredTime})</span>
+                <span className="text-slate-400 font-medium">Email: </span>
+                <span className="font-semibold text-slate-700">{visit.email}</span>
               </div>
               <div>
-                <span className="text-slate-400 font-medium">Property: </span>
+                <span className="text-slate-400 font-medium">College: </span>
+                <span className="font-semibold text-slate-700">{visit.college}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 font-medium">Scheduled Date: </span>
+                <span className="font-semibold text-slate-700">{formattedDate}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 font-medium">Location: </span>
                 <span className="font-semibold text-slate-700">{visit.location}</span>
               </div>
             </div>
@@ -153,4 +161,3 @@ export default function DeleteBookedVisit({
     </div>
   );
 }
-

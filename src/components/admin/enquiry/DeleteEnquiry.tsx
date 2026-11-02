@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useHostelAndEnquiryStore } from "@/store/useHostelAndEnquiryStore";
 import { Btn, Chip } from "../ui/AdminUI";
 import Icon from "../ui/AdminIcons";
-import { SafeEnquiry } from "@/types/enquiry.types";
+import { SafeEnquiry, ENQUIRY_STATUS_LABELS, EnquiryStatus } from "@/types/enquiry.types";
 
 export interface DeleteEnquiryProps {
   open: boolean;
@@ -40,7 +40,11 @@ export default function DeleteEnquiry({
     }
   };
 
-  const isQuery = enquiry.type === "query";
+  const statusToneMap: Record<EnquiryStatus, "amber" | "sea" | "mint"> = {
+    new: "amber",
+    read: "sea",
+    complete: "mint",
+  };
 
   return (
     <div
@@ -98,9 +102,9 @@ export default function DeleteEnquiry({
             </p>
             <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-1.5">
               <div className="flex items-center gap-2">
-                <span className="text-slate-400 font-medium">Type: </span>
-                <Chip tone={isQuery ? "amber" : "sea"}>
-                  {isQuery ? "General Query" : "Callback Request"}
+                <span className="text-slate-400 font-medium">Status: </span>
+                <Chip tone={statusToneMap[enquiry.status || "new"]}>
+                  {ENQUIRY_STATUS_LABELS[enquiry.status || "new"]}
                 </Chip>
               </div>
               {enquiry.message && (

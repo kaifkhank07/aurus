@@ -1,44 +1,51 @@
 import { PaginationMeta } from "./general.types";
 
+export const ENQUIRY_STATUSES = ["new", "read", "complete"] as const;
+export type EnquiryStatus = (typeof ENQUIRY_STATUSES)[number];
 
-export type EnquiryType = "query" | "request";
+export const ENQUIRY_STATUS_LABELS: Record<EnquiryStatus, string> = {
+  new: "New",
+  read: "Read",
+  complete: "Complete",
+};
 
 export interface SafeEnquiry {
   id: string;
-  type: EnquiryType;
   name: string;
   number: string;
   location?: string | null;
   iam?: string | null;
   message?: string | null;
+  status: EnquiryStatus;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateEnquiryInput {
-  type: EnquiryType;
   name: string;
   number: string;
-  location?: string;
-  iam?: string;
-  message?: string;
+  location: string;
+  iam: string;
+  message: string;
+  status?: EnquiryStatus;
 }
 
 export interface UpdateEnquiryInput {
-  type?: EnquiryType;
   name?: string;
   number?: string;
-  location?: string | null;
-  iam?: string | null;
-  message?: string | null;
+  location?: string;
+  iam?: string;
+  message?: string;
+  status?: EnquiryStatus;
 }
 
 export interface EnquiryQueryParams {
   page: number;
   limit: number;
-  type?: EnquiryType;
   search?: string;
-  sortBy?: "createdAt";
+  location?: string;
+  status?: EnquiryStatus | "all" | string;
+  sortBy?: "createdAt" | "name" | "status";
   sortOrderDir?: "asc" | "desc";
 }
 

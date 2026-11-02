@@ -4,14 +4,16 @@ dotenv.config();
 import mongoose from "mongoose";
 import connectToDatabase from "../src/lib/mongodb";
 import { BookedVisit } from "../src/models/booked-visit.model";
+import { BookedVisitStatus } from "../src/types/booked-visit.types";
 
 interface SeedVisitItem {
   name: string;
   number: string;
+  email: string;
+  college: string;
   location: string;
-  iam: string;
   preferredDate: Date;
-  preferredTime: string;
+  status: BookedVisitStatus;
 }
 
 function getUpcomingDate(daysFromNow: number): Date {
@@ -25,50 +27,56 @@ const sampleVisits: SeedVisitItem[] = [
   {
     name: "Aditya Kulkarni",
     number: "+91 98234 56789",
+    email: "aditya.kulkarni@example.com",
+    college: "Christ University, Bangalore",
     location: "Koramangala, Bangalore",
-    iam: "Student",
     preferredDate: getUpcomingDate(2),
-    preferredTime: "10:30 AM",
+    status: "new",
   },
   {
     name: "Tanvi Deshmukh",
     number: "+91 98765 43210",
+    email: "tanvi.deshmukh@example.com",
+    college: "NMIMS Mumbai",
     location: "HSR Layout, Bangalore",
-    iam: "Working Professional",
     preferredDate: getUpcomingDate(3),
-    preferredTime: "02:00 PM",
+    status: "read",
   },
   {
-    name: "Rajesh & Sunita Singhal",
+    name: "Rajesh Singhal",
     number: "+91 94123 45678",
+    email: "rajesh.singhal@example.com",
+    college: "Amity University, Noida",
     location: "Sector 62, Noida",
-    iam: "Parent",
     preferredDate: getUpcomingDate(4),
-    preferredTime: "11:30 AM",
+    status: "complete",
   },
   {
     name: "Neha Ranganathan",
     number: "+91 99401 23456",
+    email: "neha.ranganathan@example.com",
+    college: "Symbiosis Institute, Pune",
     location: "Viman Nagar, Pune",
-    iam: "Student",
     preferredDate: getUpcomingDate(5),
-    preferredTime: "04:00 PM",
+    status: "new",
   },
   {
     name: "Farhan Siddiqui",
     number: "+91 98112 34567",
+    email: "farhan.siddiqui@example.com",
+    college: "Delhi University, North Campus",
     location: "North Campus, Delhi",
-    iam: "Student",
     preferredDate: getUpcomingDate(6),
-    preferredTime: "01:00 PM",
+    status: "read",
   },
   {
     name: "Ananya Mukherjee",
     number: "+91 98301 23456",
+    email: "ananya.mukherjee@example.com",
+    college: "Mithibai College, Mumbai",
     location: "Andheri West, Mumbai",
-    iam: "Working Professional",
     preferredDate: getUpcomingDate(7),
-    preferredTime: "05:30 PM",
+    status: "complete",
   },
 ];
 
@@ -100,33 +108,38 @@ async function runSeed() {
         );
         existingCount++;
       } else {
-        const doc = new BookedVisit(visit);
-        await doc.save();
+        await BookedVisit.create({
+          name: visit.name,
+          number: visit.number,
+          email: visit.email,
+          college: visit.college,
+          location: visit.location,
+          preferredDate: visit.preferredDate,
+          status: visit.status,
+        });
+
         console.log(
-          `✅ Created booked visit: "${visit.name}" — ${visit.location} on ${visit.preferredDate.toISOString().slice(0, 10)} at ${visit.preferredTime}`
+          `✅ Created booked visit: "${visit.name}" (${visit.number}) for ${visit.preferredDate.toDateString()} [Status: ${visit.status}]`
         );
         createdCount++;
       }
     }
 
-    console.log("\n----------------------------------------");
-    console.log(`Summary: ${createdCount} created, ${existingCount} already existed.`);
-    console.log("----------------------------------------\n");
+    console.log("\n========================================");
+    console.log("             Seed Summary               ");
+    console.log("========================================");
+    console.log(`Total sample records: ${sampleVisits.length}`);
+    console.log(`Newly created:        ${createdCount}`);
+    console.log(`Already existed:      ${existingCount}`);
+    console.log("========================================\n");
 
-    // 3. Disconnect cleanly
-    await mongoose.disconnect();
-    console.log("Database connection closed cleanly.\n");
     process.exit(0);
   } catch (error) {
-    console.error("❌ Fatal error during booked visits seeding:", error);
-    try {
-      await mongoose.disconnect();
-    } catch {
-      // ignore
-    }
+    console.error("❌ Seeding failed with error:", error);
     process.exit(1);
+  } finally {
+    await mongoose.disconnect();
   }
 }
 
 runSeed();
-

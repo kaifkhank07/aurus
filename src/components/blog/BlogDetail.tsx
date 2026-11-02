@@ -7,6 +7,7 @@ import { Container, ArrowRight } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { useContentStore } from "@/store/useContentStore";
 import { SafeBlog, BLOG_CATEGORY_LABELS } from "@/types/blog.types";
+import ScheduleVisitModal from "../shared/ScheduleVisitModal";
 
 interface BlogDetailProps {
   slug?: string;
@@ -40,6 +41,7 @@ export function BlogDetail({
   const [blog, setBlog] = useState<SafeBlog | null>(propBlog || null);
   const [isLoading, setIsLoading] = useState<boolean>(!propBlog);
   const [copied, setCopied] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (propBlog) {
@@ -145,9 +147,9 @@ export function BlogDetail({
 
   const paragraphs = blog.description
     ? blog.description
-        .split(/\n{2,}/)
-        .map((p) => p.trim())
-        .filter(Boolean)
+      .split(/\n{2,}/)
+      .map((p) => p.trim())
+      .filter(Boolean)
     : [];
 
   return (
@@ -235,19 +237,25 @@ export function BlogDetail({
                     {copied ? "LINK COPIED!" : "SHARE ARTICLE"}
                   </button>
 
-                  <Link
-                    href="/contact"
-                    className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[1.5px] font-medium rounded-full bg-ink text-paper px-6 py-2.5 hover:bg-neutral-800 transition-all duration-300 flex items-center justify-center gap-1.5 w-full sm:w-auto shrink-0"
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(true)}
+                    className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[1.5px] rounded-full border border-ink/25 px-5 py-2.5 bg-ink text-paper hover:bg-paper hover:text-ink transition-all duration-300 w-full sm:w-auto text-center cursor-pointer"
                   >
-                    <span>BOOK A VISIT</span>
-                    <ArrowRight className="w-3 h-3 shrink-0" />
-                  </Link>
+                    BOOK A VISIT
+                  </button>
                 </div>
               </div>
             </ViewReveal>
           </div>
         </div>
       </Container>
+
+      {/* Schedule a Visit Modal */}
+      <ScheduleVisitModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </article>
   );
 }
