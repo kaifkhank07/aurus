@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useHostelAndEnquiryStore } from "@/store/useHostelAndEnquiryStore";
 import { useMasterStore } from "@/store/useMasterStore";
 import { Card, Chip, Btn, TextInput } from "../ui/AdminUI";
@@ -19,6 +20,7 @@ type StatusFilter = "all" | "active" | "inactive";
 type TenantFilter = "all" | TenantType;
 
 export default function HostelManage() {
+  const router = useRouter();
   const {
     hostels,
     hostelsPagination,
@@ -172,7 +174,10 @@ export default function HostelManage() {
         totalCount={totalCount}
         onRefresh={() => loadHostelData(true)}
         refreshing={isLoadingHostels}
+        onCreateOpen={() => router.push("/admin/hostel/create")}
+        /* Retained for reference:
         onCreateOpen={() => setCreateOpen(true)}
+        */
       />
 
       {/* Feedback Toast */}
@@ -398,15 +403,16 @@ export default function HostelManage() {
                           Clear Filters
                         </Btn>
                       ) : (
-                        <Btn
-                          variant="brand"
-                          size="sm"
-                          onClick={() => setCreateOpen(true)}
-                          className="mt-2"
-                        >
-                          <Icon name="plus" size={13} />
-                          <span>Add First Property</span>
-                        </Btn>
+                        <Link href="/admin/hostel/create">
+                          <Btn
+                            variant="brand"
+                            size="sm"
+                            className="mt-2"
+                          >
+                            <Icon name="plus" size={13} />
+                            <span>Add First Property</span>
+                          </Btn>
+                        </Link>
                       )}
                     </div>
                   </td>
@@ -471,13 +477,12 @@ export default function HostelManage() {
 
                       {/* Property Title & Subtitle */}
                       <td className="py-3 px-4 min-w-[200px]">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedHostelForDetails(hostel)}
+                        <Link
+                          href={`/admin/hostel/${hostel.id}`}
                           className="text-left font-bold text-slate-900 group-hover:text-orange-600 transition-colors truncate block max-w-[220px] cursor-pointer hover:underline"
                         >
                           {hostel.title}
-                        </button>
+                        </Link>
                         {hostel.subtitle && (
                           <div className="text-[11px] text-slate-500 truncate max-w-[220px] mt-0.5">
                             {hostel.subtitle}
@@ -556,25 +561,23 @@ export default function HostelManage() {
                             )}
                           </button>
 
-                          {/* View Preview */}
-                          <button
-                            type="button"
-                            onClick={() => setSelectedHostelForDetails(hostel)}
-                            title="Preview property"
-                            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-orange-600 hover:bg-orange-50 hover:border-orange-200 transition cursor-pointer"
+                          {/* View Preview -> Details Page */}
+                          <Link
+                            href={`/admin/hostel/${hostel.id}`}
+                            title="View property details"
+                            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-orange-600 hover:bg-orange-50 hover:border-orange-200 transition cursor-pointer inline-flex items-center justify-center"
                           >
                             <Icon name="eye" size={13} />
-                          </button>
+                          </Link>
 
-                          {/* Edit */}
-                          <button
-                            type="button"
-                            onClick={() => setEditingHostel(hostel)}
+                          {/* Edit -> Edit Page */}
+                          <Link
+                            href={`/admin/hostel/${hostel.id}/edit`}
                             title="Edit property"
-                            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 hover:border-slate-300 transition cursor-pointer"
+                            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 hover:border-slate-300 transition cursor-pointer inline-flex items-center justify-center"
                           >
                             <Icon name="pen" size={13} />
-                          </button>
+                          </Link>
 
                           {/* Delete */}
                           <button
@@ -637,7 +640,8 @@ export default function HostelManage() {
         )}
       </Card>
 
-      {/* Create Modal */}
+      {/* Retained for reference: Existing dialog flow for Create, Edit, and Details
+          Modal flows are retained below for reference while page-based routing is active.
       {createOpen && (
         <CreateHostel
           open={createOpen}
@@ -652,7 +656,6 @@ export default function HostelManage() {
         />
       )}
 
-      {/* Edit Modal */}
       {editingHostel && (
         <EditHostel
           key={editingHostel.id}
@@ -669,7 +672,6 @@ export default function HostelManage() {
         />
       )}
 
-      {/* Details Preview Modal */}
       {selectedHostelForDetails && (
         <HostelDetails
           open={!!selectedHostelForDetails}
@@ -687,6 +689,9 @@ export default function HostelManage() {
           }}
         />
       )}
+      */}
+
+      {/* Delete Confirmation Modal (Preserved list action) */}
 
       {/* Delete Confirmation Modal */}
       {deletingHostel && (

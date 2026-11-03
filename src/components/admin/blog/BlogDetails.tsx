@@ -12,6 +12,7 @@ export interface BlogDetailsProps {
   onClose: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
+  mode?: "dialog" | "page";
 }
 
 export default function BlogDetails({
@@ -20,6 +21,7 @@ export default function BlogDetails({
   onClose,
   onEdit,
   onDelete,
+  mode = "dialog",
 }: BlogDetailsProps) {
   const [copiedSlug, setCopiedSlug] = useState(false);
 
@@ -51,16 +53,45 @@ export default function BlogDetails({
     })
     : null;
 
+  const isPage = mode === "page";
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
+      className={
+        isPage
+          ? "w-full space-y-4 mx-auto pb-10"
+          : "fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200"
+      }
+      onMouseDown={
+        isPage
+          ? undefined
+          : (e) => {
+              if (e.target === e.currentTarget) {
+                onClose();
+              }
+            }
+      }
     >
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] my-auto animate-in zoom-in-95 duration-200">
+      {isPage && (
+        <div className="flex items-center justify-between gap-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer"
+          >
+            <Icon name="chevLeft" size={14} />
+            <span>Back to Articles</span>
+          </button>
+        </div>
+      )}
+
+      <div
+        className={
+          isPage
+            ? "w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col"
+            : "w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] my-auto animate-in zoom-in-95 duration-200"
+        }
+      >
         {/* Cover Banner Header */}
         <div className="relative w-full h-56 bg-slate-900 shrink-0 overflow-hidden">
           {imageUrl ? (
@@ -73,14 +104,16 @@ export default function BlogDetails({
           )}
 
           {/* Close button on cover */}
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white flex items-center justify-center transition cursor-pointer backdrop-blur-xs"
-            aria-label="Close"
-          >
-            <Icon name="x" size={15} />
-          </button>
+          {!isPage && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white flex items-center justify-center transition cursor-pointer backdrop-blur-xs"
+              aria-label="Close"
+            >
+              <Icon name="x" size={15} />
+            </button>
+          )}
 
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/30 pointer-events-none" />

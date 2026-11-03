@@ -17,6 +17,7 @@ export interface HostelDetailsProps {
   onClose: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
+  mode?: "dialog" | "page";
 }
 
 export default function HostelDetails({
@@ -25,6 +26,7 @@ export default function HostelDetails({
   onClose,
   onEdit,
   onDelete,
+  mode = "dialog",
 }: HostelDetailsProps) {
   const [copiedSlug, setCopiedSlug] = useState(false);
   const [activePhoto, setActivePhoto] = useState<string | null>(null);
@@ -76,31 +78,60 @@ export default function HostelDetails({
     typeof hostel.rent?.frequency === "object" && hostel.rent?.frequency !== null
       ? hostel.rent.frequency.name
       : typeof hostel.rent?.frequency === "string"
-      ? hostel.rent.frequency
-      : "month";
+        ? hostel.rent.frequency
+        : "month";
 
   const createdFormatted = hostel.createdAt
     ? new Date(hostel.createdAt).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
     : "—";
 
   const tenantTypeLabel = Array.isArray(hostel.tenantType)
     ? (hostel.tenantType as string[]).join(", ")
     : String(hostel.tenantType || "co-ed");
 
+  const isPage = mode === "page";
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
+      className={
+        isPage
+          ? "w-full space-y-4 mx-auto pb-10"
+          : "fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200"
+      }
+      onMouseDown={
+        isPage
+          ? undefined
+          : (e) => {
+            if (e.target === e.currentTarget) {
+              onClose();
+            }
+          }
+      }
     >
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] my-auto animate-in zoom-in-95 duration-200">
+      {isPage && (
+        <div className="flex items-center justify-between gap-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer"
+          >
+            <Icon name="chevLeft" size={14} />
+            <span>Back to Hostels</span>
+          </button>
+        </div>
+      )}
+
+      <div
+        className={
+          isPage
+            ? "w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col"
+            : "w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] my-auto animate-in zoom-in-95 duration-200"
+        }
+      >
         {/* Banner Hero */}
         <div className="relative w-full h-64 bg-slate-900 shrink-0 overflow-hidden">
           {frontImageUrl ? (
@@ -117,14 +148,16 @@ export default function HostelDetails({
           )}
 
           {/* Close button */}
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white flex items-center justify-center transition cursor-pointer backdrop-blur-xs z-10"
-            aria-label="Close"
-          >
-            <Icon name="x" size={15} />
-          </button>
+          {!isPage && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white flex items-center justify-center transition cursor-pointer backdrop-blur-xs z-10"
+              aria-label="Close"
+            >
+              <Icon name="x" size={15} />
+            </button>
+          )}
 
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent pointer-events-none" />
@@ -211,11 +244,10 @@ export default function HostelDetails({
                     key={idx}
                     type="button"
                     onClick={() => setActivePhoto(p.url)}
-                    className={`relative w-20 h-14 rounded-lg overflow-hidden border-2 shrink-0 transition cursor-pointer ${
-                      (activePhoto || frontImageUrl) === p.url
+                    className={`relative w-20 h-14 rounded-lg overflow-hidden border-2 shrink-0 transition cursor-pointer ${(activePhoto || frontImageUrl) === p.url
                         ? "border-orange-500 ring-2 ring-orange-200"
                         : "border-slate-200 opacity-70 hover:opacity-100"
-                    }`}
+                      }`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={p.url} alt={p.label} className="w-full h-full object-cover" />

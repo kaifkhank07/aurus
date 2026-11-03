@@ -2,9 +2,11 @@
 
 import React from "react";
 import { useThemeStore } from "@/store/useThemeStore";
+import { DashboardWelcomeStats } from "@/types/dashboard.types";
 
 export interface DashboardWelcomeBandProps {
   adminName: string;
+  stats?: DashboardWelcomeStats;
   totalAdmins?: number;
   activeAdmins?: number;
   totalResidences?: number;
@@ -13,12 +15,18 @@ export interface DashboardWelcomeBandProps {
 
 export default function DashboardWelcomeBand({
   adminName,
+  stats,
   totalAdmins,
   activeAdmins,
-  totalResidences = 18,
-  totalInquiries = 42,
+  totalResidences = 0,
+  totalInquiries = 0,
 }: DashboardWelcomeBandProps) {
   const { palette } = useThemeStore();
+
+  const activeResidences = stats?.activeResidences ?? totalResidences;
+  const newLeads = stats?.newLeads ?? totalInquiries;
+  const operationalCities = stats?.operationalCities ?? 0;
+  // const activeTeam = stats?.activeTeam ?? (activeAdmins || totalAdmins || 1);
 
   return (
     <div className="relative overflow-hidden rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#123456] via-[#0b2340] to-[#071827] text-white shadow-xl border border-white/5 mb-6">
@@ -68,61 +76,57 @@ export default function DashboardWelcomeBand({
 
           {/* Quick Metrics Row */}
           <div className="flex flex-wrap items-center gap-6 sm:gap-10 mt-6 pt-6 border-t border-white/10">
-            {totalAdmins && (
-              <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                  Total Admins
-                </span>
-                <span className="text-2xl font-extrabold text-white tracking-tight tabular-nums block mt-1">
-                  {totalAdmins}
-                </span>
-              </div>
-            )}
-
-            {activeAdmins && (
-              <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                  Active Staff
-                </span>
-                <span className="text-2xl font-extrabold text-white tracking-tight tabular-nums block mt-1">
-                  {activeAdmins}
-                </span>
-              </div>
-            )}
-
             <div>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                Managed Residences
+                Active Residences
               </span>
               <span className="text-2xl font-extrabold text-white tracking-tight tabular-nums block mt-1">
-                {totalResidences}
+                {activeResidences}
               </span>
             </div>
 
             <div>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                Active Inquiries
+                New Leads
               </span>
               <span className="text-2xl font-extrabold text-white tracking-tight tabular-nums block mt-1">
-                {totalInquiries}
+                {newLeads}
               </span>
             </div>
+
+            <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                Operational Cities
+              </span>
+              <span className="text-2xl font-extrabold text-white tracking-tight tabular-nums block mt-1">
+                {operationalCities}
+              </span>
+            </div>
+
+            {/* <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                Active Team
+              </span>
+              <span className="text-2xl font-extrabold text-white tracking-tight tabular-nums block mt-1">
+                {activeTeam}
+              </span>
+            </div> */}
           </div>
         </div>
 
         {/* Right Side: Frosted Glass Cards */}
-        <div className="lg:col-span-4 flex flex-col gap-3">
-          <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-between gap-4 hover:bg-white/15 transition-all">
+        <div className="lg:col-span-4 flex flex-col mb-auto gap-3">
+          {/* <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-between gap-4 hover:bg-white/15 transition-all">
             <div className="flex items-center gap-3">
               <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${palette.gradientClass} text-white flex items-center justify-center font-bold text-base shadow-sm`}>
                 ★
               </div>
               <div>
                 <span className="text-lg font-bold text-white tabular-nums block leading-tight">
-                  {totalAdmins}
+                  {activeTeam}
                 </span>
                 <span className="text-[11px] text-slate-300 font-medium block">
-                  System Staff Accounts
+                  Active Team Members
                 </span>
               </div>
             </div>
@@ -135,7 +139,7 @@ export default function DashboardWelcomeBand({
                 strokeLinecap="round"
               />
             </svg>
-          </div>
+          </div> */}
 
           <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-between gap-4 hover:bg-white/15 transition-all">
             <div className="flex items-center gap-3">
@@ -144,10 +148,10 @@ export default function DashboardWelcomeBand({
               </div>
               <div>
                 <span className="text-lg font-bold text-white tabular-nums block leading-tight">
-                  100%
+                  {operationalCities} Cities
                 </span>
                 <span className="text-[11px] text-slate-300 font-medium block">
-                  Service Health Normal
+                  Live Market Coverage
                 </span>
               </div>
             </div>

@@ -12,9 +12,16 @@ export interface EditBlogProps {
   blog: SafeBlog | null;
   onClose: () => void;
   onSuccess: () => void;
+  mode?: "dialog" | "page";
 }
 
-export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogProps) {
+export default function EditBlog({
+  open,
+  blog,
+  onClose,
+  onSuccess,
+  mode = "dialog",
+}: EditBlogProps) {
   const { updateBlog } = useContentStore();
 
   const [title, setTitle] = useState(blog?.title || "");
@@ -178,16 +185,45 @@ export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogPro
     }
   };
 
+  const isPage = mode === "page";
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget && !isSubmitting) {
-          onClose();
-        }
-      }}
+      className={
+        isPage
+          ? "w-full space-y-4 mx-auto pb-10"
+          : "fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200"
+      }
+      onMouseDown={
+        isPage
+          ? undefined
+          : (e) => {
+            if (e.target === e.currentTarget && !isSubmitting) {
+              onClose();
+            }
+          }
+      }
     >
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] my-auto animate-in zoom-in-95 duration-200">
+      {isPage && (
+        <div className="flex items-center justify-between gap-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer"
+          >
+            <Icon name="chevLeft" size={14} />
+            <span>Back to Articles</span>
+          </button>
+        </div>
+      )}
+
+      <div
+        className={
+          isPage
+            ? "w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col"
+            : "w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] my-auto animate-in zoom-in-95 duration-200"
+        }
+      >
         {/* Modal Header */}
         <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <div className="flex items-center gap-3">
@@ -200,15 +236,17 @@ export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogPro
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
-            aria-label="Close"
-          >
-            <Icon name="x" size={15} />
-          </button>
+          {!isPage && (
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
+              aria-label="Close"
+            >
+              <Icon name="x" size={15} />
+            </button>
+          )}
         </div>
 
         {/* Form Body */}
@@ -324,11 +362,10 @@ export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogPro
                 value={category}
                 onChange={(e) => setCategory(e.target.value as BlogCategory)}
                 disabled={isSubmitting}
-                className={`w-full px-3.5 py-2.5 bg-white border ${
-                  clientErrors.category
+                className={`w-full px-3.5 py-2.5 bg-white border ${clientErrors.category
                     ? "border-rose-400 focus:ring-rose-500/20"
                     : "border-slate-200 focus:ring-slate-400/20"
-                } rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 transition-all cursor-pointer`}
+                  } rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 transition-all cursor-pointer`}
               >
                 {BLOG_CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
@@ -392,11 +429,10 @@ export default function EditBlog({ open, blog, onClose, onSuccess }: EditBlogPro
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Article body content…"
               disabled={isSubmitting}
-              className={`w-full px-3.5 py-2.5 bg-white border ${
-                clientErrors.description
+              className={`w-full px-3.5 py-2.5 bg-white border ${clientErrors.description
                   ? "border-rose-400 focus:ring-rose-500/20"
                   : "border-slate-200 focus:ring-slate-400/20"
-              } rounded-xl text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 transition-all leading-relaxed`}
+                } rounded-xl text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 transition-all leading-relaxed`}
             />
           </FormField>
 

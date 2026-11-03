@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import { SafeAdmin, PaginatedAdminsResult, AdminQueryParams } from "@/types/admin.types";
+import { DashboardData } from "@/types/dashboard.types";
 import { ApiResponse } from "@/types/general.types";
 
 const ADMIN_STORAGE_KEY = "aurus_admin_user";
@@ -136,5 +137,17 @@ export async function getAdminList(
     return res.data;
   } catch (error) {
     return extractResponse<PaginatedAdminsResult>(error);
+  }
+}
+
+/**
+ * Fetch aggregated dashboard business metrics via Axios
+ */
+export async function getDashboardStats(): Promise<ApiResponse<DashboardData>> {
+  try {
+    const res = await adminApiClient.get<ApiResponse<DashboardData>>("/dashboard");
+    return res.data;
+  } catch (error) {
+    return extractResponse<DashboardData>(error);
   }
 }

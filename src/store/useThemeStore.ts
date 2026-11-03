@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type PaletteId = "ember" | "gold" | "emerald" | "sapphire" | "amethyst" | "rose";
+export type PaletteId = "champagne" | "ember" | "gold" | "emerald" | "sapphire" | "amethyst" | "rose";
 
 export interface ColorPalette {
   id: PaletteId;
@@ -18,6 +18,20 @@ export interface ColorPalette {
 }
 
 export const ADMIN_PALETTES: Record<PaletteId, ColorPalette> = {
+  champagne: {
+    id: "champagne",
+    name: "Aurus Champagne",
+    description: "Signature public website champagne gold & cream",
+    primaryHex: "#c5a059",
+    secondaryHex: "#d9ac58",
+    glowHex: "rgba(197, 160, 89, 0.35)",
+    gradientClass: "from-[#c5a059] to-[#d9ac58]",
+    hoverGradientClass: "hover:from-[#b8934a] hover:to-[#cfa04a]",
+    textClass: "text-[#c5a059]",
+    borderClass: "border-[#c5a059]",
+    bgLightClass: "bg-[#faf8f5]",
+    ringClass: "focus:ring-[#c5a059]/20",
+  },
   ember: {
     id: "ember",
     name: "Ember Orange",
@@ -131,7 +145,7 @@ function applyThemeVariables(palette: ColorPalette): void {
 }
 
 function resolveInitialPalette(): PaletteId {
-  if (typeof window === "undefined") return "ember";
+  if (typeof window === "undefined") return "champagne";
 
   // 1. Check Cookie first
   const cookieVal = getPaletteCookie();
@@ -148,7 +162,7 @@ function resolveInitialPalette(): PaletteId {
     // Ignore storage errors
   }
 
-  return "ember";
+  return "champagne";
 }
 
 export interface ThemeState {
@@ -160,7 +174,7 @@ export interface ThemeState {
 }
 
 const initialId = resolveInitialPalette();
-const initialPalette = ADMIN_PALETTES[initialId] || ADMIN_PALETTES.ember;
+const initialPalette = ADMIN_PALETTES[initialId] || ADMIN_PALETTES.champagne;
 
 if (typeof window !== "undefined") {
   applyThemeVariables(initialPalette);
@@ -186,7 +200,7 @@ export const useThemeStore = create<ThemeState>((set) => ({
 
   initTheme: () => {
     const id = resolveInitialPalette();
-    const current = ADMIN_PALETTES[id] || ADMIN_PALETTES.ember;
+    const current = ADMIN_PALETTES[id] || ADMIN_PALETTES.champagne;
     applyThemeVariables(current);
     set({
       paletteId: id,

@@ -13,11 +13,17 @@ export interface CreateHostelProps {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  mode?: "dialog" | "page";
 }
 
 type HostelTab = "basic" | "location" | "pricing" | "media" | "seo";
 
-export default function CreateHostel({ open, onClose, onSuccess }: CreateHostelProps) {
+export default function CreateHostel({
+  open,
+  onClose,
+  onSuccess,
+  mode = "dialog",
+}: CreateHostelProps) {
   const { createHostel } = useHostelAndEnquiryStore();
   const {
     cities,
@@ -464,16 +470,45 @@ export default function CreateHostel({ open, onClose, onSuccess }: CreateHostelP
     }
   };
 
+  const isPage = mode === "page";
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget && !isSubmitting) {
-          onClose();
-        }
-      }}
+      className={
+        isPage
+          ? "w-full space-y-4 mx-auto pb-10"
+          : "fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200"
+      }
+      onMouseDown={
+        isPage
+          ? undefined
+          : (e) => {
+            if (e.target === e.currentTarget && !isSubmitting) {
+              onClose();
+            }
+          }
+      }
     >
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] my-auto animate-in zoom-in-95 duration-200">
+      {isPage && (
+        <div className="flex items-center justify-between gap-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-slate-900 transition cursor-pointer"
+          >
+            <Icon name="chevLeft" size={14} />
+            <span>Back to Hostels</span>
+          </button>
+        </div>
+      )}
+
+      <div
+        className={
+          isPage
+            ? "w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col"
+            : "w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] my-auto animate-in zoom-in-95 duration-200"
+        }
+      >
         {/* Header */}
         <div className="p-5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/70">
           <div className="flex items-center gap-3">
@@ -488,15 +523,17 @@ export default function CreateHostel({ open, onClose, onSuccess }: CreateHostelP
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
-            aria-label="Close"
-          >
-            <Icon name="x" size={15} />
-          </button>
+          {!isPage && (
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
+              aria-label="Close"
+            >
+              <Icon name="x" size={15} />
+            </button>
+          )}
         </div>
 
         {/* Section Navigation Tabs */}
@@ -514,11 +551,10 @@ export default function CreateHostel({ open, onClose, onSuccess }: CreateHostelP
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`px-3.5 py-2.5 rounded-t-xl text-xs font-bold transition-all flex items-center gap-2 border-b-2 cursor-pointer whitespace-nowrap ${
-                  isActiveTab
+                className={`px-3.5 py-2.5 rounded-t-xl text-xs font-bold transition-all flex items-center gap-2 border-b-2 cursor-pointer whitespace-nowrap ${isActiveTab
                     ? "border-orange-500 text-orange-600 bg-white shadow-2xs"
                     : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/60"
-                }`}
+                  }`}
               >
                 <Icon name={tab.icon} size={13} />
                 <span>{tab.label}</span>
@@ -570,11 +606,10 @@ export default function CreateHostel({ open, onClose, onSuccess }: CreateHostelP
                         key={type}
                         type="button"
                         onClick={() => setTenantType(type)}
-                        className={`px-4 py-2.5 rounded-xl text-xs font-bold border transition cursor-pointer flex items-center gap-2 ${
-                          isSelected
+                        className={`px-4 py-2.5 rounded-xl text-xs font-bold border transition cursor-pointer flex items-center gap-2 ${isSelected
                             ? "bg-orange-500 text-white border-orange-600 shadow-2xs"
                             : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
-                        }`}
+                          }`}
                       >
                         <span className={`w-2.5 h-2.5 rounded-full border ${isSelected ? "bg-white border-white" : "bg-slate-200 border-slate-300"}`} />
                         <span className="capitalize">{type}</span>
@@ -826,15 +861,13 @@ export default function CreateHostel({ open, onClose, onSuccess }: CreateHostelP
                         key={occ.id}
                         type="button"
                         onClick={() => handleToggleOccupancy(occ.id)}
-                        className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition text-left cursor-pointer ${
-                          isSelected
+                        className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition text-left cursor-pointer ${isSelected
                             ? "bg-orange-50 border-orange-300 text-orange-950 font-bold"
                             : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                        }`}
+                          }`}
                       >
-                        <span className={`w-3.5 h-3.5 rounded flex items-center justify-center shrink-0 border ${
-                          isSelected ? "bg-orange-500 border-orange-500 text-white" : "border-slate-300 bg-white"
-                        }`}>
+                        <span className={`w-3.5 h-3.5 rounded flex items-center justify-center shrink-0 border ${isSelected ? "bg-orange-500 border-orange-500 text-white" : "border-slate-300 bg-white"
+                          }`}>
                           {isSelected && <span className="text-[9px]">✓</span>}
                         </span>
                         <span className="truncate">{occ.name}</span>
@@ -872,15 +905,13 @@ export default function CreateHostel({ open, onClose, onSuccess }: CreateHostelP
                         key={room.id}
                         type="button"
                         onClick={() => handleToggleRoom(room.id)}
-                        className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition text-left cursor-pointer ${
-                          isSelected
+                        className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition text-left cursor-pointer ${isSelected
                             ? "bg-orange-50 border-orange-300 text-orange-950 font-bold"
                             : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                        }`}
+                          }`}
                       >
-                        <span className={`w-3.5 h-3.5 rounded flex items-center justify-center shrink-0 border ${
-                          isSelected ? "bg-orange-500 border-orange-500 text-white" : "border-slate-300 bg-white"
-                        }`}>
+                        <span className={`w-3.5 h-3.5 rounded flex items-center justify-center shrink-0 border ${isSelected ? "bg-orange-500 border-orange-500 text-white" : "border-slate-300 bg-white"
+                          }`}>
                           {isSelected && <span className="text-[9px]">✓</span>}
                         </span>
                         <span className="truncate">{room.name}</span>
@@ -918,15 +949,13 @@ export default function CreateHostel({ open, onClose, onSuccess }: CreateHostelP
                         key={serv.id}
                         type="button"
                         onClick={() => handleToggleService(serv.id)}
-                        className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition text-left cursor-pointer ${
-                          isSelected
+                        className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition text-left cursor-pointer ${isSelected
                             ? "bg-orange-50 border-orange-300 text-orange-950 font-bold"
                             : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                        }`}
+                          }`}
                       >
-                        <span className={`w-3.5 h-3.5 rounded flex items-center justify-center shrink-0 border ${
-                          isSelected ? "bg-orange-500 border-orange-500 text-white" : "border-slate-300 bg-white"
-                        }`}>
+                        <span className={`w-3.5 h-3.5 rounded flex items-center justify-center shrink-0 border ${isSelected ? "bg-orange-500 border-orange-500 text-white" : "border-slate-300 bg-white"
+                          }`}>
                           {isSelected && <span className="text-[9px]">✓</span>}
                         </span>
                         <span className="truncate">{serv.name}</span>
@@ -985,16 +1014,14 @@ export default function CreateHostel({ open, onClose, onSuccess }: CreateHostelP
                           key={inst.id}
                           type="button"
                           onClick={() => handleToggleInstitute(inst.id)}
-                          className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition text-left cursor-pointer ${
-                            isSelected
+                          className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition text-left cursor-pointer ${isSelected
                               ? "bg-orange-50 border-orange-300 text-orange-950 font-bold"
                               : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                          }`}
+                            }`}
                         >
                           <span
-                            className={`w-3.5 h-3.5 rounded flex items-center justify-center shrink-0 border ${
-                              isSelected ? "bg-orange-500 border-orange-500 text-white" : "border-slate-300 bg-white"
-                            }`}
+                            className={`w-3.5 h-3.5 rounded flex items-center justify-center shrink-0 border ${isSelected ? "bg-orange-500 border-orange-500 text-white" : "border-slate-300 bg-white"
+                              }`}
                           >
                             {isSelected && <span className="text-[9px]">✓</span>}
                           </span>
@@ -1034,15 +1061,13 @@ export default function CreateHostel({ open, onClose, onSuccess }: CreateHostelP
                         key={amenity.id}
                         type="button"
                         onClick={() => handleToggleAmenity(amenity.id)}
-                        className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition text-left cursor-pointer ${
-                          isSelected
+                        className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition text-left cursor-pointer ${isSelected
                             ? "bg-orange-50 border-orange-300 text-orange-950 font-bold"
                             : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                        }`}
+                          }`}
                       >
-                        <span className={`w-3.5 h-3.5 rounded flex items-center justify-center shrink-0 border ${
-                          isSelected ? "bg-orange-500 border-orange-500 text-white" : "border-slate-300 bg-white"
-                        }`}>
+                        <span className={`w-3.5 h-3.5 rounded flex items-center justify-center shrink-0 border ${isSelected ? "bg-orange-500 border-orange-500 text-white" : "border-slate-300 bg-white"
+                          }`}>
                           {isSelected && <span className="text-[9px]">✓</span>}
                         </span>
                         <span className="truncate">{amenity.name}</span>

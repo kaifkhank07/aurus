@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useContentStore } from "@/store/useContentStore";
-import { Card, Btn, TextInput } from "../ui/AdminUI";
+import { Card, Btn, TextInput, Chip } from "../ui/AdminUI";
 import Icon from "../ui/AdminIcons";
 import BlogHeader from "./BlogHeader";
 import CreateBlog from "./CreateBlog";
@@ -16,6 +17,7 @@ import { getMediaUrl } from "@/lib/media";
 const PAGE_LIMIT = 10;
 
 export default function BlogManage() {
+  const router = useRouter();
   const {
     blogs,
     blogsPagination,
@@ -160,23 +162,24 @@ export default function BlogManage() {
         totalCount={totalCount}
         refreshing={isLoadingBlogs}
         onRefresh={() => loadBlogData(true)}
-        onCreateOpen={() => setCreateOpen(true)}
+        onCreateOpen={() => router.push("/admin/blog/create")}
+      /* Retained for reference:
+      onCreateOpen={() => setCreateOpen(true)}
+      */
       />
 
       {/* Floating feedback alert */}
       {feedback && (
         <div
-          className={`p-4 rounded-xl border flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-top-2 duration-200 ${
-            feedback.type === "success"
-              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-              : "bg-rose-50 border-rose-200 text-rose-800"
-          }`}
+          className={`p-4 rounded-xl border flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-top-2 duration-200 ${feedback.type === "success"
+            ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+            : "bg-rose-50 border-rose-200 text-rose-800"
+            }`}
         >
           <div className="flex items-center gap-2.5 text-xs font-semibold">
             <span
-              className={`w-2 h-2 rounded-full ${
-                feedback.type === "success" ? "bg-emerald-500" : "bg-rose-500"
-              }`}
+              className={`w-2 h-2 rounded-full ${feedback.type === "success" ? "bg-emerald-500" : "bg-rose-500"
+                }`}
             />
             <span>{feedback.message}</span>
           </div>
@@ -368,13 +371,15 @@ export default function BlogManage() {
                 blogs.map((blog) => {
                   const publishedDateFormatted = blog.createdAt
                     ? new Date(blog.createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
                     : "—";
 
                   const imageUrl = getMediaUrl(blog.image?.url || blog.image?.publickey);
+
+                  const isTogglingThis = togglingId === blog.id;
 
                   return (
                     <tr
@@ -402,13 +407,12 @@ export default function BlogManage() {
 
                       {/* Title & Subtitle */}
                       <td className="py-3 px-4 min-w-[200px]">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedBlogForDetails(blog)}
+                        <Link
+                          href={`/admin/blog/${blog.id}`}
                           className="text-left font-bold text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-1 cursor-pointer hover:underline"
                         >
                           {blog.title}
-                        </button>
+                        </Link>
                         {blog.subtitle && (
                           <div className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
                             {blog.subtitle}
@@ -450,7 +454,7 @@ export default function BlogManage() {
                       </td>
 
                       {/* Active Status */}
-                      <td className="py-3 px-4 whitespace-nowrap">
+                      {/* <td className="py-3 px-4 whitespace-nowrap">
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(blog)}
@@ -468,7 +472,13 @@ export default function BlogManage() {
                           />
                           <span>{blog.isActive ? "Active" : "Draft"}</span>
                         </button>
+                      </td> */}
+                      <td className="py-3 px-4">
+                        <Chip tone={blog.isActive ? "mint" : "rose"} dot>
+                          {blog.isActive ? "Active" : "Inactive"}
+                        </Chip>
                       </td>
+
 
                       {/* Published Date */}
                       <td className="py-3 px-4 text-slate-500 text-[11px] font-medium whitespace-nowrap">
@@ -478,25 +488,43 @@ export default function BlogManage() {
                       {/* Actions */}
                       <td className="py-3 px-4 text-right whitespace-nowrap">
                         <div className="inline-flex items-center gap-1">
-                          {/* View Preview */}
+                          {/* Quick Toggle Status */}
                           <button
                             type="button"
-                            onClick={() => setSelectedBlogForDetails(blog)}
-                            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition cursor-pointer"
+                            onClick={() => handleToggleStatus(blog)}
+                            disabled={isTogglingThis}
+                            title={blog.isActive ? "Deactivate blog" : "Activate blog"}
+                            className={`p-1.5 rounded-lg border transition cursor-pointer disabled:opacity-50 ${blog.isActive
+                              ? "border-slate-200 text-slate-600 hover:text-amber-700 hover:bg-amber-50 hover:border-amber-200"
+                              : "border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                              }`}
+                          >
+                            {isTogglingThis ? (
+                              <span className="inline-block animate-spin">
+                                <Icon name="refresh" size={13} />
+                              </span>
+                            ) : (
+                              <Icon name={blog.isActive ? "x" : "check"} size={13} />
+                            )}
+                          </button>
+
+                          {/* View Preview -> Details Page */}
+                          <Link
+                            href={`/admin/blog/${blog.id}`}
+                            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition cursor-pointer inline-flex items-center justify-center"
                             title="View blog article details"
                           >
                             <Icon name="eye" size={14} />
-                          </button>
+                          </Link>
 
-                          {/* Edit Post */}
-                          <button
-                            type="button"
-                            onClick={() => setEditingBlog(blog)}
-                            className="p-1.5 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition cursor-pointer"
+                          {/* Edit Post -> Edit Page */}
+                          <Link
+                            href={`/admin/blog/${blog.id}/edit`}
+                            className="p-1.5 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition cursor-pointer inline-flex items-center justify-center"
                             title="Edit blog post"
                           >
                             <Icon name="pen" size={14} />
-                          </button>
+                          </Link>
 
                           {/* Delete Post */}
                           <button
@@ -547,8 +575,8 @@ export default function BlogManage() {
         )}
       </Card>
 
-      {/* Dialog Modals */}
-      {/* 1. Create Modal */}
+      {/* Retained for reference: Existing dialog modals for Create, Edit, and Details
+          Modal flows are retained below for reference while page-based routing is active.
       {createOpen && (
         <CreateBlog
           open={createOpen}
@@ -563,7 +591,6 @@ export default function BlogManage() {
         />
       )}
 
-      {/* 2. Edit Modal */}
       {editingBlog && (
         <EditBlog
           key={editingBlog.id}
@@ -580,7 +607,6 @@ export default function BlogManage() {
         />
       )}
 
-      {/* 3. Details Modal */}
       {selectedBlogForDetails && (
         <BlogDetails
           open={!!selectedBlogForDetails}
@@ -598,8 +624,9 @@ export default function BlogManage() {
           }}
         />
       )}
+      */}
 
-      {/* 4. Delete Confirmation Modal */}
+      {/* 4. Delete Confirmation Modal (Preserved list action) */}
       {deletingBlog && (
         <DeleteBlog
           open={!!deletingBlog}

@@ -17,11 +17,11 @@ export interface DashboardHeaderProps {
 }
 
 export default function DashboardHeader({
-  title = "Admin Staff Dashboard",
+  title = "Admin Dashboard",
   sub = "Aurus Residences operational overview, inquiry workload, and administrator controls.",
   onRefresh,
   refreshing = false,
-  manageLink = { href: "/admin/admins", label: "Manage Staff" },
+  manageLink = { href: "/admin/hostel", label: "Manage Hostel" },
 }: DashboardHeaderProps) {
   const todayFormatted = new Date().toLocaleDateString("en-US", {
     weekday: "long",

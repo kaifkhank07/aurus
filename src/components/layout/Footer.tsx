@@ -56,7 +56,7 @@ export function Footer() {
               <h3 className="font-mono uppercase text-[12px] sm:text-[14px] leading-[1.7] tracking-[2px] text-white font-medium mb-4 sm:mb-5 lg:mb-6">
                 AURUS HEADQUARTERS
               </h3>
-              <div className="flex flex-col gap-2 font-mono uppercase text-[12px] sm:text-[14px] leading-[1.8] tracking-[1.5px] text-white/55">
+              <div className="flex flex-col gap-2 font-mono uppercase text-[12px] sm:text-[14px] leading-[1.8] tracking-[1.5px] text-[#77736B]">
                 <p>ANDHERI EAST, MUMBAI, MAHARASHTRA 400069</p>
                 <p>
                   TOLL-FREE:{" "}
@@ -90,7 +90,7 @@ export function Footer() {
                     <li key={link.href}>
                       <Link
                         href={link.href}
-                        className="text-white/55 hover:text-white transition-colors duration-200 block"
+                        className="text-[#77736B] hover:text-white transition-colors duration-200 block"
                       >
                         {link.label}
                       </Link>
@@ -105,22 +105,11 @@ export function Footer() {
                 OUR RESIDENCES
               </h3>
               <ul className="flex flex-col gap-2 font-mono uppercase text-[12px] sm:text-[14px] leading-[1.8] tracking-[1.5px]">
-                {/* {footer.columns[2].type === "links" &&
-                  footer.columns[2].links.map((link) => (
-                    <li key={link.href}>
-                      <Link
-                        href={link.href}
-                        className="text-white/55 hover:text-white transition-colors duration-200 block"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))} */}
                 {publicCities.map((city, index) => (
                   <li key={index}>
                     <Link
                       href={`/${city.slug}`}
-                      className="text-white/55 hover:text-white transition-colors duration-200 block"
+                      className="text-[#77736B] hover:text-white transition-colors duration-200 block"
                     >
                       Residences in {city.city}
                     </Link>
@@ -134,7 +123,7 @@ export function Footer() {
               <h3 className="font-mono uppercase text-[12px] sm:text-[14px] leading-[1.7] tracking-[2px] text-white font-medium mb-4 sm:mb-5 lg:mb-6">
                 CONCIERGE HOURS
               </h3>
-              <div className="font-mono text-[12px] sm:text-[14px] leading-[1.8] tracking-[1px] text-white/55 max-w-[28ch]">
+              <div className="font-mono text-[12px] sm:text-[14px] leading-[1.8] tracking-[1px] text-[#77736B] max-w-[28ch]">
                 <p>
                   Concierge desk active 10:00 AM – 7:00 PM daily. On-site resident
                   wardens 24/7.
@@ -144,14 +133,20 @@ export function Footer() {
           </div>
 
           <div className="w-full flex flex-col lg:flex-row gap-4 justify-between items-center">
-            <p className="font-mono uppercase text-[12px] sm:text-[14px] leading-[1.8] tracking-[1px] text-white/55 font-light">
+            <p className="font-mono uppercase text-[12px] sm:text-[14px] leading-[1.8] tracking-[1px] text-[#77736B] font-light">
               © 2026 Aurus Life · A Colstay Limited brand
             </p>
 
-            <div className="flex gap-3 sm:gap-6 font-mono uppercase text-[12px] sm:text-[14px] leading-[1.8] tracking-[1.5px] text-white/55 font-light">
-              <Link href="/privacy">Privacy</Link>
-              <Link href="/terms">Terms</Link>
-              <Link href="/refund">Refund</Link>
+            <div className="flex gap-3 sm:gap-6 font-mono uppercase text-[12px] sm:text-[14px] leading-[1.8] tracking-[1.5px]">
+              <Link href="/privacy" className="text-[#77736B] hover:text-white transition-colors duration-200 block">
+                Privacy
+              </Link>
+              <Link href="/terms" className="text-[#77736B] hover:text-white transition-colors duration-200 block">
+                Terms
+              </Link>
+              <Link href="/refund" className="text-[#77736B] hover:text-white transition-colors duration-200 block">
+                Refund
+              </Link>
             </div>
           </div>
         </Panel>
