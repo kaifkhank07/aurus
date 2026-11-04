@@ -34,7 +34,6 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const isMaintenance = process.env.MAINTENANCE_MODE === "true";
 
   return (
     <html
@@ -42,11 +41,9 @@ export default function RootLayout({
       className={`${manrope.variable} ${instrument.variable} ${spaceMono.variable}`}
     >
       <body className="font-sans antialiased">
-        {isMaintenance ? (
-          <MaintenancePage />
-        ) : (
-          <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
-        )}
+        <ClientLayoutWrapper>
+          {children}
+        </ClientLayoutWrapper>
       </body>
     </html>
   );

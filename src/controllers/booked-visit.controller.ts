@@ -21,6 +21,7 @@ import {
   PaginatedBookedVisitsResult,
 } from "@/types/booked-visit.types";
 import { createLogger } from "@/lib/logger";
+import { sendBookedVisitToTeleCRM } from "@/services/telecrm.service";
 
 const logger = createLogger("BookedVisitController");
 
@@ -251,6 +252,26 @@ export async function createPublic(request: NextRequest): Promise<NextResponse> 
     const bookedVisit = await createBookedVisitDoc(publicPayload);
 
     logger.info("Public visit booking submitted successfully", { operation, id: bookedVisit.id });
+
+    // Forward booked visit lead to TeleCRM asynchronously (failures are logged and do not block success)
+    try {
+      await sendBookedVisitToTeleCRM({
+        name: bookedVisit.name,
+        number: bookedVisit.number,
+        email: bookedVisit.email,
+        college: bookedVisit.college,
+        location: bookedVisit.location,
+        preferredDate: bookedVisit.preferredDate,
+        status: bookedVisit.status,
+        source: "Website Schedule Visit",
+      });
+    } catch (crmError) {
+      logger.error("Non-fatal error forwarding booked visit to TeleCRM", crmError, {
+        operation,
+        visitId: bookedVisit.id,
+      });
+    }
+
     return apiSuccess(
       { bookedVisit },
       "Your visit has been booked successfully.",

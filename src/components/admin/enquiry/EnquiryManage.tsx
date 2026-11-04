@@ -457,7 +457,7 @@ export default function EnquiryManage() {
                             <option value="complete">Complete</option>
                           </select>
                           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1.5 text-slate-500">
-                            <Icon name="down" size={10} />
+                            <Icon name="chev" size={10} />
                           </div>
                         </div>
                       </td>

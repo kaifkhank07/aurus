@@ -21,6 +21,7 @@ import {
   PaginatedEnquiriesResult,
 } from "@/types/enquiry.types";
 import { createLogger } from "@/lib/logger";
+import { sendEnquiryToTeleCRM } from "@/services/telecrm.service";
 
 const logger = createLogger("EnquiryController");
 
@@ -234,6 +235,25 @@ export async function createPublic(request: NextRequest): Promise<NextResponse> 
     const enquiry = await createEnquiryDoc(publicPayload);
 
     logger.info("Public enquiry submitted successfully", { operation, id: enquiry.id });
+
+    // Forward enquiry lead to TeleCRM asynchronously (failures are logged and do not block success)
+    try {
+      await sendEnquiryToTeleCRM({
+        name: enquiry.name,
+        number: enquiry.number,
+        location: enquiry.location,
+        iam: enquiry.iam,
+        message: enquiry.message,
+        status: enquiry.status,
+        source: "Website Enquiry",
+      });
+    } catch (crmError) {
+      logger.error("Non-fatal error forwarding enquiry to TeleCRM", crmError, {
+        operation,
+        enquiryId: enquiry.id,
+      });
+    }
+
     return apiSuccess(
       { enquiry },
       "Your enquiry has been submitted successfully.",
