@@ -25,48 +25,63 @@ export function Culture() {
     // Prevent mobile URL bar collapse/expand from triggering jumpy recalculations
     ScrollTrigger.config({ ignoreMobileResize: true });
 
-    const mm = gsap.matchMedia();
+    const ctx = gsap.context(() => {
+      const mm = gsap.matchMedia();
 
-    // Horizontal pinned scroll exclusively for desktop (>= lg)
-    mm.add("(min-width: 1024px)", () => {
-      const track = trackRef.current;
-      const section = sectionRef.current;
-      if (!track || !section) return;
+      // Horizontal pinned scroll exclusively for desktop (>= lg)
+      mm.add("(min-width: 1024px)", () => {
+        const track = trackRef.current;
+        const section = sectionRef.current;
+        if (!track || !section) return;
 
-      const getScrollAmount = () => {
-        const amount = track.scrollWidth - window.innerWidth;
-        return amount > 0 ? -amount : 0;
-      };
+        const getScrollDistance = () => {
+          const containerWidth = track.parentElement?.clientWidth || window.innerWidth;
+          const distance = track.scrollWidth - containerWidth;
+          return Math.max(0, distance);
+        };
 
-      const getScrollDistance = () => {
-        const distance = track.scrollWidth - window.innerWidth;
-        return Math.max(0, distance);
-      };
+        const tween = gsap.fromTo(
+          track,
+          { x: 0 },
+          {
+            x: () => -getScrollDistance(),
+            ease: "none",
+            force3D: true,
+            scrollTrigger: {
+              trigger: section,
+              start: "top top",
+              end: () => `+=${getScrollDistance()}`,
+              pin: true,
+              pinSpacing: true,
+              scrub: true,
+              invalidateOnRefresh: true,
+            },
+          }
+        );
 
-      gsap.to(track, {
-        x: getScrollAmount,
-        ease: "none",
-        scrollTrigger: {
-          trigger: section,
-          start: "top top",
-          pin: true,
-          pinSpacing: true,
-          scrub: 1,
-          end: () => `+=${getScrollDistance()}`,
-          invalidateOnRefresh: true,
-          anticipatePin: 1,
-        },
+        return () => {
+          tween.scrollTrigger?.kill();
+          tween.kill();
+        };
       });
-    });
+    }, sectionRef);
 
-    return () => mm.revert();
+    // Refresh ScrollTrigger once fonts / assets settle to ensure exact dimensions
+    const refreshTimer = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 150);
+
+    return () => {
+      clearTimeout(refreshTimer);
+      ctx.revert();
+    };
   }, []);
 
   return (
     <section
       id="culture"
       ref={sectionRef}
-      className="relative w-full py-8 sm:py-12 lg:py-6 lg:h-[100svh] lg:min-h-[100svh] text-ink bg-cream lg:overflow-hidden flex flex-col lg:justify-between"
+      className="relative z-10 w-full py-8 sm:py-12 lg:py-6 lg:h-screen lg:min-h-screen text-ink bg-cream lg:overflow-hidden flex flex-col lg:justify-between"
     >
       {/* Section Header */}
       <div className="shrink-0 w-full">
@@ -114,12 +129,13 @@ export function Culture() {
       <div className="hidden lg:flex w-full flex-1 min-h-0 items-center overflow-hidden py-2 sm:py-3">
         <div
           ref={trackRef}
-          className="flex items-stretch gap-4 sm:gap-6 lg:gap-8 w-max pl-5 sm:pl-8 lg:pl-[6.25vw] pr-5 sm:pr-8 lg:pr-[6.25vw] will-change-transform"
+          className="flex items-stretch gap-4 sm:gap-6 lg:gap-8 w-max pl-5 sm:pl-8 lg:pl-[6.25vw] pr-5 sm:pr-8 lg:pr-[6.25vw] transform-gpu will-change-transform"
+          style={{ transform: "translate3d(0, 0, 0)", backfaceVisibility: "hidden" }}
         >
           {desktopPosts.map((item, index) => (
             <div
               key={index}
-              className="w-[260px] xs:w-[280px] sm:w-[320px] md:w-[350px] lg:w-[clamp(280px,46vh,380px)] xl:w-[clamp(300px,48vh,420px)] 2xl:w-[clamp(320px,52vh,420px)] shrink-0"
+              className="w-[260px] xs:w-[280px] sm:w-[320px] md:w-[350px] lg:w-[clamp(280px,46vh,380px)] xl:w-[clamp(300px,48vh,420px)] 2xl:w-[clamp(320px,52vh,420px)] shrink-0 h-full"
             >
               <CultureCard item={item} />
             </div>
@@ -132,7 +148,7 @@ export function Culture() {
 
 function CultureCard({ item }: { item: (typeof culture.posts)[number] }) {
   return (
-    <article className="relative rounded-[16px] sm:rounded-[18px] lg:rounded-[20px] border border-black/[0.08] bg-white p-3 sm:p-3.5 lg:p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition-shadow duration-300 flex flex-col justify-between">
+    <article className="relative rounded-[16px] sm:rounded-[18px] lg:rounded-[20px] border border-black/[0.08] bg-white p-3 sm:p-3.5 lg:p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition-shadow duration-300 flex flex-col justify-between h-full">
       {/* Post Media */}
       <div className="relative overflow-hidden rounded-[10px] sm:rounded-[12px] w-full shrink-0">
         <Figure
