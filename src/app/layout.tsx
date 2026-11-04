@@ -26,6 +26,9 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "https://aurusresidences.com"
+  ),
   title: "AURUS | Luxury Managed Residences",
   description:
     "Thoughtfully designed residences for independent living, meaningful connections, and everything your next chapter deserves.",

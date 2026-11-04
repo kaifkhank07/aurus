@@ -1,19 +1,46 @@
+import type { Metadata } from "next";
 import RealStories from "@/components/stories/RealStories";
 import LifeMoments from "@/components/lifeataurus/LifeMoments";
 import AurusJournal from "@/components/stories/AurusJournal";
 
-export const metadata = {
+export const metadata: Metadata = {
+  title: "Real Stories, Genuine Experiences | AURUS",
+  description:
+    "What residents and parents say about living at Aurus — in their own words. Explore authentic testimonials, reviews, and insights from the Aurus community.",
+  keywords: [
+    "Aurus stories",
+    "resident testimonials",
+    "student experiences",
+    "parent reviews Aurus",
+    "student housing reviews",
+    "Aurus community stories",
+    "hostel life reviews",
+  ],
+  alternates: {
+    canonical: "/stories",
+  },
+  openGraph: {
     title: "Real Stories, Genuine Experiences | AURUS",
     description:
-        "What residents and parents say about living at Aurus — in their words. Explore authentic stories and insights from the Aurus Journal.",
+      "Hear directly from residents and parents about life, community, and peace of mind at Aurus.",
+    url: "/stories",
+    siteName: "AURUS",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Real Stories, Genuine Experiences | AURUS",
+    description:
+      "Authentic resident stories and parent testimonials from Aurus luxury residences.",
+  },
 };
 
 export default function StoriesPage() {
-    return (
-        <main>
-            <RealStories />
-            <LifeMoments />
-            <AurusJournal />
-        </main>
-    );
+  return (
+    <main>
+      <RealStories />
+      <LifeMoments />
+      <AurusJournal />
+    </main>
+  );
 }
