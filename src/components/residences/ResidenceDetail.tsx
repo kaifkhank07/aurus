@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Container } from "@/components/ui/Primitives";
 import { Heading } from "../utils/Heading";
 import { ScheduleVisitModal } from "../shared/ScheduleVisitModal";
+import RichTextRenderer from "../shared/RichTextRenderer";
 import { useHostelAndEnquiryStore } from "@/store/useHostelAndEnquiryStore";
 import { SafeHostel } from "@/types/hostel.types";
 
@@ -326,10 +327,12 @@ export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailPro
           {/* Left Column: Residence Features and Content */}
           <div className="lg:col-span-2 space-y-8 sm:space-y-10">
             {/* Description */}
-            <p className="font-sans text-ink text-base sm:text-lg lg:text-[28px] 3xl:text-[35px] font-regular leading-tight max-w-3xl">
-              {hostel.description ||
-                "A premium student residence crafted for comfort, safety, and an enriching community experience. Featuring elegantly designed interiors, dedicated study zones, and chef-curated dining."}
-            </p>
+            <div className="font-sans text-ink text-base sm:text-lg lg:text-[20px] 3xl:text-[24px] font-light leading-relaxed max-w-3xl">
+              <RichTextRenderer
+                content={hostel.description}
+                fallback="A premium student residence crafted for comfort, safety, and an enriching community experience. Featuring elegantly designed interiors, dedicated study zones, and chef-curated dining."
+              />
+            </div>
 
             {/* Key Specs Box */}
             <div className="grid grid-cols-2 sm:grid-cols-4 border border-ink/15 overflow-hidden bg-[#FAF8F4]/80">

@@ -25,15 +25,15 @@ export function ResidenceCard({ item }: ResidenceCardProps) {
     typeof item.location?.locality === "object" && item.location.locality !== null
       ? item.location.locality.name
       : typeof item.location?.locality === "string"
-      ? item.location.locality
-      : "";
+        ? item.location.locality
+        : "";
 
   const cityName =
     typeof item.location?.city === "object" && item.location.city !== null
       ? item.location.city.city
       : typeof item.location?.city === "string"
-      ? item.location.city
-      : "";
+        ? item.location.city
+        : "";
 
   const localityDisplay =
     localityName && cityName
@@ -49,8 +49,8 @@ export function ResidenceCard({ item }: ResidenceCardProps) {
     typeof item.rent?.frequency === "object" && item.rent.frequency !== null
       ? item.rent.frequency.name
       : typeof item.rent?.frequency === "string"
-      ? item.rent.frequency
-      : "Monthly";
+        ? item.rent.frequency
+        : "Monthly";
 
   const frequencySuffix = frequencyName.toLowerCase().includes("year") ? "/yr" : "/mo";
 
@@ -103,8 +103,9 @@ export function ResidenceCard({ item }: ResidenceCardProps) {
             </span>
           </div>
 
-          <span className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] inline-flex shrink-0 items-center gap-2 rounded-full border-b-2 border-ink/30 px-3 py-2 text-[9px] uppercase tracking-[0.18em] text-[#77736c] transition-colors group-hover:bg-ink group-hover:text-[#faf8f4]">
-            View Residence
+          <span className="inline-flex shrink-0 items-center gap-2 rounded-full border-b-2 border-ink/30 px-3 py-2 font-mono text-[9px] leading-[1.7857] tracking-[0.18em] text-[#77736c] uppercase transition-colors group-hover:bg-ink group-hover:text-[#faf8f4] lg:text-[11px]">
+            <span className="lg:hidden">View</span>
+            <span className="hidden lg:inline">View Residence</span>
             <ArrowRight />
           </span>
         </div>

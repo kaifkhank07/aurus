@@ -109,7 +109,7 @@ export function Testimonial() {
               ref={quoteRef}
               onMouseEnter={() => setIsPaused(true)}
               onMouseLeave={() => setIsPaused(false)}
-              className="mt-5 sm:mt-7 lg:mt-[2.2vw] max-w-5xl mx-auto font-sans lg:uppercase text-[20px] sm:text-[24px] lg:text-[74px] font-light text-ink normal-case leading-[1.3] lg:leading-[1.15] lg:tracking-[-0.04em]"
+              className="mt-5 sm:mt-7 lg:mt-[2.2vw] max-w-4xl mx-auto font-sans lg:uppercase text-[20px] sm:text-[24px] lg:text-[64px] font-light text-ink normal-case leading-[1.3] lg:leading-[1.15] lg:tracking-[-0.04em]"
             >
               &ldquo;{current.quote}&rdquo;
             </blockquote>

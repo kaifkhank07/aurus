@@ -5,6 +5,7 @@ import { SafeBlog, BLOG_CATEGORY_LABELS } from "@/types/blog.types";
 import { getMediaUrl } from "@/lib/media";
 import { Btn } from "../ui/AdminUI";
 import Icon from "../ui/AdminIcons";
+import RichTextRenderer from "@/components/shared/RichTextRenderer";
 
 export interface BlogDetailsProps {
   open: boolean;
@@ -188,8 +189,8 @@ export default function BlogDetails({
             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
               Article Content
             </h4>
-            <div className="p-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 leading-relaxed whitespace-pre-wrap select-text">
-              {blog.description}
+            <div className="p-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 leading-relaxed select-text">
+              <RichTextRenderer content={blog.description} />
             </div>
           </div>
 

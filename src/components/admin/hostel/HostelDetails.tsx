@@ -10,6 +10,7 @@ import { SafeInstitute } from "@/types/institute.types";
 import { Chip, Btn } from "../ui/AdminUI";
 import Icon from "../ui/AdminIcons";
 import { getMediaUrl } from "@/lib/media";
+import RichTextRenderer from "@/components/shared/RichTextRenderer";
 
 export interface HostelDetailsProps {
   open: boolean;
@@ -427,8 +428,8 @@ export default function HostelDetails({
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
               <Icon name="fileText" size={12} /> Property Description
             </span>
-            <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 text-xs sm:text-sm text-slate-800 leading-relaxed whitespace-pre-wrap select-text">
-              {hostel.description}
+            <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 text-xs sm:text-sm text-slate-800 leading-relaxed select-text">
+              <RichTextRenderer content={hostel.description} />
             </div>
           </div>
 

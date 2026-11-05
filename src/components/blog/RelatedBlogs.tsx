@@ -7,6 +7,7 @@ import { Container, ArrowRight } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { useContentStore } from "@/store/useContentStore";
 import { SafeBlog, BLOG_CATEGORY_LABELS } from "@/types/blog.types";
+import { stripHtml } from "@/lib/html-utils";
 
 interface RelatedBlogsProps {
   currentSlug?: string;
@@ -72,12 +73,13 @@ export function RelatedBlogs({
               const dateText = formatDate(article.createdAt);
               const readTimeText = `${article.readDuration || 3} MIN READ`;
               const imageUrl = article.image?.url || "/images/blog01.png";
+              const plainDesc = stripHtml(article.description);
               const excerpt =
                 article.subtitle ||
-                (article.description
-                  ? article.description.length > 120
-                    ? `${article.description.slice(0, 120)}...`
-                    : article.description
+                (plainDesc
+                  ? plainDesc.length > 120
+                    ? `${plainDesc.slice(0, 120)}...`
+                    : plainDesc
                   : "");
 
               return (

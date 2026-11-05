@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Metadata } from "next";
 import connectToDatabase from "@/lib/mongodb";
 import { Blog } from "@/models/blog.model";
+import { stripHtml } from "@/lib/html-utils";
 import BlogDetail from "@/components/blog/BlogDetail";
 import RelatedBlogs from "@/components/blog/RelatedBlogs";
 
@@ -49,7 +50,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       blog.metadata?.description ||
       blog.subtitle ||
       (blog.description
-        ? blog.description.slice(0, 160)
+        ? stripHtml(blog.description).slice(0, 160)
         : "Read our latest article on Aurus Journal.");
 
     const keywords =

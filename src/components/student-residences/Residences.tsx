@@ -152,7 +152,7 @@ export function Residences() {
             {latestHostels.map((item, index) => (
               <li
                 key={index}
-                className={`w-[76vw] shrink-0 sm:w-[44vw] lg:w-[min(19.4271vw,373px)] ${index === 0 ? "ml-5 sm:ml-8 lg:ml-[6.25vw] 3xl:ml-[7.25vh]" : ""
+                className={`w-[85vw] shrink-0 sm:w-[48vw] lg:w-[min(21vw,400px)] ${index === 0 ? "ml-5 sm:ml-8 lg:ml-[6.25vw] 3xl:ml-[7.25vh]" : ""
                   }`}
               >
                 <ResidenceCard item={item} />

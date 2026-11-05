@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useHostelAndEnquiryStore } from "@/store/useHostelAndEnquiryStore";
 import { useMasterStore } from "@/store/useMasterStore";
 import { Btn, FormField, TextInput } from "../ui/AdminUI";
+import RichTextEditor, { isQuillEmpty } from "../ui/RichTextEditor";
 import Icon from "../ui/AdminIcons";
 import { TenantType, TENANT_TYPES } from "@/types/hostel.types";
 import { SafeLocality } from "@/types/locality.types";
@@ -357,7 +358,7 @@ export default function CreateHostel({
       errors.frontImage = "Front cover image is required.";
     }
 
-    if (!description.trim()) {
+    if (isQuillEmpty(description)) {
       errors.description = "Hostel description is required.";
     }
 
@@ -647,13 +648,13 @@ export default function CreateHostel({
               </div>
 
               <FormField label="Description *" hint="Comprehensive overview of rooms, environment, and rules." error={clientErrors.description}>
-                <textarea
-                  rows={4}
+                <RichTextEditor
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  onChange={setDescription}
                   placeholder="Describe the rooms, food, security, and student lifestyle in detail…"
                   disabled={isSubmitting}
-                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                  error={!!clientErrors.description}
+                  minHeight="220px"
                 />
               </FormField>
 

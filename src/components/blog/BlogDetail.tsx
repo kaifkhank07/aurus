@@ -8,6 +8,7 @@ import { ViewReveal } from "../animation";
 import { useContentStore } from "@/store/useContentStore";
 import { SafeBlog, BLOG_CATEGORY_LABELS } from "@/types/blog.types";
 import ScheduleVisitModal from "../shared/ScheduleVisitModal";
+import RichTextRenderer from "../shared/RichTextRenderer";
 
 interface BlogDetailProps {
   slug?: string;
@@ -145,13 +146,6 @@ export function BlogDetail({
   const readTimeText = `${blog.readDuration || 3} MIN READ`;
   const imageUrl = blog.image?.url || "/images/blog01.png";
 
-  const paragraphs = blog.description
-    ? blog.description
-      .split(/\n{2,}/)
-      .map((p) => p.trim())
-      .filter(Boolean)
-    : [];
-
   return (
     <article className={`pt-6 sm:pt-10 lg:pt-14 pb-8 sm:pb-12 ${className}`}>
       <Container>
@@ -203,21 +197,11 @@ export function BlogDetail({
                   </p>
                 )}
 
-                {/* Description Paragraphs */}
-                {paragraphs.length > 0 ? (
-                  paragraphs.map((paragraph, idx) => (
-                    <p
-                      key={idx}
-                      className="font-sans font-light text-[13.5px] sm:text-[14.5px] lg:text-[15.5px] leading-[1.65] text-ink/75 whitespace-pre-line"
-                    >
-                      {paragraph}
-                    </p>
-                  ))
-                ) : (
-                  <p className="font-sans font-light text-[13.5px] sm:text-[14.5px] lg:text-[15.5px] leading-[1.65] text-ink/75">
-                    {blog.description}
-                  </p>
-                )}
+                {/* Description Content */}
+                <RichTextRenderer
+                  content={blog.description}
+                  className="text-ink/80 text-[14px] sm:text-[15px] lg:text-[16px] font-light leading-[1.7]"
+                />
               </div>
 
               {/* Footer / Meta & Share Bar */}

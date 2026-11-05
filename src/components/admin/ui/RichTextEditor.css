@@ -1,0 +1,96 @@
+/* Quill Editor Customizations for Aurus Admin */
+.quill-editor-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.quill-editor-wrapper .ql-toolbar.ql-snow {
+  border: none;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  border-top-left-radius: 0.75rem;
+  border-top-right-radius: 0.75rem;
+  padding: 0.5rem 0.65rem;
+  font-family: inherit;
+}
+
+.quill-editor-wrapper .ql-container.ql-snow {
+  border: none;
+  font-family: inherit;
+  font-size: 0.875rem;
+  border-bottom-left-radius: 0.75rem;
+  border-bottom-right-radius: 0.75rem;
+  background-color: #ffffff;
+}
+
+.quill-editor-wrapper .ql-editor {
+  min-height: var(--editor-min-height, 200px);
+  max-height: 520px;
+  overflow-y: auto;
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.625;
+  color: #0f172a;
+  padding: 0.875rem 1rem;
+}
+
+.quill-editor-wrapper .ql-editor.ql-blank::before {
+  color: #94a3b8;
+  font-style: normal;
+  left: 1rem;
+  right: 1rem;
+}
+
+.quill-editor-wrapper .ql-snow .ql-picker {
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.quill-editor-wrapper .ql-snow .ql-stroke {
+  stroke: #475569;
+}
+
+.quill-editor-wrapper .ql-snow .ql-fill {
+  fill: #475569;
+}
+
+.quill-editor-wrapper .ql-snow.ql-toolbar button:hover,
+.quill-editor-wrapper .ql-snow.ql-toolbar button:focus,
+.quill-editor-wrapper .ql-snow.ql-toolbar button.ql-active,
+.quill-editor-wrapper .ql-snow.ql-toolbar .ql-picker-label:hover,
+.quill-editor-wrapper .ql-snow.ql-toolbar .ql-picker-label.ql-active,
+.quill-editor-wrapper .ql-snow.ql-toolbar .ql-picker-item:hover,
+.quill-editor-wrapper .ql-snow.ql-toolbar .ql-picker-item.ql-selected {
+  color: #ea580c;
+}
+
+.quill-editor-wrapper .ql-snow.ql-toolbar button:hover .ql-stroke,
+.quill-editor-wrapper .ql-snow.ql-toolbar button:focus .ql-stroke,
+.quill-editor-wrapper .ql-snow.ql-toolbar button.ql-active .ql-stroke,
+.quill-editor-wrapper .ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke,
+.quill-editor-wrapper .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke,
+.quill-editor-wrapper .ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke,
+.quill-editor-wrapper .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke {
+  stroke: #ea580c;
+}
+
+.quill-editor-wrapper .ql-snow.ql-toolbar button:hover .ql-fill,
+.quill-editor-wrapper .ql-snow.ql-toolbar button:focus .ql-fill,
+.quill-editor-wrapper .ql-snow.ql-toolbar button.ql-active .ql-fill,
+.quill-editor-wrapper .ql-snow.ql-toolbar .ql-picker-label:hover .ql-fill,
+.quill-editor-wrapper .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-fill,
+.quill-editor-wrapper .ql-snow.ql-toolbar .ql-picker-item:hover .ql-fill,
+.quill-editor-wrapper .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-fill {
+  fill: #ea580c;
+}
+
+.quill-editor-wrapper .ql-snow .ql-picker-options {
+  border-radius: 0.5rem;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  padding: 0.25rem;
+  background-color: #ffffff;
+}
+

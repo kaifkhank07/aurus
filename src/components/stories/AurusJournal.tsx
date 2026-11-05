@@ -10,6 +10,7 @@ import { Heading } from "../utils/Heading";
 import ScheduleVisitModal from "../shared/ScheduleVisitModal";
 import { useContentStore } from "@/store/useContentStore";
 import { BLOG_CATEGORY_LABELS } from "@/types/blog.types";
+import { stripHtml } from "@/lib/html-utils";
 
 function formatDate(isoString?: string): string {
   if (!isoString) return "";
@@ -88,12 +89,13 @@ export function AurusJournal() {
                 const dateText = formatDate(article.createdAt);
                 const readTimeText = `${article.readDuration || 3} MIN READ`;
                 const imageUrl = article.image?.url || "/images/journal-1.png";
+                const plainDesc = stripHtml(article.description);
                 const excerpt =
                   article.subtitle ||
-                  (article.description
-                    ? article.description.length > 120
-                      ? `${article.description.slice(0, 120)}...`
-                      : article.description
+                  (plainDesc
+                    ? plainDesc.length > 120
+                      ? `${plainDesc.slice(0, 120)}...`
+                      : plainDesc
                     : "");
 
                 return (

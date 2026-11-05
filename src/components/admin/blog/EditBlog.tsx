@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useContentStore } from "@/store/useContentStore";
 import { Btn, FormField, TextInput } from "../ui/AdminUI";
+import RichTextEditor, { isQuillEmpty } from "../ui/RichTextEditor";
 import Icon from "../ui/AdminIcons";
 import { SafeBlog, UpdateBlogInput, BLOG_CATEGORIES, BLOG_CATEGORY_LABELS, BlogCategory } from "@/types/blog.types";
 import { getMediaUrl } from "@/lib/media";
@@ -120,7 +121,7 @@ export default function EditBlog({
       errors.readDuration = "Read duration cannot exceed 180 minutes.";
     }
 
-    if (!description.trim()) {
+    if (isQuillEmpty(description)) {
       errors.description = "Blog content / description is required.";
     }
 
@@ -420,19 +421,16 @@ export default function EditBlog({
           {/* Content / Description */}
           <FormField
             label="Article Content *"
-            hint="Full body content for the blog post."
+            hint="Full formatted body content for the blog post."
             error={clientErrors.description}
           >
-            <textarea
-              rows={8}
+            <RichTextEditor
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={setDescription}
               placeholder="Article body content…"
               disabled={isSubmitting}
-              className={`w-full px-3.5 py-2.5 bg-white border ${clientErrors.description
-                  ? "border-rose-400 focus:ring-rose-500/20"
-                  : "border-slate-200 focus:ring-slate-400/20"
-                } rounded-xl text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 transition-all leading-relaxed`}
+              error={!!clientErrors.description}
+              minHeight="240px"
             />
           </FormField>
 

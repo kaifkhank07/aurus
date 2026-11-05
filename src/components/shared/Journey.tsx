@@ -17,7 +17,7 @@ export function Journey() {
         {/* Ghost wordmark */}
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute -bottom-36 -z-10 select-none text-center font-regular text-[22vw] leading-none tracking-[-0.045em] text-ink/[0.06]"
+          className="hidden lg:block pointer-events-none absolute -bottom-36 -z-10 select-none text-center font-regular text-[22vw] leading-none tracking-[-0.045em] text-ink/[0.06]"
         >
           {journey.watermark}
         </span>

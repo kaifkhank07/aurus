@@ -9,6 +9,7 @@ import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
 import { useContentStore } from "@/store/useContentStore";
 import { BLOG_CATEGORY_LABELS } from "@/types/blog.types";
+import { stripHtml } from "@/lib/html-utils";
 
 // Limit of 6 articles per page in pagination
 const PAGE_LIMIT = 6;
@@ -122,12 +123,13 @@ export function AurusJournalBlog() {
                 const dateText = formatDate(article.createdAt);
                 const readTimeText = `${article.readDuration || 3} MIN READ`;
                 const imageUrl = article.image?.url || "/images/blog01.png";
+                const plainDesc = stripHtml(article.description);
                 const excerpt =
                   article.subtitle ||
-                  (article.description
-                    ? article.description.length > 120
-                      ? `${article.description.slice(0, 120)}...`
-                      : article.description
+                  (plainDesc
+                    ? plainDesc.length > 120
+                      ? `${plainDesc.slice(0, 120)}...`
+                      : plainDesc
                     : "");
 
                 return (
