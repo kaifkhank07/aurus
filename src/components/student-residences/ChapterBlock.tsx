@@ -39,14 +39,14 @@ export function ChapterBlock() {
         </div>
 
         {/* Images */}
-        <div className="flex flex-col gap-4 sm:gap-5 lg:grid lg:grid-cols-2 lg:gap-[1.25vw">
+        <div className="flex flex-col lg:grid lg:grid-cols-2 gap-4 lg:gap-6">
           {chapter.images.map((image) => (
             <ViewReveal duration={800} startDelay={100} key={image.alt}>
               <Figure
                 src={image.src}
                 alt={image.alt}
                 sizes="(min-width: 1024px) 50vw, 100vw"
-                className="aspect-[16/11] sm:aspect-[16/10] lg:aspect-[830/572] w-full rounded-[20px] sm:rounded-[26px] lg:rounded-[var(--radius-media)]"
+                className="aspect-[16/11] sm:aspect-[16/10] lg:aspect-[830/572] w-full rounded-[16px] sm:rounded-[40px]"
               />
             </ViewReveal>
           ))}

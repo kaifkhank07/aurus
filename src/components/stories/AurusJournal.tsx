@@ -43,7 +43,7 @@ export function AurusJournal() {
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">
-      <Container>
+      <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
         {/* Section Heading & Subtitle */}
         <div>
           <Heading
@@ -60,7 +60,7 @@ export function AurusJournal() {
         {/* 3 Articles Grid */}
         <ViewReveal duration={800} startDelay={100}>
           {isLoadingLatestBlogs && articlesToDisplay.length === 0 ? (
-            <div className="mt-10 sm:mt-12 lg:mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
               {Array.from({ length: 3 }).map((_, idx) => (
                 <div
                   key={`skeleton-${idx}`}
@@ -80,7 +80,7 @@ export function AurusJournal() {
               ))}
             </div>
           ) : articlesToDisplay.length === 0 ? null : (
-            <div className="mt-10 sm:mt-12 lg:mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
               {articlesToDisplay.map((article) => {
                 const categoryLabel =
                   BLOG_CATEGORY_LABELS[article.category] ||
@@ -147,7 +147,7 @@ export function AurusJournal() {
 
         {/* Community Banner CTA */}
         <ViewReveal duration={800} startDelay={200}>
-          <div className="mt-10 sm:mt-12 lg:mt-14 bg-white rounded-[24px] sm:rounded-[32px] lg:rounded-[36px] p-8 sm:p-12 lg:p-16 border border-ink/[0.06] flex flex-col md:flex-row md:items-center justify-between gap-6 lg:gap-8">
+          <div className="bg-white rounded-[24px] sm:rounded-[32px] lg:rounded-[36px] p-8 sm:p-12 lg:p-16 border border-ink/[0.06] flex flex-col md:flex-row md:items-center justify-between gap-6 lg:gap-8">
             {/* Left Column: Heading */}
             <Heading
               title1={bannerData.titleTop}

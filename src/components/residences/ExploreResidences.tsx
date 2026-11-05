@@ -58,15 +58,15 @@ export function ExploreResidences() {
           typeof hostel.location?.locality === "object" && hostel.location?.locality !== null
             ? (hostel.location.locality.name || "").toLowerCase()
             : typeof hostel.location?.locality === "string"
-            ? hostel.location.locality.toLowerCase()
-            : "";
+              ? hostel.location.locality.toLowerCase()
+              : "";
 
         const cityName =
           typeof hostel.location?.city === "object" && hostel.location?.city !== null
             ? (hostel.location.city.city || "").toLowerCase()
             : typeof hostel.location?.city === "string"
-            ? hostel.location.city.toLowerCase()
-            : "";
+              ? hostel.location.city.toLowerCase()
+              : "";
 
         const keywords = Array.isArray(hostel.metadata?.keywords)
           ? hostel.metadata.keywords.map((k) => (k || "").toLowerCase())
@@ -172,7 +172,8 @@ export function ExploreResidences() {
           <Heading
             title1={exploreResidences.titleTop}
             title2={exploreResidences.titleAccent}
-            className="uppercase max-w-[28ch] sm:max-w-none"
+            // className="uppercase max-w-[28ch] sm:max-w-none"
+            className="uppercase max-w-[200px] sm:max-w-full"
           />
 
           <p className="mt-4 sm:mt-5 lg:mt-6 max-w-[56ch] lg:max-w-[43ch] font-sans font-normal text-[15px] sm:text-[17px] lg:text-[19px] leading-[1.4] tracking-[-0.03em] text-muted">

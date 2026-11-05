@@ -97,19 +97,19 @@ export function FaqAccordionItem({
         aria-expanded={isOpen}
         className="w-full py-4 sm:py-5 flex items-center justify-between gap-4 text-left group cursor-pointer"
       >
-        <span className="font-sans font-light text-[12px] sm:text-[16px] lg:text-[20px] text-ink group-hover:text-neutral-700 transition-colors">
+        <span className="font-sans font-light text-[14px] sm:text-[16px] lg:text-[20px] text-ink group-hover:text-neutral-700 transition-colors">
           {question}
         </span>
         <span
           ref={plusRef}
-          className="font-mono text-[18px] sm:text-[20px] text-ink/60 group-hover:text-ink shrink-0 inline-block will-change-transform"
+          className="font-light text-[32px] sm:text-[36px] text-muted shrink-0 inline-block will-change-transform"
         >
           +
         </span>
       </button>
 
       <div ref={contentRef} className="will-change-[height,opacity]">
-        <div className="pb-5 pt-1 pr-6 font-sans font-light text-[10px] sm:text-[12px] lg:text-[14px] text-muted leading-relaxed">
+        <div className="pb-5 pt-1 pr-6 font-sans font-light text-[12px] sm:text-[14px] lg:text-[18px] text-muted leading-relaxed">
           <p>{answer}</p>
         </div>
       </div>
@@ -156,7 +156,7 @@ export default function FaqSection() {
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">
-      <Container>
+      <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
         {/* Section Heading & Subtitle */}
         <div>
           <Heading
@@ -171,7 +171,7 @@ export default function FaqSection() {
 
         {/* Main FAQ Layout: Left Category Nav & Right Questions */}
         <ViewReveal duration={800} startDelay={100}>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 xl:gap-20 mt-10 sm:mt-12 lg:mt-16 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 xl:gap-20 items-start">
             {/* Left Column: Category Pills Filter */}
             <div className="lg:col-span-3 xl:col-span-3">
               {/* Mobile / Tablet: Horizontal Scrollable Pills */}
@@ -183,11 +183,10 @@ export default function FaqSection() {
                       key={cat.category}
                       type="button"
                       onClick={() => handleCategoryClick(cat.category)}
-                      className={`font-mono uppercase text-[10px] sm:text-[11px] tracking-[1.5px] rounded-full border px-4 py-2 whitespace-nowrap transition-all duration-200 cursor-pointer ${
-                        isActive
-                          ? "bg-ink text-paper border-ink"
-                          : "border-ink/20 text-muted hover:border-ink/40 hover:text-ink bg-transparent"
-                      }`}
+                      className={`font-mono uppercase text-[10px] sm:text-[11px] tracking-[1.5px] rounded-full border px-4 py-2 whitespace-nowrap transition-all duration-200 cursor-pointer ${isActive
+                        ? "bg-ink text-paper border-ink"
+                        : "border-ink/20 text-muted hover:border-ink/40 hover:text-ink bg-transparent"
+                        }`}
                     >
                       {cat.categoryLabel.toUpperCase()}
                     </button>
@@ -204,11 +203,10 @@ export default function FaqSection() {
                       key={cat.category}
                       type="button"
                       onClick={() => handleCategoryClick(cat.category)}
-                      className={`font-mono uppercase text-[10px] sm:text-[12px] tracking-[1.5px] rounded-full border px-5 py-2.5 text-left transition-all duration-200 cursor-pointer w-full ${
-                        isActive
-                          ? "bg-ink text-paper border-ink font-medium"
-                          : "border-ink/20 text-ink hover:border-ink/50 hover:text-ink bg-transparent"
-                      }`}
+                      className={`font-mono uppercase text-[10px] sm:text-[12px] tracking-[1.5px] rounded-full border px-5 py-2.5 text-left transition-all duration-200 cursor-pointer w-full ${isActive
+                        ? "bg-ink text-paper border-ink font-medium"
+                        : "border-ink/20 text-ink hover:border-ink/50 hover:text-ink bg-transparent"
+                        }`}
                     >
                       {cat.categoryLabel.toUpperCase()}
                     </button>

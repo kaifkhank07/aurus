@@ -55,7 +55,7 @@ export default function TheDetails() {
 
             {/* Right Column: Gym / Workout Photo */}
             <div className="hidden lg:block lg:col-span-4 w-full">
-              <div className="relative aspect-[4/3] sm:aspect-[5/4] lg:aspect-square w-full overflow-hidden bg-ink/5 border border-ink/10 shadow-sm group">
+              <div className="relative aspect-[4/3] sm:aspect-[5/4] lg:aspect-square w-full rounded-[10px] overflow-hidden bg-ink/5 border border-ink/10 group">
                 <Image
                   src={facilities.image.src}
                   alt={facilities.image.alt}

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import Image from "next/image";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { lifePageData } from "@/data/lifeataurus";
 import { Container, Eyebrow } from "../ui/Primitives";
@@ -15,9 +15,9 @@ export default function LifeMoments() {
     const marquee = marqueeRef.current;
     if (!marquee) return;
 
-    // Smooth continuous auto-scrolling marquee for mobile & tablet
+    // Keep the existing tablet auto-scrolling animation.
     const tween = gsap.to(marquee, {
-      xPercent: -33.333333333333336, // 3 sets -> seamless infinite loop at 1/3
+      xPercent: -33.333333333333336,
       ease: "none",
       duration: 32,
       repeat: -1,
@@ -26,8 +26,12 @@ export default function LifeMoments() {
     const handleTouchStart = () => tween.pause();
     const handleTouchEnd = () => tween.play();
 
-    marquee.addEventListener("touchstart", handleTouchStart, { passive: true });
-    marquee.addEventListener("touchend", handleTouchEnd, { passive: true });
+    marquee.addEventListener("touchstart", handleTouchStart, {
+      passive: true,
+    });
+    marquee.addEventListener("touchend", handleTouchEnd, {
+      passive: true,
+    });
 
     return () => {
       marquee.removeEventListener("touchstart", handleTouchStart);
@@ -39,36 +43,55 @@ export default function LifeMoments() {
   return (
     <section className="py-8 sm:py-12 lg:py-16">
       <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
-        {/* Eyebrow Header */}
         <Eyebrow>{momentsGallery.eyebrow}</Eyebrow>
 
-        {/* 8 Moments Photo Cards */}
         <ViewReveal duration={800}>
-          {/* Mobile / Tablet: Infinite Loop Scrolling Marquee */}
-          <div className="lg:hidden -mx-5 sm:-mx-8 overflow-hidden select-none">
+          {/* Mobile: Static vertical cards */}
+          <div className="mx-auto flex w-full max-w-[380px] flex-col gap-6 sm:hidden">
+            {momentsGallery.items.map((item, index) => (
+              <div key={index} className="flex flex-col gap-3.5">
+                <div className="relative aspect-[3/2] w-full overflow-hidden rounded-[10px] border border-ink/10 bg-ink/5 shadow-sm">
+                  <Image
+                    src={item.image}
+                    alt={item.alt}
+                    fill
+                    sizes="100vw"
+                    className="object-cover"
+                  />
+                </div>
+
+                <span className="font-mono text-[10px] font-medium tracking-[0.14em] text-ink uppercase">
+                  {item.label}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Tablet: Existing infinite scrolling marquee */}
+          {/* <div className="mx-0 hidden overflow-hidden select-none sm:block lg:hidden">
             <div ref={marqueeRef} className="flex w-max will-change-transform">
               {[0, 1, 2].map((setIndex) => (
                 <div
                   key={setIndex}
                   aria-hidden={setIndex > 0 ? "true" : undefined}
-                  className="flex shrink-0 items-center gap-3.5 sm:gap-4 pr-3.5 sm:pr-4"
+                  className="flex shrink-0 items-center gap-4 pr-4"
                 >
                   {momentsGallery.items.map((item, i) => (
                     <div
                       key={`${setIndex}-${i}`}
-                      className="group relative aspect-[3/4] h-[260px] sm:h-[320px] shrink-0 overflow-hidden rounded-[16px] bg-ink/5 border border-ink/10 shadow-sm"
+                      className="group relative aspect-[3/4] h-[320px] shrink-0 overflow-hidden rounded-[16px] border border-ink/10 bg-ink/5 shadow-sm"
                     >
                       <Image
                         src={item.image}
                         alt={setIndex === 0 ? item.alt : ""}
                         fill
-                        sizes="(max-width: 640px) 210px, 260px"
+                        sizes="260px"
                         className="object-cover"
                       />
-                      {/* Gradient Overlay for Text Legibility */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-                      {/* Overlay Tag */}
-                      <span className="absolute bottom-3 left-3 sm:bottom-3.5 sm:left-3.5 z-10 font-mono text-[9.5px] sm:text-[10.5px] uppercase tracking-[0.14em] text-white/95 font-medium drop-shadow-sm">
+
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                      <span className="absolute bottom-3.5 left-3.5 z-10 font-mono text-[10.5px] font-medium tracking-[0.14em] text-white/95 uppercase drop-shadow-sm">
                         {item.label}
                       </span>
                     </div>
@@ -76,26 +99,26 @@ export default function LifeMoments() {
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
 
-          {/* Desktop: 4 Columns x 2 Rows Photo Grid */}
-          <div className="hidden lg:grid lg:grid-cols-4 gap-3.5 sm:gap-4 lg:gap-6">
+          {/* Desktop: Existing 4-column grid */}
+          <div className="hidden md:grid grid-cols-3 lg:grid-cols-4 gap-6">
             {momentsGallery.items.map((item, index) => (
               <div
                 key={index}
-                className="group relative aspect-[3/4] w-full overflow-hidden rounded-[10px] bg-ink/5 border border-ink/10 shadow-sm"
+                className="group relative aspect-[3/4] w-full overflow-hidden rounded-[10px] border border-ink/10 bg-ink/5 shadow-sm"
               >
                 <Image
                   src={item.image}
                   alt={item.alt}
                   fill
-                  sizes="(min-width: 1024px) 25vw, 50vw"
+                  sizes="25vw"
                   className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                 />
-                {/* Gradient Overlay for Text Legibility */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-                {/* Overlay Tag */}
-                <span className="absolute bottom-3.5 left-3.5 sm:bottom-4 sm:left-4 z-10 font-mono text-[10px] sm:text-[12px] 3xl:text-[14px] uppercase tracking-[0.14em] text-white/95 font-light drop-shadow-sm">
+
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                <span className="absolute bottom-3.5 left-3.5 z-10 font-mono text-[10px] font-light tracking-[0.14em] text-white/95 uppercase drop-shadow-sm sm:bottom-4 sm:left-4 sm:text-[12px] 3xl:text-[14px]">
                   {item.label}
                 </span>
               </div>

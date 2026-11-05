@@ -27,7 +27,7 @@ export function RealStories() {
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">
-      <Container>
+      <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
         {/* Section Heading & Subtitle */}
         <div>
           <Heading
@@ -43,50 +43,48 @@ export function RealStories() {
 
         {/* Stats Row */}
         <ViewReveal duration={800} startDelay={100}>
-          <div className="mt-10 sm:mt-12 lg:mt-14">
-            {/* Mobile / Tablet (< lg): 2x2 Grid with hairline dividers */}
-            <div className="grid grid-cols-2 gap-y-8 gap-x-6 sm:gap-x-10 lg:hidden">
-              {data.stats.map((stat) => {
-                return (
-                  <div
-                    key={stat.label}
-                    className="flex flex-col justify-start"
-                  >
-                    <NumberRoller
-                      value={stat.value}
-                      className="font-mono font-regular text-[32px] sm:text-[38px] lg:text-[46px] leading-none text-ink tracking-tight tabular-nums"
-                    />
-                    <span className="font-mono font-regular text-[10px] sm:text-[11px] lg:text-[14px] tracking-[1.5px] uppercase text-muted mt-3 block">
-                      {stat.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Desktop (>= lg): 4-Column Divider Row */}
-            <dl className="hidden lg:grid lg:grid-cols-4">
-              {data.stats.map((stat, idx) => (
+          {/* Mobile / Tablet (< lg): 2x2 Grid with hairline dividers */}
+          <div className="grid grid-cols-2 gap-y-8 gap-x-6 sm:gap-x-10 lg:hidden">
+            {data.stats.map((stat) => {
+              return (
                 <div
                   key={stat.label}
-                  className={`flex flex-col justify-start ${idx > 0
-                    ? "border-l border-ink/15 pl-8 xl:pl-10"
-                    : "pr-8 xl:pr-10"
-                    }`}
+                  className="flex flex-col justify-start"
                 >
-                  <dt className="sr-only">{stat.label}</dt>
-                  <dd>
-                    <NumberRoller
-                      value={stat.value}
-                      className="font-mono font-regular text-[40px] xl:text-[46px] 3xl:text-[50px] leading-none text-ink tracking-tight tabular-nums"
-                    />
-                    <span className="font-mono font-regular text-[10px] sm:text-[11px] xl:text-[14px] tracking-[1.5px] uppercase text-muted mt-3.5 block">
-                      {stat.label}
-                    </span>
-                  </dd>
+                  <NumberRoller
+                    value={stat.value}
+                    className="font-mono font-regular text-[32px] sm:text-[38px] lg:text-[46px] leading-none text-ink tracking-tight tabular-nums"
+                  />
+                  <span className="font-mono font-regular text-[10px] sm:text-[11px] lg:text-[14px] tracking-[1.5px] uppercase text-muted mt-3 block">
+                    {stat.label}
+                  </span>
                 </div>
-              ))}
-            </dl>
+              );
+            })}
+          </div>
+
+          {/* Desktop (>= lg): 4-Column Divider Row */}
+          <div className="hidden lg:grid lg:grid-cols-4">
+            {data.stats.map((stat, idx) => (
+              <div
+                key={stat.label}
+                className={`flex flex-col justify-start ${idx > 0
+                  ? "border-l border-ink/15 pl-8 xl:pl-10"
+                  : "pr-8 xl:pr-10"
+                  }`}
+              >
+                <dt className="sr-only">{stat.label}</dt>
+                <dd>
+                  <NumberRoller
+                    value={stat.value}
+                    className="font-regular text-[40px] xl:text-[46px] 3xl:text-[50px] leading-none text-ink tracking-tight tabular-nums"
+                  />
+                  <span className="font-light text-[10px] sm:text-[11px] xl:text-[14px] tracking-[1.5px] uppercase text-muted mt-3.5 block">
+                    {stat.label}
+                  </span>
+                </dd>
+              </div>
+            ))}
           </div>
         </ViewReveal>
 

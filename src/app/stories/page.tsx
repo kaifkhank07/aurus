@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import RealStories from "@/components/stories/RealStories";
-import LifeMoments from "@/components/lifeataurus/LifeMoments";
+import LifeMoments from "@/components/stories/LifeMoments";
 import AurusJournal from "@/components/stories/AurusJournal";
 
 export const metadata: Metadata = {

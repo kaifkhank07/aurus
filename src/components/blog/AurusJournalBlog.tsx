@@ -70,7 +70,7 @@ export function AurusJournalBlog() {
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">
-      <Container>
+      <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
         {/* Section Heading & Subtitle */}
         <div ref={gridTopRef}>
           <Heading
@@ -87,7 +87,7 @@ export function AurusJournalBlog() {
         {/* Articles Grid (Max 6 per page) */}
         <ViewReveal duration={800} startDelay={100}>
           {isLoadingPublicBlogs && publicBlogs.length === 0 ? (
-            <div className="mt-10 sm:mt-12 lg:mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
               {Array.from({ length: PAGE_LIMIT }).map((_, idx) => (
                 <div
                   key={`skeleton-${idx}`}
@@ -107,14 +107,14 @@ export function AurusJournalBlog() {
               ))}
             </div>
           ) : publicBlogs.length === 0 ? (
-            <div className="mt-10 sm:mt-12 lg:mt-14 py-16 text-center rounded-[22px] bg-[#FAF8F5] border border-ink/[0.06]">
+            <div className="py-16 text-center rounded-[22px] bg-[#FAF8F5] border border-ink/[0.06]">
               <p className="font-serif italic text-2xl text-ink">No journal articles found</p>
               <p className="mt-2 font-mono text-[11px] uppercase tracking-[1.5px] text-muted">
                 Check back soon for insights, stories, and guides.
               </p>
             </div>
           ) : (
-            <div className="mt-10 sm:mt-12 lg:mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
               {currentArticles.map((article) => {
                 const categoryLabel =
                   BLOG_CATEGORY_LABELS[article.category] ||
@@ -182,66 +182,63 @@ export function AurusJournalBlog() {
         {/* Pagination Controls */}
         {publicBlogs.length > 0 && (
           <ViewReveal duration={800} startDelay={150}>
-            <div className="mt-12 sm:mt-16 lg:mt-20">
-              {/* Top divider hairline rule */}
-              <div className="w-full border-t border-ink/15" />
+            {/* Top divider hairline rule */}
+            <div className="w-full border-t border-ink/15" />
 
-              {/* Pagination Controls Row */}
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-y-3 pt-6 sm:pt-8">
-                {/* Previous Button */}
-                <div className="order-2 lg:order-1 flex justify-start items-center">
-                  <button
-                    type="button"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    aria-label="Previous Page"
-                    className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[1.5px] rounded-full border px-4 sm:px-6 py-2 sm:py-2.5 transition-all duration-300 disabled:opacity-30 disabled:border-ink/10 disabled:cursor-not-allowed border-ink/30 text-ink hover:enabled:bg-ink hover:enabled:text-paper cursor-pointer"
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <span aria-hidden="true">&larr;</span>
-                      <span>PREVIOUS</span>
-                    </span>
-                  </button>
-                </div>
+            {/* Pagination Controls Row */}
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-y-3 pt-6 sm:pt-8">
+              {/* Previous Button */}
+              <div className="order-2 lg:order-1 flex justify-start items-center">
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  aria-label="Previous Page"
+                  className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[1.5px] rounded-full border px-4 sm:px-6 py-2 sm:py-2.5 transition-all duration-300 disabled:opacity-30 disabled:border-ink/10 disabled:cursor-not-allowed border-ink/30 text-ink hover:enabled:bg-ink hover:enabled:text-paper cursor-pointer"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <span aria-hidden="true">&larr;</span>
+                    <span>PREVIOUS</span>
+                  </span>
+                </button>
+              </div>
 
-                {/* Numbered Page Circles */}
-                <div className="order-1 lg:order-2 col-span-2 lg:col-span-1 flex justify-center items-center gap-2 sm:gap-3 lg:px-3">
-                  {pageNumbers.map((page) => {
-                    const isActive = page === currentPage;
-                    return (
-                      <button
-                        key={page}
-                        type="button"
-                        onClick={() => handlePageChange(page)}
-                        aria-current={isActive ? "page" : undefined}
-                        aria-label={`Page ${page}`}
-                        className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full font-mono text-[11px] sm:text-[12px] font-medium flex items-center justify-center transition-all duration-200 ${
-                          isActive
-                            ? "bg-ink text-paper"
-                            : "border border-ink/25 text-ink hover:border-ink hover:bg-ink hover:text-paper cursor-pointer"
+              {/* Numbered Page Circles */}
+              <div className="order-1 lg:order-2 col-span-2 lg:col-span-1 flex justify-center items-center gap-2 sm:gap-3 lg:px-3">
+                {pageNumbers.map((page) => {
+                  const isActive = page === currentPage;
+                  return (
+                    <button
+                      key={page}
+                      type="button"
+                      onClick={() => handlePageChange(page)}
+                      aria-current={isActive ? "page" : undefined}
+                      aria-label={`Page ${page}`}
+                      className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full font-mono text-[11px] sm:text-[12px] font-medium flex items-center justify-center transition-all duration-200 ${isActive
+                        ? "bg-ink text-paper"
+                        : "border border-ink/25 text-ink hover:border-ink hover:bg-ink hover:text-paper cursor-pointer"
                         }`}
-                      >
-                        {page}
-                      </button>
-                    );
-                  })}
-                </div>
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+              </div>
 
-                {/* Next Button */}
-                <div className="order-3 flex justify-end items-center">
-                  <button
-                    type="button"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    aria-label="Next Page"
-                    className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[1.5px] rounded-full border px-4 sm:px-6 py-2 sm:py-2.5 transition-all duration-300 disabled:opacity-30 disabled:border-ink/10 disabled:cursor-not-allowed border-ink/30 text-ink hover:enabled:bg-ink hover:enabled:text-paper cursor-pointer"
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <span>NEXT</span>
-                      <span aria-hidden="true">&rarr;</span>
-                    </span>
-                  </button>
-                </div>
+              {/* Next Button */}
+              <div className="order-3 flex justify-end items-center">
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  aria-label="Next Page"
+                  className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[1.5px] rounded-full border px-4 sm:px-6 py-2 sm:py-2.5 transition-all duration-300 disabled:opacity-30 disabled:border-ink/10 disabled:cursor-not-allowed border-ink/30 text-ink hover:enabled:bg-ink hover:enabled:text-paper cursor-pointer"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <span>NEXT</span>
+                    <span aria-hidden="true">&rarr;</span>
+                  </span>
+                </button>
               </div>
             </div>
           </ViewReveal>
@@ -249,7 +246,7 @@ export function AurusJournalBlog() {
 
         {/* Subscribe Banner CTA */}
         <ViewReveal duration={800} startDelay={200}>
-          <div className="mt-12 sm:mt-16 lg:mt-20 bg-white rounded-[24px] sm:rounded-[32px] lg:rounded-[36px] p-8 sm:p-12 lg:p-16 border border-ink/[0.06] shadow-[0_2px_16px_rgba(0,0,0,0.02)]">
+          <div className="bg-white rounded-[24px] sm:rounded-[32px] lg:rounded-[36px] p-8 sm:p-12 lg:p-16 border border-ink/[0.06] shadow-[0_2px_16px_rgba(0,0,0,0.02)]">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14">
               {/* Left Column: Heading */}
               <div className="lg:col-span-5">

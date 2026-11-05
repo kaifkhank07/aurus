@@ -34,7 +34,7 @@ export function CallYouBack() {
 
             {/* Right Column: Where To Find Us Directory */}
             <div className="lg:col-span-6 lg:pl-4 xl:pl-8">
-              <span className="font-mono uppercase text-[10px] sm:text-[11px] lg:text-[14px] text-muted mb-4 block">
+              <span className="mb-4 block font-mono text-[10px] text-muted uppercase sm:text-[11px] lg:text-[14px]">
                 {data.directoryEyebrow}
               </span>
 
@@ -42,27 +42,32 @@ export function CallYouBack() {
                 {data.locations.map((loc) => (
                   <div
                     key={loc.name}
-                    className="border-b border-ink/15 py-4 sm:py-4.5 flex items-baseline justify-between gap-4 transition-colors hover:bg-black/[0.01]"
+                    className="flex flex-col gap-1 border-b border-ink/15 py-3 transition-colors hover:bg-black/[0.01] sm:flex-row sm:items-baseline sm:justify-between sm:gap-4 sm:py-4.5"
                   >
-                    {/* Location Name */}
-                    <span className="font-sans font-light text-[12px] sm:text-[16px] lg:text-[20px] text-ink w-[110px] sm:w-[130px] shrink-0">
-                      {loc.name}
-                    </span>
+                    {/* Location Name and Action Link */}
+                    <div className="flex items-baseline justify-between gap-4 sm:contents">
+                      <span className="font-sans text-[14px] font-light text-ink sm:w-[130px] sm:shrink-0 sm:text-[16px] lg:text-[20px]">
+                        {loc.name}
+                      </span>
+
+                      <Link
+                        href={loc.actionHref}
+                        target={loc.actionHref.startsWith("http") ? "_blank" : undefined}
+                        rel={
+                          loc.actionHref.startsWith("http")
+                            ? "noopener noreferrer"
+                            : undefined
+                        }
+                        className="shrink-0 font-mono text-[9px] text-ink underline uppercase transition hover:text-muted sm:order-3 sm:text-[12px]"
+                      >
+                        {loc.actionText}
+                      </Link>
+                    </div>
 
                     {/* Detail / Address / Chapters */}
-                    <span className="font-sans font-light text-[10px] sm:text-[12px] lg:text-[14px] text-muted leading-relaxed flex-1">
+                    <span className="flex-1 font-sans text-[11px] leading-relaxed font-light text-muted sm:text-[12px] lg:text-[14px]">
                       {loc.detail}
                     </span>
-
-                    {/* Action Link (MAP / VIEW) */}
-                    <Link
-                      href={loc.actionHref}
-                      target={loc.actionHref.startsWith("http") ? "_blank" : undefined}
-                      rel={loc.actionHref.startsWith("http") ? "noopener noreferrer" : undefined}
-                      className="font-mono uppercase text-[10px] sm:text-[12px] text-ink hover:text-muted transition shrink-0 underline"
-                    >
-                      {loc.actionText}
-                    </Link>
                   </div>
                 ))}
               </div>

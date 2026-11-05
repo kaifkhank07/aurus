@@ -52,7 +52,7 @@ export default function StudentResidencesPage() {
       <Locations showHeading={true} />
       <Amenities />
       <RealLife havingTopSpace={true} />
-      <Culture />
+      {/* <Culture /> */}
       <Testimonial />
       <Journey />
     </main>

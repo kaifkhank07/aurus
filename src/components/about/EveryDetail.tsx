@@ -9,22 +9,20 @@ import { Heading } from "../utils/Heading";
 export default function EveryDetail() {
   return (
     <section className="py-8 sm:py-12 lg:py-16">
-      <Container>
+      <Container className="space-y-4 sm:space-y-8">
         {/* Eyebrow Header */}
         <Eyebrow>{aboutData.amenities.eyebrow}</Eyebrow>
 
         {/* Heading */}
-        <div className="mt-8 sm:mt-10 lg:mt-12">
-          <Heading
-            title1={aboutData.amenities.titleTop}
-            title2={aboutData.amenities.titleAccent}
-            className="uppercase max-w-[24ch] sm:max-w-none"
-          />
-        </div>
+        <Heading
+          title1={aboutData.amenities.titleTop}
+          title2={aboutData.amenities.titleAccent}
+          className="uppercase max-w-[24ch] sm:max-w-none"
+        />
 
         {/* 2-Column Section Content */}
         <ViewReveal duration={800}>
-          <div className="mt-8 sm:mt-10 lg:mt-14 grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-0">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-0">
             {/* Left Column: Description & Feature Image */}
             <div className="flex flex-col lg:pr-10">
               <p className="font-sans font-regular text-[14px] sm:text-[16px] lg:text-[17px] 3xl:text-[19px] leading-[1.45] tracking-[-0.025em] text-muted">

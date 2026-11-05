@@ -48,7 +48,7 @@ export default function Home() {
       <Story />
       <Locations />
       <RealLife />
-      <Culture />
+      {/* <Culture /> */}
       <Testimonial />
       <Faq />
       <Journey />

@@ -276,7 +276,7 @@ export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailPro
             <Heading
               title1={hostel.title}
               title2={hostel.subtitle || ""}
-              className="max-w-[70%] sm:max-w-none"
+              className="uppercase max-w-[200px] sm:max-w-full"
             />
           </div>
 
@@ -293,7 +293,7 @@ export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailPro
 
         {/* Gallery Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
-          <div className="lg:col-span-2 lg:row-span-2 relative aspect-[16/10] sm:aspect-[1.5/1] rounded-[18px] sm:rounded-[22px] overflow-hidden bg-neutral-200 group">
+          <div className="lg:col-span-2 lg:row-span-2 relative aspect-[16/10] sm:aspect-[1.5/1] rounded-[10px] sm:rounded-[20px] overflow-hidden bg-neutral-200 group">
             <Image
               src={heroImage}
               alt={`${hostel.title} main interior view`}
@@ -307,7 +307,7 @@ export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailPro
           {galleryImages.slice(0, 2).map((img, idx) => (
             <div
               key={idx}
-              className="relative aspect-[16/10] sm:aspect-[1.5/1] rounded-[18px] sm:rounded-[22px] overflow-hidden bg-neutral-200 group cursor-pointer"
+              className="relative aspect-[16/10] sm:aspect-[1.5/1] rounded-[10px] sm:rounded-[20px] overflow-hidden bg-neutral-200 group cursor-pointer"
             >
               <Image
                 src={img}
@@ -326,7 +326,7 @@ export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailPro
           {/* Left Column: Residence Features and Content */}
           <div className="lg:col-span-2 space-y-8 sm:space-y-10">
             {/* Description */}
-            <p className="font-sans text-ink text-lg sm:text-xl lg:text-[28px] 3xl:text-[35px] font-regular leading-sung max-w-3xl">
+            <p className="font-sans text-ink text-base sm:text-lg lg:text-[28px] 3xl:text-[35px] font-regular leading-tight max-w-3xl">
               {hostel.description ||
                 "A premium student residence crafted for comfort, safety, and an enriching community experience. Featuring elegantly designed interiors, dedicated study zones, and chef-curated dining."}
             </p>

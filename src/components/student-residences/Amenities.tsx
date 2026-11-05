@@ -205,7 +205,7 @@ export function Amenities() {
         <Heading
           title1={amenities.titleTop + " " + amenities.titleBottom}
           title2={amenities.titleAccent}
-          className="uppercase"
+          className="uppercase max-w-[248px] sm:max-w-full"
         />
 
         {/* Main 2-column Grid: Sticky Image (Top on mobile/tablet, Left on desktop) + Scrollable List */}

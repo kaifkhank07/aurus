@@ -24,8 +24,8 @@ const assets = useAssets();
 export const realLife: realLifeData = {
   titleTop: "Real life at",
   titleAccent: "Aurus",
-  body: "Not a listing. A place people actually live - late-night study sessions and weekend game nights, rooftop dinners after a long day at work, and neighbours who become friends.",
-  note: "Moments from Aurus residents - students and professionals - across Mumbai, Noida, Ahmedabad, Pune & Jalandhar.",
+  body: "Not a listing. A place people actually live - 0.5x wide selfies, flash-photo game nights, mid-day lounge naps, and genuine memories made with friends.",
+  note: "Sourced directly from real resident moments across Mumbai, Noida, Ahmedabad & Pune.",
   badge: { label: "Experience Aurus", href: "/life-at-aurus" },
   photos: [
     { src: assets.lifeataurus1, alt: "Residents on a rooftop", offset: 49 },

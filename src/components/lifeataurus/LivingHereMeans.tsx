@@ -7,13 +7,13 @@ import { ViewReveal } from "../animation";
 export default function LivingHereMeans() {
   return (
     <section className="py-8 sm:py-12 lg:py-16">
-         <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
-        {/* Eyebrow Header */}
-        <Eyebrow>{lifePageData.livingMeans.eyebrow}</Eyebrow>
-
-        {/* 6 Features Table Grid */}
+      <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
         <ViewReveal duration={800}>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 border-t border-ink/15 border-b border-ink/15 lg:border-b-0">
+          {/* Eyebrow Header */}
+          <Eyebrow>{lifePageData.livingMeans.eyebrow}</Eyebrow>
+
+          {/* 6 Features Table Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 border-b border-ink/15 lg:border-b-0">
             {lifePageData.livingMeans.items.map((item, index) => {
               const isThirdCol = (index + 1) % 3 === 0;
               const IsEven = (index + 1) % 2 === 0;

@@ -8,7 +8,7 @@ export interface journeyData {
 }
 
 export const journey: journeyData = {
-  eyebrow: "09 // Your Next Chapter",
+  eyebrow: "Your Next Chapter",
   titleTop: "Start your",
   titleAccent: "Journey.",
   body: "Explore Aurus residences across India and discover a space designed around your life.",

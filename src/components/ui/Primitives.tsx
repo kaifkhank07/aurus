@@ -35,7 +35,7 @@ export function Eyebrow({
   return (
     <div className="flex flex-col items-start gap-3">
       <div className="flex w-full flex-wrap sm:flex-nowrap items-center justify-between gap-x-4 gap-y-2">
-        <span className={`font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] whitespace-nowrap ${dark ? "text-white" : "text-ink"}`}>
+        <span className={`font-mono font-regular uppercase text-[clamp(12px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] whitespace-nowrap ${dark ? "text-white" : "text-ink"}`}>
           {children}
         </span>
         {right}

@@ -32,7 +32,7 @@ export function Intro() {
             {intro.stats.map((stat) => (
               <div
                 key={stat.label}
-                className="rounded-[18px] bg-paper p-5 sm:p-6 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between"
+                className="rounded-[12px] bg-paper p-5 sm:p-6 flex flex-col justify-between"
               >
                 <NumberRoller
                   value={stat.value}

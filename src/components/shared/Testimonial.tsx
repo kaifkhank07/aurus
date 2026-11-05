@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import gsap from "gsap";
 import { testimonial } from "@/data/shared";
-import { Container } from "@/components/ui/Primitives";
+import { Container, Eyebrow } from "@/components/ui/Primitives";
 import { ViewReveal } from "../animation";
 
 const AUTO_PLAY_INTERVAL = 4000;
@@ -33,7 +33,6 @@ export function Testimonial() {
         return;
       }
 
-      // Smooth fade-out and subtle upward motion
       gsap.to([quoteEl, figcaptionEl], {
         opacity: 0,
         y: -14,
@@ -42,13 +41,11 @@ export function Testimonial() {
         onComplete: () => {
           setActiveIndex(nextIndex);
 
-          // Reset starting position below
           gsap.set([quoteEl, figcaptionEl], {
             opacity: 0,
             y: 14,
           });
 
-          // Smooth reveal of the new quote and attribution
           gsap.to(quoteEl, {
             opacity: 1,
             y: 0,
@@ -78,7 +75,6 @@ export function Testimonial() {
     goToSlide(next);
   }, [activeIndex, goToSlide, items.length]);
 
-  // Auto-play timer with pause on hover
   useEffect(() => {
     if (isPaused || items.length <= 1) return;
 
@@ -93,7 +89,6 @@ export function Testimonial() {
     };
   }, [isPaused, handleNext, items.length]);
 
-  // Clean up any active GSAP tweens on unmount
   useEffect(() => {
     return () => {
       if (quoteRef.current) gsap.killTweensOf(quoteRef.current);
@@ -107,31 +102,27 @@ export function Testimonial() {
     <section className="py-8 sm:py-12 lg:py-16">
       <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
         <ViewReveal duration={800}>
-          <figure
-            className="mx-auto flex min-h-[auto] lg:min-h-[min(37.81vw,726px)] max-w-[1690px] flex-col items-center justify-center rounded-[28px] sm:rounded-[36px] lg:rounded-[var(--radius-panel)] bg-cream-deep px-5 sm:px-12 lg:px-16 py-10 sm:py-14 lg:py-[min(4.2vw,80px)] text-center"
-          >
-            <p className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] text-muted lg:text-ink">
-              {testimonial.eyebrow}
-            </p>
+          <figure className="mx-auto flex min-h-[auto] flex-col items-center justify-center rounded-[28px] bg-cream-deep px-5 py-10 text-center sm:min-h-[auto] sm:rounded-[36px] sm:px-12 sm:py-14 lg:min-h-[min(37.81vw,726px)] lg:rounded-[var(--radius-panel)] lg:px-16 lg:py-[min(4.2vw,80px)]">
+            <Eyebrow rule={false}>{testimonial.eyebrow}</Eyebrow>
 
             <blockquote
               ref={quoteRef}
               onMouseEnter={() => setIsPaused(true)}
               onMouseLeave={() => setIsPaused(false)}
-              className="font-sans font-light normal-case text-ink mx-auto mt-5 sm:mt-7 lg:mt-[2.2vw] max-w-[28ch] text-[20px] sm:text-[24px] lg:font-sans lg:font-light lg:uppercase lg:text-[clamp(2.125rem,5.2083vw,100px)] lg:leading-[0.9] lg:tracking-[-0.04em] lg:text-ink lg:uppercase lg:!text-[clamp(1.6rem,3.02vw,58px)] leading-[1.3] lg:!leading-[1.15]"
+              className="mt-5 sm:mt-7 lg:mt-[2.2vw] max-w-5xl mx-auto font-sans lg:uppercase text-[20px] sm:text-[24px] lg:text-[74px] font-light text-ink normal-case leading-[1.3] lg:leading-[1.15] lg:tracking-[-0.04em]"
             >
               &ldquo;{current.quote}&rdquo;
             </blockquote>
 
             <figcaption
               ref={figcaptionRef}
-              className="font-sans font-normal uppercase text-[18px] leading-[1.3889] tracking-[2px] mt-5 sm:mt-7 lg:mt-[1.9vw] text-muted lg:text-ink !text-[10px] sm:!text-[11px] lg:!text-[18px] tracking-[1.5px] lg:tracking-[2px] uppercase"
+              className="mt-5 sm:mt-7 lg:mt-[1.9vw] font-sans font-normal text-[10px] sm:text-[11px] lg:text-[18px] text-muted uppercase lg:text-ink  leading-[1.3889] tracking-[1.5px] lg:tracking-[2px]"
             >
               {current.attribution}
             </figcaption>
 
             {/* Navigation Indicator Buttons */}
-            <div className="mt-6 sm:mt-8 lg:mt-10 flex w-full max-w-[8rem] items-center gap-2">
+            <div className="mt-6 flex w-full max-w-[8rem] items-center gap-2 sm:mt-8 lg:mt-10">
               {items.map((_, index) => (
                 <button
                   key={index}
@@ -139,7 +130,7 @@ export function Testimonial() {
                   onClick={() => goToSlide(index)}
                   aria-label={`Go to testimonial ${index + 1}`}
                   aria-current={index === activeIndex ? "true" : undefined}
-                  className="group relative flex-1 py-3 -my-3 cursor-pointer"
+                  className="group relative -my-3 flex-1 cursor-pointer py-3"
                 >
                   <span
                     className={`block h-[3px] w-full rounded-full transition-colors duration-300 ${index === activeIndex

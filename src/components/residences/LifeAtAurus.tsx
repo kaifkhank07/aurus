@@ -21,7 +21,7 @@ export function LifeAtAurus() {
               <Heading
                 title1={lifeAtAurus.titleTop}
                 title2={lifeAtAurus.titleAccent}
-                className="uppercase w-full"
+                className="uppercase max-w-[200px] sm:max-w-[560px]"
               />
 
               <p className="font-sans font-normal text-[15px] sm:text-[16px] lg:text-[20px] leading-[1.5] tracking-[-0.03em] text-muted max-w-[37ch] mt-6 sm:mt-8">

@@ -53,9 +53,9 @@ export default function CherishExperience() {
   }, []);
 
   return (
-    <section className="py-8 sm:py-12 lg:py-16">
+    <section className="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-0">
       <Panel
-        className="bg-ink text-white rounded-t-[36px] sm:rounded-t-[48px] lg:rounded-[57px] overflow-visible"
+        className="bg-ink text-white rounded-[30px] sm:rounded-[48px] lg:rounded-[57px] overflow-visible"
         innerClassName="pt-9 pb-12 sm:pt-12 sm:pb-16 lg:py-[min(4.9vw,95px)] !px-5 sm:!px-8 lg:!px-[min(4.5313vw,87px)]"
       >
         <ViewReveal duration={800}>

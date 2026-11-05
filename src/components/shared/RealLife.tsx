@@ -13,67 +13,123 @@ interface RealLifeProps {
 
 export function RealLife({ havingTopSpace = false }: RealLifeProps) {
   const marqueeRef = useRef<HTMLDivElement>(null);
+  const mobileMarqueeRightRef = useRef<HTMLDivElement>(null);
+  const mobileMarqueeLeftRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const marquee = marqueeRef.current;
-    if (!marquee) return;
+    const mobileRight = mobileMarqueeRightRef.current;
+    const mobileLeft = mobileMarqueeLeftRef.current;
 
-    // Smooth continuous auto-scrolling marquee from right to left
-    const tween = gsap.to(marquee, {
-      xPercent: -33.333333333333336, // 3 identical sets -> seamless loop at 1/3
-      ease: "none",
-      duration: 32, // elegant, premium luxury speed
-      repeat: -1,
-    });
+    const tweens: gsap.core.Tween[] = [];
 
-    const handleMouseEnter = () => tween.pause();
-    const handleMouseLeave = () => tween.play();
-    const handleTouchStart = () => tween.pause();
-    const handleTouchEnd = () => tween.play();
+    // Desktop: Smooth continuous auto-scrolling marquee from right to left
+    if (marquee) {
+      const tween = gsap.to(marquee, {
+        xPercent: -33.333333333333336,
+        ease: "none",
+        duration: 32,
+        repeat: -1,
+      });
 
-    marquee.addEventListener("mouseenter", handleMouseEnter);
-    marquee.addEventListener("mouseleave", handleMouseLeave);
-    marquee.addEventListener("touchstart", handleTouchStart, { passive: true });
-    marquee.addEventListener("touchend", handleTouchEnd, { passive: true });
+      const handleMouseEnter = () => tween.pause();
+      const handleMouseLeave = () => tween.play();
+      const handleTouchStart = () => tween.pause();
+      const handleTouchEnd = () => tween.play();
+
+      marquee.addEventListener("mouseenter", handleMouseEnter);
+      marquee.addEventListener("mouseleave", handleMouseLeave);
+      marquee.addEventListener("touchstart", handleTouchStart, {
+        passive: true,
+      });
+      marquee.addEventListener("touchend", handleTouchEnd, {
+        passive: true,
+      });
+
+      tweens.push(tween);
+
+      // Mobile/desktop cleanup
+      const cleanupDesktop = () => {
+        marquee.removeEventListener("mouseenter", handleMouseEnter);
+        marquee.removeEventListener("mouseleave", handleMouseLeave);
+        marquee.removeEventListener("touchstart", handleTouchStart);
+        marquee.removeEventListener("touchend", handleTouchEnd);
+      };
+
+      // Keep cleanup available for the effect's return
+      desktopCleanup = cleanupDesktop;
+    }
+
+    // Mobile: First row moves right to left
+    if (mobileRight) {
+      tweens.push(
+        gsap.fromTo(
+          mobileRight,
+          { xPercent: 0 },
+          {
+            xPercent: -50,
+            duration: 25,
+            ease: "none",
+            repeat: -1,
+          }
+        )
+      );
+    }
+
+    // Mobile: Second row moves left to right
+    if (mobileLeft) {
+      tweens.push(
+        gsap.fromTo(
+          mobileLeft,
+          { xPercent: -50 },
+          {
+            xPercent: 0,
+            duration: 25,
+            ease: "none",
+            repeat: -1,
+          }
+        )
+      );
+    }
 
     return () => {
-      marquee.removeEventListener("mouseenter", handleMouseEnter);
-      marquee.removeEventListener("mouseleave", handleMouseLeave);
-      marquee.removeEventListener("touchstart", handleTouchStart);
-      marquee.removeEventListener("touchend", handleTouchEnd);
-      tween.kill();
+      desktopCleanup?.();
+      tweens.forEach((tween) => tween.kill());
     };
   }, []);
 
   return (
-    <section className={`${havingTopSpace ? "pb-8 lg:pt-8" : "py-8 sm:py-12 lg:py-16"} -mt-1 lg:mt-0`}>
+    <section
+      className={`-mt-1 lg:mt-0 ${havingTopSpace ? "pb-8 lg:pt-8" : "py-8 sm:py-12 lg:py-16"
+        }`}
+    >
       <Panel
         className="bg-ink text-white lg:rounded-[57px]"
-        innerClassName="pt-6 pb-12 sm:pt-10 sm:pb-16 lg:py-[min(4.9vw,95px)] !px-5 sm:!px-8 lg:!px-[min(4.5313vw,87px)] space-y-4 sm:space-y-8 lg:space-y-12"
+        innerClassName="space-y-6 sm:space-y-8 lg:space-y-12 pt-6 sm:pt-10 pb-12 sm:pb-16 lg:py-[min(4.9vw,95px)] !px-5 sm:!px-8 lg:!px-[min(4.5313vw,87px)]"
       >
-        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 lg:gap-10 ">
-          <div className="max-w-[700px]">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between lg:gap-10">
+          <div className="space-y-4 lg:space-y-8">
             {/* Figma hero-title: Manrope 300 / 100px / 90% / -4%, uppercase */}
             <Heading
               title1={realLife.titleTop}
               title2={realLife.titleAccent}
-              className="uppercase max-w-sm 3xl:max-w-2xl"
+              className="max-w-[200px] sm:max-w-[320px] uppercase"
             />
 
             {/* Figma: 456px wide, Manrope 19px */}
-            <p className="font-sans font-regular text-[clamp(1rem,0.9896vw,19px)] leading-[1.3158] tracking-[-0.04em] mt-5 sm:mt-6 lg:mt-[min(2.1vw,40px)] max-w-[456px] text-white/85 sm:text-white tracking-normal">
+            <p className="max-w-[440px] font-sans font-light text-[clamp(0.9rem,0.9896vw,19px)] leading-sung text-white/80 opacity-80 sm:opacity-100 sm:tracking-normal">
               {realLife.body}
             </p>
 
             {/* Fine print note in mono uppercase */}
-            <p className="font-mono font-regular text-[clamp(1rem,0.9896vw,19px)] tracking-[1.5px] uppercase text-white/85 leading-relaxed mt-4 sm:mt-5 lg:mt-[min(1.6vw,30px)] max-w-2xl">
+            <p className="max-w-[560px] font-mono font-light uppercase text-[clamp(0.9rem,0.9896vw,19px)] leading-sung text-white/80 opacity-80 sm:opacity-100 sm:tracking-normal">
               {realLife.note}
             </p>
 
             {/* Mobile / Tablet: Full-width rounded pill CTA button */}
             <Link
               href={realLife.badge.href}
-              className="lg:hidden mt-6 sm:mt-8 flex h-[48px] sm:h-[52px] w-full items-center justify-center gap-2.5 rounded-full border border-white/35 px-6 font-mono text-[11px] sm:text-[12px] uppercase tracking-[2px] text-white transition-colors hover:bg-white hover:text-ink active:bg-white/20"
+              className="mt-6 sm:mt-8 lg:hidden flex h-[48px] sm:h-[52px] w-full items-center justify-center gap-2.5 rounded-full border border-white/35 px-6 font-mono text-[11px] sm:text-[12px] uppercase tracking-[2px] text-white transition-colors hover:bg-white hover:text-ink active:bg-white/20"
             >
               <span>{realLife.badge.label}</span>
               <ArrowRight />
@@ -83,7 +139,7 @@ export function RealLife({ havingTopSpace = false }: RealLifeProps) {
           {/* Desktop only: Circular badge */}
           <Link
             href={realLife.badge.href}
-            className="hidden lg:flex font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] aspect-square w-[10.2vw] min-w-[120px] shrink-0 items-center justify-center rounded-full border border-white/45 p-4 text-center leading-relaxed transition-colors hover:bg-white hover:text-ink"
+            className="hidden lg:flex aspect-square w-[10.2vw] min-w-[120px] shrink-0 items-center justify-center rounded-full border border-white/45 p-4 font-mono text-[clamp(11px,0.7292vw,14px)] uppercase leading-[1.7857] tracking-[2px] text-center leading-relaxed transition-colors hover:bg-white hover:text-ink"
           >
             <span className="inline-flex items-center gap-1">
               {realLife.badge.label}
@@ -92,12 +148,50 @@ export function RealLife({ havingTopSpace = false }: RealLifeProps) {
           </Link>
         </div>
 
-        {/* Bottom images strip — smooth auto-scrolling right-to-left */}
-        {/* no-scrollbar flex items-start gap-4 sm:gap-6 lg:gap-[min(3.2292vw,62px)] mt-8 sm:mt-10 lg:mt-[min(2.2vw,42px)] overflow-x-auto pb-2 */}
-        <div className="w-full flex items-start gap-4 sm:gap-6 lg:gap-[min(3.2292vw,62px)]">
+        {/* Mobile: Two horizontal scrolling rows */}
+        <div className="lg:hidden flex flex-col gap-4 overflow-hidden">
+          {[0, 1].map((rowIndex) => (
+            <div key={rowIndex} className="w-full overflow-hidden">
+              <div
+                ref={
+                  rowIndex === 0
+                    ? mobileMarqueeRightRef
+                    : mobileMarqueeLeftRef
+                }
+                className="flex w-max"
+              >
+                {[0, 1].map((setIndex) => (
+                  <ul
+                    key={setIndex}
+                    aria-hidden={setIndex > 0 ? "true" : undefined}
+                    className="flex shrink-0 items-center gap-4 pr-4"
+                  >
+                    {realLife.photos.map((photo, i) => (
+                      <li
+                        key={`${rowIndex}-${setIndex}-${i}`}
+                        className="w-[42vw] shrink-0"
+                      >
+                        <Figure
+                          src={photo.src}
+                          alt={setIndex === 0 ? photo.alt : ""}
+                          dark
+                          sizes="42vw"
+                          className="aspect-square w-full rounded-[12px]"
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop: Existing scrolling images strip */}
+        <div className="hidden lg:flex w-full items-start gap-4 sm:gap-6 lg:gap-[min(3.2292vw,62px)]">
           <div
             ref={marqueeRef}
-            className="flex w-max will-change-transform select-none"
+            className="flex w-max select-none will-change-transform"
           >
             {[0, 1, 2].map((setIndex) => (
               <ul
@@ -109,7 +203,7 @@ export function RealLife({ havingTopSpace = false }: RealLifeProps) {
                   <li
                     key={`${setIndex}-${i}`}
                     style={{ marginTop: `${photo.offset / 19.2}vw` }}
-                    className="w-[42vw] shrink-0 sm:w-[25vw] lg:w-[min(16.4063vw,315px)]"
+                    className="w-[42vw] sm:w-[25vw] lg:w-[min(16.4063vw,315px)] shrink-0 cursor-pointer"
                   >
                     <Figure
                       src={photo.src}
@@ -129,3 +223,4 @@ export function RealLife({ havingTopSpace = false }: RealLifeProps) {
   );
 }
 
+let desktopCleanup: (() => void) | undefined;
