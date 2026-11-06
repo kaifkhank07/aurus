@@ -31,8 +31,8 @@ export const notFoundData: NotFoundData = {
       variant: "solid",
     },
     {
-      label: "EXPLORE RESIDENCES",
-      href: "/residences",
+      label: "EXPLORE HOSTELS",
+      href: "/hostels",
       variant: "outline",
     },
     {

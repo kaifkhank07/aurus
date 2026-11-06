@@ -1,7 +1,7 @@
 export default function ManagedResidences() {
-    return (
-        <main>
-            <h1>Managed Residences</h1>
-        </main>
-    );
+  return (
+    <main>
+      <h1>Managed Hostels</h1>
+    </main>
+  );
 }

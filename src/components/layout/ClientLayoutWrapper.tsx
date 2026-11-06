@@ -5,11 +5,12 @@ import { usePathname, useSearchParams } from "next/navigation";
 import SmoothScroll from "./SmoothScroll";
 import { Footer } from "./Footer";
 import { Navbar } from "./Navbar";
+import WhatsApp from "./WhatsApp"; // Update import path as needed
+import CallIcon from "./PhoneCall";
+import ScrollToTop from "./ScrollToTop";
 
 /**
- * Universal scroll-to-top handler for all page navigations (public & admin).
- * Ensures every navigation cleanly starts at the top (0, 0) without inertia carry-over,
- * while respecting anchor links (hashes like #culture, #faq).
+ * Resets scroll position on navigation while preserving anchor navigation.
  */
 function ScrollResetOnNavigate() {
   const pathname = usePathname();
@@ -18,83 +19,138 @@ function ScrollResetOnNavigate() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Prevent the browser from automatically restoring previous scroll positions
+    // Prevent browser scroll restoration.
     if ("scrollRestoration" in window.history) {
       window.history.scrollRestoration = "manual";
     }
 
-    // If an anchor hash is targeted, allow scrolling to that element instead of top
+    // Preserve anchor navigation.
     if (window.location.hash) {
       try {
         const hashEl = document.querySelector(window.location.hash);
+
         if (hashEl) {
           hashEl.scrollIntoView({ behavior: "instant" });
           return;
         }
       } catch {
-        // Invalid selector, fall through to scroll to top
+        // Fall back to scrolling to the top.
       }
     }
 
     const resetToTop = () => {
-      // 1. If Lenis is active on public pages, stop momentum and snap to 0
-      const win = window as any;
+      const win = window as typeof window & {
+        lenis?: {
+          stop: () => void;
+          start: () => void;
+          scrollTo: (
+            target: number,
+            options: { immediate: boolean; force: boolean }
+          ) => void;
+        };
+      };
+
+      // Stop Lenis momentum and reset public-page scrolling.
       if (win.lenis) {
         try {
           win.lenis.stop();
-          win.lenis.scrollTo(0, { immediate: true, force: true });
+          win.lenis.scrollTo(0, {
+            immediate: true,
+            force: true,
+          });
           win.lenis.start();
         } catch {
-          // Lenis might be re-initializing
+          // Lenis may be initializing or reinitializing.
         }
       }
 
-      // 2. Snap native window and root document elements instantly
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
-      if (document.documentElement) document.documentElement.scrollTop = 0;
-      if (document.body) document.body.scrollTop = 0;
+      // Reset native document scrolling.
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "instant",
+      });
+
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
     };
 
-    // Immediate synchronous reset
     resetToTop();
 
-    // Re-verify after React commits the new page layout to the DOM
     const rafId = requestAnimationFrame(resetToTop);
-
-    // Final safety check after async components and images settle
-    const timer = setTimeout(resetToTop, 50);
+    const timerId = window.setTimeout(resetToTop, 50);
 
     return () => {
       cancelAnimationFrame(rafId);
-      clearTimeout(timer);
+      clearTimeout(timerId);
     };
   }, [pathname, searchParams]);
 
   return null;
 }
 
+/**
+ * Shared admin route check.
+ */
+function useIsAdminRoute() {
+  const pathname = usePathname();
+  return pathname?.startsWith("/admin") ?? false;
+}
+
 function LayoutNav() {
   const pathname = usePathname();
-  if (pathname?.startsWith("/admin")) return null;
+  const isAdmin = useIsAdminRoute();
+
+  if (isAdmin) return null;
+
   const isNotHomepage =
     pathname !== "/" &&
+    pathname !== "/student-hostels" &&
+    pathname !== "/managed-hostels" &&
     pathname !== "/student-residences" &&
     pathname !== "/managed-residences";
 
-  if (!isNotHomepage) return null;
-  return <Navbar />;
+  return isNotHomepage ? <Navbar /> : null;
 }
 
 function LayoutFooter() {
-  const pathname = usePathname();
-  if (pathname?.startsWith("/admin")) return null;
+  const isAdmin = useIsAdminRoute();
+
+  if (isAdmin) return null;
+
   return <Footer />;
 }
 
 function LayoutScroll() {
-  const pathname = usePathname();
-  if (pathname?.startsWith("/admin")) return null;
+  const isAdmin = useIsAdminRoute();
+
+  if (isAdmin) return null;
+
   return <SmoothScroll />;
+}
+
+function LayoutWhatsApp() {
+  const isAdmin = useIsAdminRoute();
+
+  if (isAdmin) return null;
+
+  return <WhatsApp />;
+}
+
+function LayoutPhoneCall() {
+  const isAdmin = useIsAdminRoute();
+
+  if (isAdmin) return null;
+
+  return <CallIcon />;
+}
+
+function LayoutScrollToTop() {
+  const isAdmin = useIsAdminRoute();
+
+  if (isAdmin) return null;
+
+  return <ScrollToTop />;
 }
 
 export default function ClientLayoutWrapper({
@@ -107,15 +163,31 @@ export default function ClientLayoutWrapper({
       <Suspense fallback={null}>
         <ScrollResetOnNavigate />
       </Suspense>
+
       <Suspense fallback={null}>
         <LayoutNav />
       </Suspense>
+
       <Suspense fallback={null}>
         <LayoutScroll />
       </Suspense>
+
       {children}
+
       <Suspense fallback={null}>
         <LayoutFooter />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <LayoutWhatsApp />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <LayoutPhoneCall />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <LayoutScrollToTop />
       </Suspense>
     </>
   );

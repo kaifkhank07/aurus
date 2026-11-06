@@ -201,7 +201,7 @@ export default function HostelDetails({
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-bold text-slate-500">Public Slug:</span>
               <span className="font-mono text-slate-800 bg-white px-2 py-0.5 rounded-md border border-slate-200">
-                /residences/{hostel.slug}
+                /hostels/{hostel.slug}
               </span>
               <button
                 type="button"

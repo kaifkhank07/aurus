@@ -70,8 +70,15 @@ function handleError(error: unknown, operation = "general"): NextResponse {
     "code" in error &&
     (error as { code: number }).code === 11000
   ) {
-    logger.warn("Rent Frequency name conflict", { operation, statusCode: 409 });
-    return apiError("A rent frequency with this name already exists.", 409);
+    const keyPattern = (error as { keyPattern?: Record<string, number> }).keyPattern || {};
+    const field = Object.keys(keyPattern)[0] || "name";
+    logger.warn(`Rent Frequency ${field} conflict`, { operation, statusCode: 409 });
+    return apiError(
+      field === "name"
+        ? "A rent frequency with this name already exists."
+        : `A rent frequency with this ${field} already exists.`,
+      409
+    );
   }
 
   logger.error("Unhandled server error", error, { operation, statusCode: 500 });
@@ -180,10 +187,11 @@ export async function create(request: NextRequest): Promise<NextResponse> {
     await connectToDatabase();
 
     const normalizedName = validated.name.trim();
+    const escapedName = normalizedName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
     // Check duplicate name
     const existing = await RentFrequency.findOne({
-      name: { $regex: new RegExp(`^${normalizedName}$`, "i") },
+      name: { $regex: new RegExp(`^${escapedName}$`, "i") },
     });
 
     if (existing) {
@@ -271,9 +279,10 @@ export async function update(
     if (validated.name !== undefined) {
       const normalizedName = validated.name.trim();
       if (normalizedName.toLowerCase() !== frequency.name.toLowerCase()) {
+        const escapedName = normalizedName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         const existing = await RentFrequency.findOne({
           _id: { $ne: targetId },
-          name: { $regex: new RegExp(`^${normalizedName}$`, "i") },
+          name: { $regex: new RegExp(`^${escapedName}$`, "i") },
         });
 
         if (existing) {

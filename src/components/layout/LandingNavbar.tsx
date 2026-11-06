@@ -67,8 +67,10 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
                     {nav.links.map((link) => {
                         const isActive =
                             pathname === link.href ||
-                            (link.href === "/residences" &&
-                                (pathname === "/residences" || pathname?.includes("residences")));
+                            (link.href === "/hostels" &&
+                                (pathname === "/hostels" || pathname?.includes("hostels"))) ||
+                            (link.href === "/real-stories" &&
+                                (pathname === "/real-stories" || pathname?.includes("real-stories")));
 
                         return (
                             <Link

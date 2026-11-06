@@ -24,8 +24,8 @@ export const useAssets = () => {
         studentHeroBg: "/images/static/image-01.jpg",
 
 
-        projectplaceholder: "/assets/Images/project-placeholder.jpg",
-
-        whatsapp: "/assets/Images/whatsapp-icon.png",
+        projectplaceholder: "/images/static/workplaceholder.jpg",
+        whatsapp: "/images/static/whatsapp-icon.png",
+        phonecall: "/images/static/call-icon.png",
     };
 };

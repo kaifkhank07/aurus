@@ -12,3 +12,4 @@ export * from "./stories";
 export * from "./not-found";
 
 export * from "./assets/assets";
+export * from "./compony/infro";

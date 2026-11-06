@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import TalkToUs from "@/components/contact/TalkToUs";
 import CallYouBack from "@/components/contact/CallYouBack";
+import TalkToUs from "@/components/contact/TalkToUs";
 
 export const metadata: Metadata = {
   title: "Contact Us | AURUS Luxury Managed Residences",
@@ -37,8 +37,8 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <main>
-      <TalkToUs />
       <CallYouBack />
+      <TalkToUs />
     </main>
   );
 }

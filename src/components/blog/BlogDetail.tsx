@@ -127,7 +127,7 @@ export function BlogDetail({
             </p>
             <div className="pt-4">
               <Link
-                href="/blog"
+                href="/blogs"
                 className="font-mono uppercase text-[11px] tracking-[1.5px] inline-flex items-center gap-2 rounded-full border border-ink/25 px-5 py-2.5 text-ink hover:bg-ink hover:text-paper transition-all"
               >
                 <span>&larr; BACK TO THE JOURNAL</span>
@@ -154,7 +154,7 @@ export function BlogDetail({
           <div className="lg:col-span-3">
             <div className="lg:sticky lg:top-28">
               <Link
-                href="/blog"
+                href="/blogs"
                 className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[2px] text-ink/80 hover:text-ink transition-colors inline-flex items-center gap-2 pb-1.5 border-b border-ink/25 group"
               >
                 <span className="transition-transform duration-200 group-hover:-translate-x-0.5">&larr;</span>

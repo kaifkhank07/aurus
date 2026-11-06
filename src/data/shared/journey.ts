@@ -14,7 +14,7 @@ export const journey: journeyData = {
   body: "Explore Aurus residences across India and discover a space designed around your life.",
   watermark: "AURUS",
   actions: [
-    { label: "Explore Residences", href: "/residences", solid: false },
+    { label: "Explore Hostels", href: "/hostels", solid: false },
     { label: "Book a Visit", href: "#", solid: true },
   ],
 };

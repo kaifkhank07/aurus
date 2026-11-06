@@ -105,7 +105,7 @@ export default function BlogManage() {
   }, [loadBlogData]);
 
   const handleCopySlug = (slug: string, id: string) => {
-    navigator.clipboard.writeText(`/blog/${slug}`);
+    navigator.clipboard.writeText(`/blogs/${slug}`);
     setCopiedSlugId(id);
     setTimeout(() => {
       setCopiedSlugId(null);

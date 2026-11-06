@@ -161,7 +161,7 @@ export default function BlogDetails({
             <div className="flex items-center gap-2">
               <span className="font-bold text-slate-500">URL Slug:</span>
               <span className="font-mono text-slate-800 bg-white px-2 py-0.5 rounded-md border border-slate-200">
-                /blog/{blog.slug}
+                /blogs/{blog.slug}
               </span>
               <button
                 type="button"
