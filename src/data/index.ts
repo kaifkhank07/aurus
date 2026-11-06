@@ -10,6 +10,7 @@ export * from "./contact";
 export * from "./faq";
 export * from "./stories";
 export * from "./not-found";
+export { yearlyRhythmData } from "./home/yearRythmData";
 
 export * from "./assets/assets";
 export * from "./compony/infro";

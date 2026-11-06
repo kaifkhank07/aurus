@@ -7,6 +7,8 @@ import { Culture } from "@/components/shared/Culture";
 import { Testimonial } from "@/components/shared/Testimonial";
 import Faq from "@/components/home/Faq";
 import { Journey } from "@/components/shared/Journey";
+import YearRythm from "@/components/home/YearRythm";
+import AurusPlaylist from "@/components/home/AurusPlaylist";
 
 export const metadata: Metadata = {
   title: "AURUS | Luxury Managed Residences & Purpose-Built Student Living",
@@ -48,7 +50,9 @@ export default function Home() {
       <Story />
       <Locations />
       <RealLife />
-      {/* <Culture /> */}
+      <Culture />
+      <YearRythm />
+      <AurusPlaylist />
       <Testimonial />
       <Faq />
       <Journey />
