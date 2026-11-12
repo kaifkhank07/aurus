@@ -116,7 +116,7 @@ export function RelatedBlogs({
 
                     <div className="mt-4 flex justify-end sm:justify-start items-center">
                       <Link
-                        href={`/blogs/${article.slug}`}
+                        href={`/blog-details/${article.slug}`}
                         className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[1.5px] inline-flex items-center gap-2 rounded-full border border-ink/25 px-4 py-2 text-ink transition-all duration-300 hover:bg-ink hover:text-paper hover:border-ink w-fit"
                       >
                         <span>READ GUIDE</span>

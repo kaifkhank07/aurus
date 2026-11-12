@@ -83,12 +83,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       keywords,
       alternates: {
-        canonical: `/hostels/${hostel.slug || normalizedSlug}`,
+        canonical: `/hostel-details/${hostel.slug || normalizedSlug}`,
       },
       openGraph: {
         title,
         description,
-        url: `/hostels/${hostel.slug || normalizedSlug}`,
+        url: `/hostel-details/${hostel.slug || normalizedSlug}`,
         type: "website",
         images: imageUrl ? [{ url: imageUrl }] : undefined,
       },
@@ -107,7 +107,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default async function HostelSlugPage({ params }: PageProps) {
+export default async function HostelDetailsPage({ params }: PageProps) {
   const { slug } = await params;
   const normalizedSlug = (slug || "").toLowerCase().trim();
 

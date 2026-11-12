@@ -65,12 +65,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       keywords,
       alternates: {
-        canonical: `/blogs/${blog.slug || normalizedSlug}`,
+        canonical: `/blog-details/${blog.slug || normalizedSlug}`,
       },
       openGraph: {
         title,
         description,
-        url: `/blogs/${blog.slug || normalizedSlug}`,
+        url: `/blog-details/${blog.slug || normalizedSlug}`,
         type: "article",
         images: imageUrl ? [{ url: imageUrl }] : undefined,
       },
@@ -89,7 +89,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default async function BlogSlugPage({ params }: PageProps) {
+export default async function BlogDetailsPage({ params }: PageProps) {
   const { slug } = await params;
   const normalizedSlug = (slug || "").toLowerCase().trim();
 

@@ -103,7 +103,7 @@ async function run() {
       priceFrom: hostel.rent
         ? `₹${Number(hostel.rent).toLocaleString("en-IN")}`
         : "₹50,000",
-      href: `/hostels/${hostel.slug || hostel._id}`,
+      href: `/hostel-details/${hostel.slug || hostel._id}`,
       image,
       colleges,
     };

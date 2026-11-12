@@ -31,7 +31,7 @@ export const residences: ResidenceData = {
       locality: "Vile Parle · Mumbai",
       distance: "5 mins from NMIMS, Mithibai & DJ Sanghvi",
       priceFrom: "₹60,000",
-      href: "/hostels/chapter-i",
+      href: "/hostel-details/chapter-i",
       image: "/images/image03.png",
     },
     {
@@ -41,7 +41,7 @@ export const residences: ResidenceData = {
       locality: "Vile Parle · Mumbai",
       distance: "5 mins from NMIMS, Mithibai & DJ Sanghvi",
       priceFrom: "₹70,000",
-      href: "/hostels/chapter-ii",
+      href: "/hostel-details/chapter-ii",
       image: "/images/image04.png",
     },
     {
@@ -51,7 +51,7 @@ export const residences: ResidenceData = {
       locality: "Vile Parle · Mumbai",
       distance: "5 mins from NMIMS, Mithibai & DJ Sanghvi",
       priceFrom: "₹50,000",
-      href: "/hostels/chapter-iii",
+      href: "/hostel-details/chapter-iii",
       image: "/images/image05.png",
     },
     {
@@ -61,7 +61,7 @@ export const residences: ResidenceData = {
       locality: "Vile Parle · Mumbai",
       distance: "5 mins from NMIMS, Mithibai & DJ Sanghvi",
       priceFrom: "₹57,000",
-      href: "/hostels/chapter-iv",
+      href: "/hostel-details/chapter-iv",
       image: "/images/image06.png",
     },
     {
@@ -71,7 +71,7 @@ export const residences: ResidenceData = {
       locality: "Vile Parle · Mumbai",
       distance: "5 mins from NMIMS, Mithibai & DJ Sanghvi",
       priceFrom: "₹85,000",
-      href: "/hostels/chapter-v",
+      href: "/hostel-details/chapter-v",
       image: "/images/image07.jpg",
     },
     {
@@ -81,7 +81,7 @@ export const residences: ResidenceData = {
       locality: "Vile Parle · Mumbai",
       distance: "5 mins from NMIMS, Mithibai & DJ Sanghvi",
       priceFrom: "₹85,000",
-      href: "/hostels/chapter-v",
+      href: "/hostel-details/chapter-v",
       image: "/images/image03.png",
     },
     {
@@ -91,7 +91,7 @@ export const residences: ResidenceData = {
       locality: "Vile Parle · Mumbai",
       distance: "5 mins from NMIMS, Mithibai & DJ Sanghvi",
       priceFrom: "₹85,000",
-      href: "/hostels/chapter-v",
+      href: "/hostel-details/chapter-v",
       image: "/images/image04.png",
     },
     {
@@ -101,7 +101,7 @@ export const residences: ResidenceData = {
       locality: "Vile Parle · Mumbai",
       distance: "5 mins from NMIMS, Mithibai & DJ Sanghvi",
       priceFrom: "₹85,000",
-      href: "/hostels/chapter-v",
+      href: "/hostel-details/chapter-v",
       image: "/images/image05.png",
     },
     {
@@ -111,7 +111,7 @@ export const residences: ResidenceData = {
       locality: "Vile Parle · Mumbai",
       distance: "5 mins from NMIMS, Mithibai & DJ Sanghvi",
       priceFrom: "₹85,000",
-      href: "/hostels/chapter-v",
+      href: "/hostel-details/chapter-v",
       image: "/images/image06.png",
     },
     {
@@ -121,7 +121,7 @@ export const residences: ResidenceData = {
       locality: "Vile Parle · Mumbai",
       distance: "5 mins from NMIMS, Mithibai & DJ Sanghvi",
       priceFrom: "₹85,000",
-      href: "/hostels/chapter-v",
+      href: "/hostel-details/chapter-v",
       image: "/images/image07.jpg",
     },
   ],

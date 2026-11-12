@@ -56,7 +56,7 @@ export function ResidenceCard({ item }: ResidenceCardProps) {
 
   return (
     <Link
-      href={`/hostels/${item.slug}`}
+      href={`/hostel-details/${item.slug}`}
       className="group flex h-full flex-col overflow-hidden rounded-[18px] border border-ink/10 bg-[#faf8f4] transition-all duration-300 hover:border-ink/25 hover:shadow-[0_10px_30px_rgba(0,0,0,0.06)]"
     >
       {/* Residence Image */}

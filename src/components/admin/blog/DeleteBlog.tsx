@@ -93,7 +93,7 @@ export default function DeleteBlog({ open, blog, onClose, onSuccess }: DeleteBlo
             )}
             <div className="min-w-0 flex-1">
               <h4 className="text-xs font-bold text-slate-900 truncate">{blog.title}</h4>
-              <p className="text-[11px] text-slate-500 font-mono mt-0.5 truncate">/blogs/{blog.slug}</p>
+              <p className="text-[11px] text-slate-500 font-mono mt-0.5 truncate">/blog-details/{blog.slug}</p>
             </div>
           </div>
 

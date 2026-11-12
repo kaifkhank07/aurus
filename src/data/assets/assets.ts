@@ -4,7 +4,7 @@ export const useAssets = () => {
         favicon: "/assets/Images/ssb-logo.png",
 
         chooseResidence1: "/images/static/image-01.jpg",
-        chooseResidence2: "/images/static/image-02.jpg",
+        chooseResidence2: "/images/static/image-02.png",
         storyAbout: "/images/static/image-03.png",
 
         location1: "",

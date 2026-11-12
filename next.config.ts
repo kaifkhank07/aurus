@@ -13,8 +13,13 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
-        source: "/residences/:slug*",
-        destination: "/hostels/:slug*",
+        source: "/residences/:slug+",
+        destination: "/hostel-details/:slug+",
+        permanent: true,
+      },
+      {
+        source: "/hostels/:slug+",
+        destination: "/hostel-details/:slug+",
         permanent: true,
       },
       {
@@ -43,8 +48,13 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
-        source: "/blog/:slug*",
-        destination: "/blogs/:slug*",
+        source: "/blog/:slug+",
+        destination: "/blog-details/:slug+",
+        permanent: true,
+      },
+      {
+        source: "/blogs/:slug+",
+        destination: "/blog-details/:slug+",
         permanent: true,
       },
       {

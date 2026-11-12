@@ -76,7 +76,7 @@ export function Navbar({ variant = "auto", className = "" }: NavbarProps) {
             const isActive =
               pathname === link.href ||
               (link.href === "/hostels" &&
-                (pathname === "/hostels" || pathname?.includes("hostels"))) ||
+                (pathname === "/hostels" || pathname?.includes("hostel"))) ||
               (link.href === "/real-stories" &&
                 (pathname === "/real-stories" || pathname?.includes("real-stories")));
 
