@@ -1,13 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { lifePageData } from "@/data/lifeataurus";
+import { theDetailsData } from "@/data/lifeataurus/theDetails";
 import { Container, Eyebrow } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
 
 export default function TheDetails() {
-  const { facilities } = lifePageData;
+  const facilities = theDetailsData;
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">

@@ -21,7 +21,7 @@ export function ChapterBlock() {
           {/* Heading and Body layout */}
           <div className="grid gap-4 sm:gap-6 lg:grid-cols-[1fr_min(21.198vw,407px)] lg:items-start lg:pr-[min(1.72vw,33px)] lg:gap-[2.4vw]">
             <Heading
-              title1={chapter.titleTop + " " + chapter.titleBottom}
+              title1={chapter.titleTop}
               title2={chapter.titleAccent}
               className="uppercase max-w-3xl 3xl:max-w-5xl"
             />
@@ -40,11 +40,11 @@ export function ChapterBlock() {
 
         {/* Images */}
         <div className="flex flex-col lg:grid lg:grid-cols-2 gap-4 lg:gap-6">
-          {chapter.images.map((image) => (
-            <ViewReveal duration={800} startDelay={100} key={image.alt}>
+          {chapter.recentWork.map((item, index) => (
+            <ViewReveal duration={800} startDelay={100} key={index}>
               <Figure
-                src={image.src}
-                alt={image.alt}
+                src={item.image}
+                alt={item.name}
                 sizes="(min-width: 1024px) 50vw, 100vw"
                 className="aspect-[16/11] sm:aspect-[16/10] lg:aspect-[830/572] w-full rounded-[16px] sm:rounded-[40px]"
               />

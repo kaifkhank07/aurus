@@ -47,7 +47,7 @@ export default function ScrollToTop() {
         <button
             ref={btnRef}
             onClick={scrollToTop}
-            className="fixed bottom-2 md:bottom-3 right-6 z-50 p-3 rounded-full text-ink border border-ink cursor-pointer hover:opacity-80 transition-opacity duration-300"
+            className="fixed bottom-2 md:bottom-3 right-6 z-50 p-3 rounded-full text-[#B58A62] border border-[#B58A62] cursor-pointer hover:text-[#8B5E3C] hover:border-[#8B5E3C] transition-all duration-300"
             aria-label="Scroll to top"
         >
             <ArrowUp size={24} />

@@ -5,8 +5,11 @@ import { Panel } from "@/components/ui/Primitives";
 import { ViewReveal } from "../animation";
 import useMasterStore from "@/store/useMasterStore";
 import { useEffect } from "react";
+import { componyInfoData, useAssets } from "@/data";
 
 export function Footer() {
+  const assets = useAssets();
+
   const {
     publicCities,
     isLoadingPublicCities,
@@ -34,7 +37,7 @@ export function Footer() {
           <Link href="/" aria-label="Aurus home" className="inline-block group">
             <div className="flex flex-col items-start">
               <Image
-                src="/images/logo.png"
+                src={assets.logo}
                 alt="Aurus"
                 width={130}
                 height={28}
@@ -57,23 +60,29 @@ export function Footer() {
                 AURUS HEADQUARTERS
               </h3>
               <div className="flex flex-col gap-2 font-mono uppercase text-[12px] sm:text-[14px] leading-[1.8] tracking-[1.5px] text-[#77736B]">
-                <p>ANDHERI EAST, MUMBAI, MAHARASHTRA 400069</p>
+                <a
+                  href={componyInfoData.location}
+                  target="_blank"
+                  className="hover:text-white transition-colors duration-200">
+                  {componyInfoData.address}
+                </a>
+
                 <p>
                   TOLL-FREE:{" "}
                   <a
-                    href="tel:18005720709"
+                    href={`tel:${componyInfoData.mobile}`}
                     className="hover:text-white transition-colors duration-200"
                   >
-                    1800-572-0709
+                    {componyInfoData.mobile}
                   </a>
                 </p>
                 <p>
                   EMAIL:{" "}
                   <a
-                    href="mailto:info@auruslife.com"
+                    href={`mailto:${componyInfoData.email}`}
                     className="hover:text-white transition-colors duration-200"
                   >
-                    INFO@AURUSLIFE.COM
+                    {componyInfoData.email}
                   </a>
                 </p>
               </div>

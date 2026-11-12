@@ -1,14 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { lifePageData } from "@/data/lifeataurus";
+import { cafeAndAppData } from "@/data/lifeataurus/cafeAndApp";
 import { Container, Eyebrow } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
 
 export default function CafeAndApp() {
-  const { cafeAndApp } = lifePageData;
-  const { cafe, app } = cafeAndApp;
+  const { cafe, app } = cafeAndAppData;
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">

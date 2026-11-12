@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Container, Eyebrow } from "@/components/ui/Primitives";
 import { Heading } from "@/components/utils/Heading";
 import { ViewReveal } from "@/components/animation";
-import { developersData } from "@/data/developers";
+import { idealAssetsData } from "@/data/developers/idealAssets";
 
 function CriterionIcon({ type }: { type: string }) {
   if (type === "location") {
@@ -93,7 +93,7 @@ function CriterionIcon({ type }: { type: string }) {
 }
 
 export function IdealAssets() {
-  const { idealAssets } = developersData;
+  const idealAssets = idealAssetsData;
 
   return (
     <section id="what-we-look-for" className="py-8 sm:py-12 lg:py-16">

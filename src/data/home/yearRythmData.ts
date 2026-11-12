@@ -1,10 +1,12 @@
 import { Coffee, Leaf, LucideIcon, MessageSquare, ShieldCheck, Smartphone, UsersRound } from "lucide-react";
+import { useAssets } from "../assets/assets";
 
 
 
 export interface TimelineSlot {
   time: string;
   activity: string;
+  image: string;
 }
 
 
@@ -13,39 +15,44 @@ export interface yearlyRhythmData {
   titleTop: string;
   titleAccent: string;
   body: string;
-  image: { src: string; alt: string };
   timeline: TimelineSlot[];
 }
+
+const assets = useAssets();
 
 export const yearlyRhythmData: yearlyRhythmData = {
   eyebrow: "DAILY RHYTHM",
   titleTop: "THE AURUS",
   titleAccent: "Year.",
   body: "A venue for curiosity, dialogue, and shared experiences",
-  image: {
-    src: "/images/static/image-07.png",
-    alt: "Residents sharing freshly prepared dinner in dining hall",
-  },
   timeline: [
     {
       time: "Nov",
       activity: "The Aurus Padel Cup",
+      image: assets.aurusyear1,
+
     },
     {
       time: "Nov",
       activity: "AI for Academic Edge",
+      image: assets.aurusyear2,
     },
     {
       time: "Nov",
       activity: "The Aurus Masterclass",
+      image: assets.aurusyear3,
+
     },
     {
       time: "Dec",
       activity: "The Aurus Yacht Evening",
+      image: assets.aurusyear4,
+
     },
     {
       time: "Jan",
       activity: "The Aurus Wellness Reset",
+      image: assets.aurusyear5,
     },
   ],
 }

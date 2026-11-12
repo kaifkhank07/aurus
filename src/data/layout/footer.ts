@@ -15,7 +15,6 @@ export const footer = {
       type: "links" as const,
       links: [
         { label: "About Us", href: "/about" },
-        { label: "Boutique Workspaces", href: "/workspaces" },
         { label: "Life @ Aurus", href: "/life-at-aurus" },
         { label: "Hostels", href: "/hostels" },
         { label: "Real Stories", href: "/real-stories" },

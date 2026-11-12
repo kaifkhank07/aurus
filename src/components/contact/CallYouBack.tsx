@@ -2,14 +2,14 @@
 
 import React from "react";
 import Link from "next/link";
-import { contactData } from "@/data/contact";
+import { callYouBackData } from "@/data/contact/callYouBack";
 import { Container } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
 import { CallbackForm } from "./CallbackForm";
 
 export function CallYouBack() {
-  const data = contactData.callback;
+  const data = callYouBackData;
 
   return (
     <section className="py-10 sm:py-14 lg:py-18">

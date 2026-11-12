@@ -3,10 +3,10 @@
 import { Container, Eyebrow } from "@/components/ui/Primitives";
 import { Heading } from "@/components/utils/Heading";
 import { ViewReveal } from "@/components/animation";
-import { developersData } from "@/data/developers";
+import { executionProcessData } from "@/data/developers/executionProcess";
 
 export function ExecutionProcess() {
-  const { executionProcess } = developersData;
+  const executionProcess = executionProcessData;
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">

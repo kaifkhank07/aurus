@@ -5,12 +5,12 @@ import Link from "next/link";
 import { Container, PillButton } from "@/components/ui/Primitives";
 import { Heading } from "@/components/utils/Heading";
 import { ViewReveal } from "@/components/animation";
-import { developersData } from "@/data/developers";
+import { developerHeroData } from "@/data/developers/developerHero";
 import { useScrollNavigation } from "../utils/Scroll";
 
 
 export function DeveloperHero() {
-  const { hero } = developersData;
+  const hero = developerHeroData;
   const { handleScroll } = useScrollNavigation();
 
   return (

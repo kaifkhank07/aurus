@@ -203,7 +203,7 @@ export function Amenities() {
 
         {/* Heading */}
         <Heading
-          title1={amenities.titleTop + " " + amenities.titleBottom}
+          title1={amenities.titleTop}
           title2={amenities.titleAccent}
           className="uppercase max-w-[248px] sm:max-w-full"
         />

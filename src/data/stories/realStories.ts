@@ -8,7 +8,6 @@ export interface realStoriesData {
     titleAccent: string;
     body: string;
     stats: StoryStat[];
-
 }
 
 

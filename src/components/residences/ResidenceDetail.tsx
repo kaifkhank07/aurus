@@ -9,6 +9,7 @@ import { ResidenceGalleryModal } from "./ResidenceGalleryModal";
 import RichTextRenderer from "../shared/RichTextRenderer";
 import { useHostelAndEnquiryStore } from "@/store/useHostelAndEnquiryStore";
 import { SafeHostel } from "@/types/hostel.types";
+import { componyInfoData } from "@/data";
 
 function CheckCircleIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -303,9 +304,9 @@ export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailPro
   const occupancyCardItems: Array<{ type: string; status: string }> =
     occupanciesList.length > 0
       ? occupanciesList.map((occName) => ({
-          type: occName,
-          status: "Available",
-        }))
+        type: occName,
+        status: "Available",
+      }))
       : [{ type: "Occupancy", status: "Not Available" }];
 
   // 9. Included in your stay (Amenities only)
@@ -452,9 +453,8 @@ export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailPro
               {keySpecs.map((spec, index) => (
                 <div
                   key={spec.label}
-                  className={`p-4 sm:p-5 flex flex-col justify-center border-r border-ink/15 ${
-                    index < 2 ? "border-b lg:border-b-0 border-ink/15" : "border-b-0"
-                  }`}
+                  className={`p-4 sm:p-5 flex flex-col justify-center border-r border-ink/15 ${index < 2 ? "border-b lg:border-b-0 border-ink/15" : "border-b-0"
+                    }`}
                 >
                   <span className="font-mono uppercase text-[10px] sm:text-[11px] lg:text-[14px] tracking-[2px] text-[#88847C] block mb-1 font-medium">
                     {spec.label}
@@ -509,8 +509,9 @@ export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailPro
                 </button>
 
                 <a
-                  href={`https://wa.me/919876543210?text=${encodeURIComponent(
-                    `Hello! I'm interested in visiting ${hostel.title}.`
+                  href={`https://wa.me/${componyInfoData.whatsapp}}?text=${encodeURIComponent(
+                    // `Hello! I'm interested in visiting ${hostel.title}.`
+                    `${componyInfoData.defaultWhatsAppMessage}.`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -521,7 +522,7 @@ export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailPro
                 </a>
 
                 <a
-                  href="tel:18005720709"
+                  href={`tel:${componyInfoData.mobile}}`}
                   className="w-full rounded-full border border-ink/30 py-2.5 px-4 font-mono text-[11px] sm:text-[12px] uppercase tracking-[2px] font-medium text-ink hover:border-ink hover:bg-ink/5 transition flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <PhoneIcon className="w-4 h-4 text-ink" />
@@ -674,8 +675,9 @@ export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailPro
                 </button>
 
                 <a
-                  href={`https://wa.me/919876543210?text=${encodeURIComponent(
-                    `Hello! I'm interested in visiting ${hostel.title}.`
+                  href={`https://wa.me/${componyInfoData.whatsapp}?text=${encodeURIComponent(
+                    // `Hello! I'm interested in visiting ${hostel.title}.`
+                    `${componyInfoData.defaultWhatsAppMessage}.`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -686,7 +688,7 @@ export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailPro
                 </a>
 
                 <a
-                  href="tel:18005720709"
+                  href={`tel:${componyInfoData.mobile}`}
                   className="w-full rounded-full border border-ink/30 py-2.5 px-4 font-mono text-[11px] sm:text-[12px] uppercase tracking-[2px] font-medium text-ink hover:border-ink hover:bg-ink/5 transition flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <PhoneIcon className="w-4 h-4 text-ink" />

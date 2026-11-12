@@ -56,5 +56,3 @@ export const landing: landingData = {
     email: { label: "info@auruslife.com", href: "mailto:info@auruslife.com" },
   },
 };
-
-export const chooseResidenceData = landing;

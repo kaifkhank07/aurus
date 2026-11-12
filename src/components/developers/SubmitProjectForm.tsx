@@ -4,10 +4,10 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Eyebrow, Panel } from "@/components/ui/Primitives";
 import { ViewReveal } from "@/components/animation";
-import { developersData } from "@/data/developers";
+import { submitProjectData } from "@/data/developers/submitProject";
 
 export function SubmitProjectForm() {
-  const { submitProject } = developersData;
+  const submitProject = submitProjectData;
 
   const [formData, setFormData] = useState({
     fullName: "",

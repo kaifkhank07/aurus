@@ -24,8 +24,7 @@ export const playlistData: PlaylistData = {
       '"The official Aurus playlist — where music meets lifestyle! Curated for our residents, it\'s the perfect soundtrack for living the Aurus way: vibrant, luxurious, and unforgettable."',
     creator: "Aurus - Luxury Student Residence and Kartik",
     stats: "95 saves • 90 songs, about 5 hr 20 min",
-    // spotifyUrl: "https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M",
-    spotifyUrl: "https://open.spotify.com/playlist/37i9dQZF1E4CUrkGzn1VSI?si=-O7W6AcIRuCihhvthvmjKQ&utm_source=whatsapp&pi=lp7hN3HESkGlh",
+    spotifyUrl: "https://open.spotify.com/playlist/57EUb87yPQhwXg3zdp5U5O?si=zQDDPze0TlWUiAWinkmcVA&utm_source=copy-link&pi=Ascz15j5SZeaa",
     coverAlt: "Aurus Luxury Student Residences Playlist",
   },
 };

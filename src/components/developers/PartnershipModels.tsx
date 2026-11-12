@@ -4,11 +4,11 @@ import Link from "next/link";
 import { Container, Eyebrow } from "@/components/ui/Primitives";
 import { Heading } from "@/components/utils/Heading";
 import { ViewReveal } from "@/components/animation";
-import { developersData } from "@/data/developers";
+import { partnershipModelsData } from "@/data/developers/partnershipModels";
 import { useScrollNavigation } from "../utils/Scroll";
 
 export function PartnershipModels() {
-  const { partnershipModels } = developersData;
+  const partnershipModels = partnershipModelsData;
   const { handleScroll } = useScrollNavigation();
 
   return (

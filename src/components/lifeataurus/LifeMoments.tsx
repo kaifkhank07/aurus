@@ -3,12 +3,12 @@
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
-import { lifePageData } from "@/data/lifeataurus";
+import { lifeMomentsData } from "@/data/lifeataurus/lifeMoments";
 import { Container, Eyebrow } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 
 export default function LifeMoments() {
-  const { momentsGallery } = lifePageData;
+  const momentsGallery = lifeMomentsData;
   const marqueeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

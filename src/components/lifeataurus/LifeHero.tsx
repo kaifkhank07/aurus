@@ -3,13 +3,13 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import gsap from "gsap";
-import { lifePageData } from "@/data/lifeataurus";
+import { lifeHeroData } from "@/data/lifeataurus/lifeHero";
 import { Container } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
 
 export default function LifeHero() {
-  const { hero } = lifePageData;
+  const hero = lifeHeroData;
   const marqueeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -47,12 +47,6 @@ export default function LifeHero() {
     return () => media.revert();
   }, []);
 
-  const images = [
-    hero.images.main,
-    hero.images.topRight,
-    hero.images.bottomRight,
-  ];
-
   return (
     <section className="py-8 sm:py-12 lg:py-16">
       <Container className="space-y-4 sm:space-y-8">
@@ -81,7 +75,7 @@ export default function LifeHero() {
                   aria-hidden={setIndex > 0 ? "true" : undefined}
                   className="flex shrink-0 items-center gap-3.5 pr-3.5"
                 >
-                  {images.map((image, index) => (
+                  {hero.images.map((image, index) => (
                     <div
                       key={`${setIndex}-${index}`}
                       className="relative aspect-[4/3] w-[280px] shrink-0 overflow-hidden rounded-[10px] bg-ink/5"
@@ -105,8 +99,8 @@ export default function LifeHero() {
             {/* Left Column: Large Celebration Photo */}
             <div className="relative aspect-[14/11] min-h-[260px] w-full overflow-hidden rounded-[10px] bg-ink/5 sm:aspect-[4/3] sm:min-h-[380px] lg:col-span-7 lg:aspect-auto lg:h-full">
               <Image
-                src={hero.images.main.src}
-                alt={hero.images.main.alt}
+                src={hero.images[0].src}
+                alt={hero.images[0].alt}
                 fill
                 sizes="(min-width: 1024px) 60vw, 100vw"
                 priority
@@ -119,8 +113,8 @@ export default function LifeHero() {
               {/* Top Photo: DJ Set */}
               <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[10px] bg-ink/5 sm:aspect-[4/3] lg:aspect-[12/6]">
                 <Image
-                  src={hero.images.topRight.src}
-                  alt={hero.images.topRight.alt}
+                  src={hero.images[1].src}
+                  alt={hero.images[1].alt}
                   fill
                   sizes="(min-width: 1024px) 40vw, 50vw"
                   className="object-cover transition-transform duration-700 ease-out hover:scale-105"
@@ -130,8 +124,8 @@ export default function LifeHero() {
               {/* Bottom Photo: Poolside Group */}
               <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[10px] bg-ink/5 sm:aspect-[4/3] lg:aspect-[12/6]">
                 <Image
-                  src={hero.images.bottomRight.src}
-                  alt={hero.images.bottomRight.alt}
+                  src={hero.images[2].src}
+                  alt={hero.images[2].alt}
                   fill
                   sizes="(min-width: 1024px) 40vw, 50vw"
                   className="object-cover transition-transform duration-700 ease-out hover:scale-105"

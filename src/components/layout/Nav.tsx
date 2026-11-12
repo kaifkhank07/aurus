@@ -5,16 +5,18 @@ import { useState } from "react";
 import { nav } from "@/data/layout";
 import { ArrowRight } from "@/components/ui/Primitives";
 import Image from "next/image";
+import { useAssets } from "@/data";
 
 export function Nav() {
   const [open, setOpen] = useState(false);
+  const assets = useAssets();
 
   return (
     <header className="absolute inset-x-0 top-0 z-50 text-white">
       <div className="mx-auto flex w-full max-w-[1920px] items-center justify-between px-6 py-7 sm:px-10 lg:px-[4.5833vw] lg:py-[2.1vw]">
         <Link href="/" aria-label="Aurus home">
           <Image
-            src="/images/logo.png"
+            src={assets.logo}
             alt="Aurus"
             width={120}
             height={120}

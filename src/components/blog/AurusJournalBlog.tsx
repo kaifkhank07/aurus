@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { blogsData } from "@/data/blog";
+import { journalSectionData, communityBannerData } from "@/data/blog/aurusJournalBlog";
 import { Container, ArrowRight } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
@@ -32,8 +32,8 @@ function formatDate(isoString?: string): string {
 }
 
 export function AurusJournalBlog() {
-  const data = blogsData.journalSection;
-  const bannerData = blogsData.communityBanner;
+  const data = journalSectionData;
+  const bannerData = communityBannerData;
 
   const { publicBlogs, isLoadingPublicBlogs, fetchPublicBlogs } = useContentStore();
 

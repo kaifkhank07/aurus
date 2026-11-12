@@ -1,3 +1,5 @@
+import { useAssets } from "../assets/assets";
+
 export interface LifeCategoryItem {
   label: string;
   image: string;
@@ -10,7 +12,19 @@ export interface LifeColumn {
   bottom: LifeCategoryItem;
 }
 
-export const lifeAtAurus = {
+export interface LifeAtAurusData {
+  eyebrow: string;
+  titleTop: string;
+  titleAccent: string;
+  body: string;
+  cta: { label: string; href: string };
+  columns: LifeColumn[];
+  items: LifeCategoryItem[];
+}
+
+const assets = useAssets();
+
+export const lifeAtAurus: LifeAtAurusData = {
   eyebrow: "LIFE & AURUS",
   titleTop: "NOT JUST WHERE YOU",
   titleAccent: "Stay.",
@@ -24,12 +38,12 @@ export const lifeAtAurus = {
       stagger: false,
       top: {
         label: "STUDY",
-        image: "/images/life-study.jpg",
+        image: assets.auruslife1,
         alt: "Resident focused on studying in quiet alcove",
       },
       bottom: {
         label: "CONNECT",
-        image: "/images/life-connect.png",
+        image: assets.auruslife4,
         alt: "Residents bonding and conversing in lounge",
       },
     },
@@ -37,12 +51,12 @@ export const lifeAtAurus = {
       stagger: true,
       top: {
         label: "EAT",
-        image: "/images/life-eat.png",
+        image: assets.auruslife2,
         alt: "Residents sharing fresh communal meals",
       },
       bottom: {
         label: "UNWIND",
-        image: "/images/life-unwind.png",
+        image: assets.auruslife5,
         alt: "Residents relaxing in modern living area",
       },
     },
@@ -50,46 +64,46 @@ export const lifeAtAurus = {
       stagger: false,
       top: {
         label: "MOVE",
-        image: "/images/life-move.png",
+        image: assets.auruslife3,
         alt: "Resident exercising on treadmill in fitness gym",
       },
       bottom: {
         label: "ENJOY",
-        image: "/images/life-enjoy.png",
+        image: assets.auruslife6,
         alt: "Residents playing foosball in recreation space",
       },
     },
-  ] as LifeColumn[],
+  ],
   items: [
     {
       label: "STUDY",
-      image: "/images/life-study.jpg",
+      image: assets.auruslife1,
       alt: "Resident focused on studying in quiet alcove",
     },
     {
       label: "EAT",
-      image: "/images/life-eat.png",
+      image: assets.auruslife2,
       alt: "Residents sharing fresh communal meals",
     },
     {
       label: "MOVE",
-      image: "/images/life-move.png",
+      image: assets.auruslife3,
       alt: "Resident exercising on treadmill in fitness gym",
     },
     {
       label: "CONNECT",
-      image: "/images/life-connect.png",
+      image: assets.auruslife4,
       alt: "Residents bonding and conversing in lounge",
     },
     {
       label: "UNWIND",
-      image: "/images/life-unwind.png",
+      image: assets.auruslife5,
       alt: "Residents relaxing in modern living area",
     },
     {
       label: "ENJOY",
-      image: "/images/life-enjoy.png",
+      image: assets.auruslife6,
       alt: "Residents playing foosball in recreation space",
     },
-  ] satisfies LifeCategoryItem[],
+  ]
 };

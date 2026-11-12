@@ -26,7 +26,7 @@ export const hero: heroData = {
   cities: "Mumbai · Noida · Ahmedabad · Pune · Jalandhar",
   actions: [
     { label: "Explore Hostels", href: "/hostels" },
-    { label: "Discover Aurus", href: "#intro" },
+    { label: "Residences Page", href: "/hostels" },
   ],
   image: assets.studentHeroBg,
 };

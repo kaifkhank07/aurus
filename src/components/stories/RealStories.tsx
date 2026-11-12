@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { realStoriesData } from "@/data";
+import { realStoriesData } from "@/data/stories/realStories";
 import { useContentStore } from "@/store/useContentStore";
 import { Container } from "../ui/Primitives";
 import { ViewReveal } from "../animation";

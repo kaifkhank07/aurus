@@ -9,11 +9,11 @@ export interface ComponyInfoData {
 
 export const componyInfoData: ComponyInfoData = {
 
-    mobile: 18005720709,
-    whatsapp: +917208950935,
+    mobile: 8238482384,
+    whatsapp: 8238482384,
     defaultWhatsAppMessage: "Hello, I would like to get in touch!",
     email: "info@auruslife.com",
-    address: "ANDHERI EAST, MUMBAI, MAHARASHTRA 400069",
+    address: "1001, 1002, Sapphire Plaza, Dadabhai Rd, Pond Gaothan, Navpada, Kamala Nagar, Vile Parle West, Mumbai, Maharashtra 400056",
     location: "https://maps.app.goo.gl/y66n4jd5K359ygju7",
 
 }

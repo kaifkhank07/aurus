@@ -4,16 +4,16 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
-import { aboutData } from "@/data/about";
+import { aboutCherishExperienceData } from "@/data/about/cherishExperience";
 import { ArrowRight, Panel } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
 
 const marqueeImages = [
-  aboutData.cherishExperience.photos.topRight,
-  aboutData.cherishExperience.photos.middle,
-  aboutData.cherishExperience.photos.bottomRight,
-  aboutData.cherishExperience.photos.bottomLeft,
+  aboutCherishExperienceData.photos.topRight,
+  aboutCherishExperienceData.photos.middle,
+  aboutCherishExperienceData.photos.bottomRight,
+  aboutCherishExperienceData.photos.bottomLeft,
   {
     src: "/images/life-enjoy.jpg",
     alt: "Residents playing foosball in recreation space",
@@ -63,14 +63,14 @@ export default function CherishExperience() {
             {/* Left Column: Heading, Description, Mobile Infinite Loop, Features & Actions */}
             <div className="w-full">
               <Heading
-                title1={aboutData.cherishExperience.titleTop}
-                title2={aboutData.cherishExperience.titleAccent}
+                title1={aboutCherishExperienceData.titleTop}
+                title2={aboutCherishExperienceData.titleAccent}
                 className="uppercase max-w-lg sm:max-w-[95%] lg:min-w-[940px]"
               />
 
               {/* Paragraph */}
               <p className="mt-5 sm:mt-7 text-white/70 font-sans font-normal text-[14px] sm:text-[15px] lg:text-[16px] leading-[1.6] tracking-[-0.015em] max-w-[452px]">
-                {aboutData.cherishExperience.body}
+                {aboutCherishExperienceData.body}
               </p>
 
               {/* Mobile-only Infinite Loop Image Scroll between Paragraph and Feature Points */}
@@ -104,7 +104,7 @@ export default function CherishExperience() {
               {/* 4 Feature Points (2x2 Grid) */}
               <div className="mt-8 sm:mt-10 border-t border-b border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-y-3.5 sm:gap-y-4 gap-x-6 sm:gap-x-0">
                 <div>
-                  {aboutData.cherishExperience.features.slice(0, 2).map((item) => (
+                  {aboutCherishExperienceData.features.slice(0, 2).map((item) => (
                     <div key={item.number}>
                       <div className="h-px bg-white/10" />
                       <div className="py-6 sm:py-8 flex items-baseline gap-2">
@@ -119,7 +119,7 @@ export default function CherishExperience() {
                   ))}
                 </div>
                 <div>
-                  {aboutData.cherishExperience.features.slice(2, 4).map((item) => (
+                  {aboutCherishExperienceData.features.slice(2, 4).map((item) => (
                     <div key={item.number}>
                       <div className="h-px bg-white/10" />
                       <div className="py-6 sm:py-8 flex items-baseline gap-2">
@@ -138,17 +138,17 @@ export default function CherishExperience() {
               {/* CTA Action Buttons */}
               <div className="mt-8 sm:mt-10 flex flex-wrap items-center gap-3 sm:gap-4">
                 <Link
-                  href={aboutData.cherishExperience.actions[0].href}
+                  href={aboutCherishExperienceData.actions[0].href}
                   className="w-full lg:w-auto font-mono uppercase text-center text-[10px] sm:text-[11px] tracking-[2px] rounded-full border border-white/30 text-white hover:border-white hover:bg-white hover:text-ink px-5 sm:px-6 py-3 transition-all duration-300 active:scale-95"
                 >
-                  {aboutData.cherishExperience.actions[0].label}
+                  {aboutCherishExperienceData.actions[0].label}
                 </Link>
 
                 <Link
-                  href={aboutData.cherishExperience.actions[1].href}
+                  href={aboutCherishExperienceData.actions[1].href}
                   className="w-full lg:w-auto font-mono uppercase text-center text-[10px] sm:text-[11px] tracking-[2px] rounded-full bg-white text-ink hover:bg-neutral-200 px-5 sm:px-6 py-3 inline-flex items-center gap-2 justify-center transition-all duration-300 active:scale-95"
                 >
-                  <span>{aboutData.cherishExperience.actions[1].label}</span>
+                  <span>{aboutCherishExperienceData.actions[1].label}</span>
                   <ArrowRight className="h-3 w-3" />
                 </Link>
               </div>
@@ -160,8 +160,8 @@ export default function CherishExperience() {
                 {/* Top Left: DJ Performance */}
                 <div className="relative h-[200px] w-full overflow-hidden bg-white/5">
                   <Image
-                    src={aboutData.cherishExperience.photos.middle.src}
-                    alt={aboutData.cherishExperience.photos.middle.alt}
+                    src={aboutCherishExperienceData.photos.middle.src}
+                    alt={aboutCherishExperienceData.photos.middle.alt}
                     fill
                     sizes="(min-width: 1024px) 25vw, 50vw"
                     className="object-cover transition-transform duration-700 ease-out hover:scale-105"
@@ -171,8 +171,8 @@ export default function CherishExperience() {
                 {/* Top Right: Poolside Group */}
                 <div className="relative h-[350px] w-full overflow-hidden bg-white/5">
                   <Image
-                    src={aboutData.cherishExperience.photos.topRight.src}
-                    alt={aboutData.cherishExperience.photos.topRight.alt}
+                    src={aboutCherishExperienceData.photos.topRight.src}
+                    alt={aboutCherishExperienceData.photos.topRight.alt}
                     fill
                     sizes="(min-width: 1024px) 25vw, 50vw"
                     className="object-cover transition-transform duration-700 ease-out hover:scale-105"
@@ -184,8 +184,8 @@ export default function CherishExperience() {
                 {/* Bottom Left: Night Outdoor Gathering */}
                 <div className="relative h-[240px] w-[40%] overflow-hidden bg-white/5">
                   <Image
-                    src={aboutData.cherishExperience.photos.bottomLeft.src}
-                    alt={aboutData.cherishExperience.photos.bottomLeft.alt}
+                    src={aboutCherishExperienceData.photos.bottomLeft.src}
+                    alt={aboutCherishExperienceData.photos.bottomLeft.alt}
                     fill
                     sizes="(min-width: 1024px) 25vw, 50vw"
                     className="object-cover transition-transform duration-700 ease-out hover:scale-105"
@@ -195,8 +195,8 @@ export default function CherishExperience() {
                 {/* Bottom Right: House Party Friends */}
                 <div className="relative h-[240px] w-[60%] overflow-hidden bg-white/5">
                   <Image
-                    src={aboutData.cherishExperience.photos.bottomRight.src}
-                    alt={aboutData.cherishExperience.photos.bottomRight.alt}
+                    src={aboutCherishExperienceData.photos.bottomRight.src}
+                    alt={aboutCherishExperienceData.photos.bottomRight.alt}
                     fill
                     sizes="(min-width: 1024px) 25vw, 50vw"
                     className="object-cover transition-transform duration-700 ease-out hover:scale-105"

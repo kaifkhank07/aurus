@@ -5,7 +5,8 @@ import Link from "next/link";
 import { ArrowRight, Container } from "@/components/ui/Primitives";
 import { Heading } from "@/components/utils/Heading";
 import { ViewReveal } from "@/components/animation";
-import { aboutData } from "@/data/about";
+import { aboutHeroData } from "@/data/about/hero";
+import { aboutStoryData } from "@/data/about/story";
 
 export function AboutHero() {
   return (
@@ -14,22 +15,22 @@ export function AboutHero() {
         {/* Top Hero Header: Title & Mission Subtitle */}
         <Heading
           as="h1"
-          title1={aboutData.hero.titleTop}
-          title2={aboutData.hero.titleAccent}
+          title1={aboutHeroData.titleTop}
+          title2={aboutHeroData.titleAccent}
           className="uppercase max-w-[18ch] sm:max-w-3xl lg:max-w-4xl"
         />
         
         <p className="max-w-[44ch] font-sans font-regular text-[15px] sm:text-[17px] lg:text-[19px] leading-[1.45] tracking-[-0.025em] text-muted">
-          {aboutData.hero.body}
+          {aboutHeroData.body}
         </p>
 
         {/* Mobile / Tablet Enquire CTA Button (matching mobile UI reference) */}
         <ViewReveal duration={800} className="block lg:hidden w-full">
           <Link
-            href={aboutData.hero.cta.href}
+            href={aboutHeroData.cta.href}
             className="w-full h-[46px] sm:h-[50px] rounded-full bg-ink text-paper font-mono text-[11px] sm:text-[12px] tracking-[2px] uppercase flex items-center justify-center gap-2 transition-all duration-300 hover:bg-neutral-800 active:scale-[0.99] shadow-sm"
           >
-            <span>{aboutData.hero.cta.label}</span>
+            <span>{aboutHeroData.cta.label}</span>
             <ArrowRight />
           </Link>
         </ViewReveal>
@@ -40,15 +41,15 @@ export function AboutHero() {
             {/* Left Column: Heading & Paragraphs */}
             <div className="flex flex-col lg:pt-8 space-y-4 sm:space-y-6">
               <Heading
-                title1={aboutData.story.titleTop}
-                title2={aboutData.story.titleAccent}
+                title1={aboutStoryData.titleTop}
+                title2={aboutStoryData.titleAccent}
                 className="uppercase max-w-[200px] sm:max-w-full"
                 title1ClassName="text-[38px] sm:text-[42px] md:text-6xl lg:text-7xl xl:text-[56px]"
                 title2ClassName="text-[38px] sm:text-[42px] md:text-6xl lg:text-7xl xl:text-[56px]"
               />
 
               <div className="space-y-4 sm:space-y-6">
-                {aboutData.story.paragraphs.map((paragraph, index) => (
+                {aboutStoryData.paragraphs.map((paragraph, index) => (
                   <p
                     key={index}
                     className="font-sans font-regular text-[15px] sm:text-[17px] lg:text-[19px] leading-[1.45] tracking-[-0.025em] text-muted">
@@ -62,8 +63,8 @@ export function AboutHero() {
             <div className="w-full lg:pl-6">
               <div className="relative aspect-[16/11] sm:aspect-[16/10] lg:aspect-[16/11] xl:aspect-[4/3] w-full overflow-hidden rounded-[16px] sm:rounded-[8px] lg:rounded-[10px] bg-ink/5">
                 <Image
-                  src={aboutData.story.image}
-                  alt={aboutData.story.alt}
+                  src={aboutStoryData.image}
+                  alt={aboutStoryData.alt}
                   fill
                   sizes="(min-width: 1280px) 42vw, (min-width: 1024px) 46vw, 100vw"
                   priority

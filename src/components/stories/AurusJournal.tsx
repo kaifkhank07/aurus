@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { storiesData } from "@/data/stories";
+import { journalSectionData, communityBannerData } from "@/data/stories/aurusJournal";
 import { Container, ArrowRight } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
@@ -30,8 +30,8 @@ function formatDate(isoString?: string): string {
 }
 
 export function AurusJournal() {
-  const data = storiesData.journalSection;
-  const bannerData = storiesData.communityBanner;
+  const data = journalSectionData;
+  const bannerData = communityBannerData;
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { latestBlogs, isLoadingLatestBlogs, fetchLatestBlogs } = useContentStore();

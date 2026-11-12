@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { contactData, ContactPageData } from "@/data/contact";
+import { talkToUsData } from "@/data/contact/talkToUs";
 import { Container } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
@@ -10,7 +10,7 @@ import { Heading } from "../utils/Heading";
 
 
 export function TalkToUs() {
-  const data = contactData.hero;
+  const data = talkToUsData;
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">

@@ -1,6 +1,6 @@
 "use client";
 
-import { lifePageData, type LivingFeature } from "@/data/lifeataurus";
+import { livingMeansData } from "@/data/lifeataurus/livingHereMeans";
 import { Container, Eyebrow } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 
@@ -10,11 +10,11 @@ export default function LivingHereMeans() {
       <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
         <ViewReveal duration={800}>
           {/* Eyebrow Header */}
-          <Eyebrow>{lifePageData.livingMeans.eyebrow}</Eyebrow>
+          <Eyebrow>{livingMeansData.eyebrow}</Eyebrow>
 
           {/* 6 Features Table Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 border-b border-ink/15 lg:border-b-0">
-            {lifePageData.livingMeans.items.map((item, index) => {
+            {livingMeansData.items.map((item, index) => {
               const isThirdCol = (index + 1) % 3 === 0;
               const IsEven = (index + 1) % 2 === 0;
 

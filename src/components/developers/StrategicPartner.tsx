@@ -3,10 +3,10 @@
 import { Container, Eyebrow } from "@/components/ui/Primitives";
 import { Heading } from "@/components/utils/Heading";
 import { ViewReveal } from "@/components/animation";
-import { developersData } from "@/data/developers";
+import { strategicPartnerData } from "@/data/developers/strategicPartner";
 
 export function StrategicPartner() {
-  const { strategicPartner } = developersData;
+  const strategicPartner = strategicPartnerData;
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">

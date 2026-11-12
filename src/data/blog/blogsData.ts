@@ -1,25 +1,12 @@
-export interface JournalArticle {
-  id: string;
-  image: string;
-  alt: string;
-  category: string;
-  date: string;
-  readTime: string;
-  title: string;
-  excerpt: string;
-  ctaText: string;
-  href: string;
-}
+import {
+  JournalArticle,
+  CommunityBannerData,
+  AurusJournalBlogData,
+  journalSectionData,
+  communityBannerData,
+} from "./aurusJournalBlog";
 
-export interface CommunityBannerData {
-  titleTop: string;
-  titleAccent: string;
-  description: string;
-  cta: {
-    label: string;
-    href: string;
-  };
-}
+export type { JournalArticle, CommunityBannerData, AurusJournalBlogData };
 
 export interface BlogSectionPoint {
   title: string;
@@ -41,29 +28,11 @@ export interface BlogDetailData {
 }
 
 export interface BlogsPageData {
-  journalSection: {
-    titleTop: string;
-    titleAccent: string;
-    body: string;
-    articles?: JournalArticle[];
-  };
+  journalSection: AurusJournalBlogData;
   communityBanner: CommunityBannerData;
 }
 
 export const blogsData: BlogsPageData = {
-  journalSection: {
-    titleTop: "THE AURUS",
-    titleAccent: "Journal.",
-    body: "Insights on relocation, student life in Mumbai, Noida & Pune, study productivity hacks, and hostel guides.",
-    articles: [],
-  },
-  communityBanner: {
-    titleTop: "One good read,",
-    titleAccent: "Every Sunday.",
-    description: "New journal articles and the occasional city guide, in your inbox once a week. No offers, no noise.",
-    cta: {
-      label: "Subscribe",
-      href: "#",
-    },
-  },
+  journalSection: journalSectionData,
+  communityBanner: communityBannerData,
 };

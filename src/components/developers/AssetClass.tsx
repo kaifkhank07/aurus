@@ -3,7 +3,7 @@
 import { Eyebrow, Panel } from "@/components/ui/Primitives";
 import { Heading } from "@/components/utils/Heading";
 import { ViewReveal } from "@/components/animation";
-import { developersData } from "@/data/developers";
+import { assetClassData } from "@/data/developers/assetClass";
 
 function FeatureIcon({ type }: { type: string }) {
   if (type === "trend") {
@@ -72,7 +72,7 @@ function FeatureIcon({ type }: { type: string }) {
 }
 
 export function AssetClass() {
-  const { assetClass } = developersData;
+  const assetClass = assetClassData;
 
   return (
     <section className="px-4 sm:px-6 lg:px-0 py-8 sm:py-12 lg:py-16">

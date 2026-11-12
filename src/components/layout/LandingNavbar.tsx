@@ -5,6 +5,8 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { nav } from "@/data/layout";
 import { ArrowRight } from "@/components/ui/Primitives";
+import Image from "next/image";
+import { useAssets } from "@/data";
 
 export interface NavbarProps {
     variant?: "auto" | "light" | "dark";
@@ -14,6 +16,8 @@ export interface NavbarProps {
 export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps) {
     const [open, setOpen] = useState(false);
     const pathname = usePathname();
+
+    const assets = useAssets();
 
     const isDark = variant === "dark";
 
@@ -44,18 +48,15 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
             <div className="relative z-50 flex w-full items-center justify-between px-2 sm:px-4 lg:px-6 py-3 sm:py-3.5 lg:h-[72px]">
                 {/* Brand Wordmark (Left) */}
                 <div className="flex items-center shrink-0">
-                    <Link
-                        href="/"
-                        aria-label="Aurus home"
-                        className="group flex items-center select-none"
-                    >
-                        <span
-                            className={`font-display text-[26px] sm:text-[30px] lg:text-[34px] tracking-[0.06em] leading-none transition-opacity ${
-                                isDark ? "text-white" : "text-ink group-hover:opacity-80"
-                            }`}
-                        >
-                            AURUS
-                        </span>
+                    <Link href="/" aria-label="Aurus home" className="flex items-center shrink-0">
+                        <Image
+                            src={assets.logo2}
+                            alt="Aurus Luxury Student Residences"
+                            width={155}
+                            height={42}
+                            priority
+                            className="w-[120px] sm:w-[135px] lg:w-[155px] h-auto object-contain"
+                        />
                     </Link>
                 </div>
 
@@ -76,9 +77,8 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className={`font-mono uppercase text-[11px] lg:text-[12px] xl:text-[13px] leading-none tracking-[2px] transition-opacity hover:opacity-70 ${
-                                    isDark ? "text-white" : "text-ink"
-                                } ${isActive ? "underline underline-offset-8 decoration-1" : ""}`}
+                                className={`font-mono uppercase text-[11px] lg:text-[12px] xl:text-[13px] leading-none tracking-[2px] transition-opacity hover:opacity-70 ${isDark ? "text-white" : "text-ink"
+                                    } ${isActive ? "underline underline-offset-8 decoration-1" : ""}`}
                             >
                                 {link.label}
                             </Link>
@@ -118,14 +118,12 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
                     >
                         <span className="relative flex h-[8px] w-[22px] flex-col justify-between">
                             <span
-                                className={`block h-[1.5px] w-full rounded-full transition-all duration-300 ease-in-out ${hamburgerBarColor} ${
-                                    open ? "translate-y-[3.25px] rotate-45" : ""
-                                }`}
+                                className={`block h-[1.5px] w-full rounded-full transition-all duration-300 ease-in-out ${hamburgerBarColor} ${open ? "translate-y-[3.25px] rotate-45" : ""
+                                    }`}
                             />
                             <span
-                                className={`block h-[1.5px] w-full rounded-full transition-all duration-300 ease-in-out ${hamburgerBarColor} ${
-                                    open ? "-translate-y-[3.25px] -rotate-45" : ""
-                                }`}
+                                className={`block h-[1.5px] w-full rounded-full transition-all duration-300 ease-in-out ${hamburgerBarColor} ${open ? "-translate-y-[3.25px] -rotate-45" : ""
+                                    }`}
                             />
                         </span>
                     </button>
@@ -136,27 +134,27 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
             <div
                 aria-hidden="true"
                 onClick={() => setOpen(false)}
-                className={`fixed inset-0 z-[60] bg-black/45 transition-opacity duration-300 lg:hidden ${
-                    open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-                }`}
+                className={`fixed inset-0 z-[60] bg-black/45 transition-opacity duration-300 lg:hidden ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                    }`}
             />
 
             {/* Mobile & tablet side menu */}
             <aside
                 id="mobile-nav-menu"
                 aria-hidden={!open}
-                className={`fixed inset-y-0 right-0 z-[70] flex w-[82vw] max-w-[420px] flex-col bg-black px-5 pb-7 pt-6 text-white transition-transform duration-300 ease-out sm:px-8 lg:hidden ${
-                    open ? "translate-x-0" : "translate-x-full"
-                }`}
+                className={`fixed inset-y-0 right-0 z-[70] flex w-[82vw] max-w-[420px] flex-col bg-black px-5 pb-7 pt-6 text-white transition-transform duration-300 ease-out sm:px-8 lg:hidden ${open ? "translate-x-0" : "translate-x-full"
+                    }`}
             >
                 <div className="mt-8 mb-7 flex items-center justify-between">
-                    <Link
-                        href="/"
-                        aria-label="Aurus home"
-                        onClick={() => setOpen(false)}
-                        className="font-display text-[26px] tracking-[0.06em] text-white leading-none select-none"
-                    >
-                        AURUS
+                    <Link href="/" aria-label="Aurus home" className="flex items-center shrink-0">
+                        <Image
+                            src={assets.logo2}
+                            alt="Aurus Luxury Student Residences"
+                            width={155}
+                            height={42}
+                            priority
+                            className="w-[120px] sm:w-[135px] lg:w-[155px] h-auto object-contain grayscale invert"
+                        />
                     </Link>
 
                     <button

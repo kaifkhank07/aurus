@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { nav } from "@/data/layout";
 import { ArrowRight, Container } from "@/components/ui/Primitives";
 import Image from "next/image";
+import { useAssets } from "@/data";
 
 
 export interface NavbarProps {
@@ -16,6 +17,8 @@ export interface NavbarProps {
 export function Navbar({ variant = "auto", className = "" }: NavbarProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+
+  const assets = useAssets();
 
   const isLight = variant === "light";
   const isDark = variant === "dark";
@@ -55,15 +58,14 @@ export function Navbar({ variant = "auto", className = "" }: NavbarProps) {
     <header className={`${headerClasses} ${className}`}>
       <Container className="relative z-50 flex items-center justify-between py-3.5 sm:py-4 lg:py-5">
         {/* Brand Logo */}
-
         <Link href="/" aria-label="Aurus home" className="flex items-center shrink-0">
           <Image
-            src="/images/logo.png"
+            src={assets.logo}
             alt="Aurus Luxury Student Residences"
             width={155}
             height={42}
             priority
-            className={logoClasses}
+            className="w-[120px] sm:w-[135px] lg:w-[155px] h-auto object-contain"
           />
         </Link>
 
@@ -157,18 +159,14 @@ export function Navbar({ variant = "auto", className = "" }: NavbarProps) {
           }`}
       >
         <div className="mt-8 mb-7 flex items-center justify-between">
-          <Link
-            href="/"
-            aria-label="Aurus home"
-            onClick={() => setOpen(false)}
-          >
+          <Link href="/" aria-label="Aurus home" className="flex items-center shrink-0">
             <Image
-              src="/images/logo.png"
+              src={assets.logo}
               alt="Aurus Luxury Student Residences"
               width={155}
               height={42}
               priority
-              className="h-auto w-[105px] object-contain grayscale invert"
+              className="w-[120px] sm:w-[135px] lg:w-[155px] h-auto object-contain grayscale invert"
             />
           </Link>
 

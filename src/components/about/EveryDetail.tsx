@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { aboutData } from "@/data/about";
+import { aboutEveryDetailData } from "@/data/about/everyDetail";
 import { Container, Eyebrow } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
@@ -11,12 +11,12 @@ export default function EveryDetail() {
     <section className="py-8 sm:py-12 lg:py-16">
       <Container className="space-y-4 sm:space-y-8">
         {/* Eyebrow Header */}
-        <Eyebrow>{aboutData.amenities.eyebrow}</Eyebrow>
+        <Eyebrow>{aboutEveryDetailData.eyebrow}</Eyebrow>
 
         {/* Heading */}
         <Heading
-          title1={aboutData.amenities.titleTop}
-          title2={aboutData.amenities.titleAccent}
+          title1={aboutEveryDetailData.titleTop}
+          title2={aboutEveryDetailData.titleAccent}
           className="uppercase max-w-[24ch] sm:max-w-none"
         />
 
@@ -26,13 +26,13 @@ export default function EveryDetail() {
             {/* Left Column: Description & Feature Image */}
             <div className="flex flex-col lg:pr-10">
               <p className="font-sans font-regular text-[14px] sm:text-[16px] lg:text-[17px] 3xl:text-[19px] leading-[1.45] tracking-[-0.025em] text-muted">
-                {aboutData.amenities.body}
+                {aboutEveryDetailData.body}
               </p>
 
               <div className="mt-8 sm:mt-10 lg:mt-4 relative aspect-[4/3] sm:aspect-[4/2] w-full overflow-hidden rounded-[16px] sm:rounded-[8px] lg:rounded-[10px] bg-ink/5 border border-ink/10">
                 <Image
-                  src={aboutData.amenities.image}
-                  alt={aboutData.amenities.alt}
+                  src={aboutEveryDetailData.image}
+                  alt={aboutEveryDetailData.alt}
                   fill
                   sizes="(min-width: 1024px) 45vw, 100vw"
                   className="object-cover transition-transform duration-700 ease-out hover:scale-105"
@@ -43,7 +43,7 @@ export default function EveryDetail() {
             {/* Right Column: 12 Amenities Table */}
             <div className="border-t border-ink/15">
               <div className="grid grid-cols-1 sm:grid-cols-2">
-                {aboutData.amenities.items.map((item, index) => {
+                {aboutEveryDetailData.items.map((item, index) => {
                   const isEvenCol = index % 2 === 1;
                   return (
                     <div
