@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Manrope, Instrument_Serif, Space_Mono } from "next/font/google";
 import "./globals.css";
 import ClientLayoutWrapper from "@/components/layout/ClientLayoutWrapper";
-import MaintenancePage from "@/components/layout/MaintenancePage";
 
 const manrope = Manrope({
   variable: "--font-manrope",

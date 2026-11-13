@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 
 export interface ScheduleVisitModalProps {
   isOpen: boolean;
@@ -45,6 +46,11 @@ export function ScheduleVisitModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (residenceLocation) {
@@ -75,11 +81,17 @@ export function ScheduleVisitModal({
       if (e.key === "Escape") handleClose();
     };
 
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [isOpen, handleClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const handleScheduleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,26 +143,26 @@ export function ScheduleVisitModal({
   };
 
   const inputClass =
-    "w-full h-[36px] sm:h-[48px] rounded-[10px] border border-[#D4D4D4] bg-white px-3.5 text-[14px] text-black outline-none transition-colors focus:border-black disabled:opacity-60";
+    "w-full h-[42px] sm:h-[48px] rounded-[10px] border border-[#D4D4D4] bg-white px-3.5 text-[14px] text-black outline-none transition-colors focus:border-black disabled:opacity-60";
 
   const labelClass =
-    "mb-1 sm:mb-2 block font-mono text-[12px] uppercase tracking-[0.5px] text-[#77736B]";
+    "mb-1 sm:mb-1.5 block font-mono text-[11px] sm:text-[12px] uppercase tracking-[0.5px] text-[#77736B]";
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6"
+      className="fixed inset-0 z-[9999] overflow-y-auto bg-black/60 p-3 sm:p-6 flex min-h-full items-center justify-center no-scrollbar"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget && !isSubmitting) {
           handleClose();
         }
       }}
     >
-      <div className="relative w-full max-w-[696px] rounded-[30px] bg-white px-6 py-8 sm:px-8 sm:py-8 lg:px-[32px] lg:py-[32px]">
+      <div className="relative w-full max-w-[696px] rounded-[22px] sm:rounded-[30px] bg-white px-5 py-6 sm:px-8 sm:py-8 lg:px-[32px] lg:py-[32px] my-auto max-h-[92vh] sm:max-h-[88vh] overflow-y-auto overscroll-contain shadow-2xl no-scrollbar">
         <button
           type="button"
           onClick={handleClose}
           disabled={isSubmitting}
-          className="absolute right-6 top-6 text-black/50 transition-colors hover:text-black disabled:opacity-50 cursor-pointer"
+          className="absolute right-3.5 top-3.5 sm:right-6 sm:top-6 text-black/50 transition-colors hover:text-black disabled:opacity-50 cursor-pointer p-2 rounded-full hover:bg-neutral-100 flex items-center justify-center"
           aria-label="Close modal"
         >
           <svg
@@ -168,32 +180,32 @@ export function ScheduleVisitModal({
         </button>
 
         {isSubmitted ? (
-          <div className="flex min-h-[420px] flex-col items-center justify-center text-center">
+          <div className="flex min-h-[280px] sm:min-h-[380px] flex-col items-center justify-center text-center py-6">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-black text-white">
               <CheckCircleIcon className="h-6 w-6 text-white" />
             </div>
 
-            <h3 className="text-2xl font-light text-black">
+            <h3 className="text-xl sm:text-2xl font-light text-black uppercase">
               Visit Request Received
             </h3>
 
-            <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#77736B]">
+            <p className="mt-2 max-w-sm text-xs sm:text-sm leading-relaxed text-[#77736B]">
               Our residence manager will reach out within 2 hours to confirm
               your visit.
             </p>
           </div>
         ) : (
           <>
-            <div className="mb-4 sm:mb-8">
-              <span className="mb-2 block text-[14px] font-light uppercase text-black">
+            <div className="mb-4 sm:mb-6 pr-6 sm:pr-0">
+              <span className="mb-1.5 sm:mb-2 block text-[12px] sm:text-[14px] font-light uppercase text-black">
                 See it in person
               </span>
 
-              <h3 className="text-[32px] font-light uppercase leading-[1.15] tracking-[-1px] text-black sm:text-[38px]">
+              <h3 className="text-[24px] sm:text-[32px] lg:text-[38px] font-light uppercase leading-[1.15] tracking-[-0.5px] sm:tracking-[-1px] text-black">
                 Schedule a Visit
               </h3>
 
-              <p className="mt-2 max-w-[580px] text-[14px] leading-[1.3] text-[#88847C] sm:text-[16px]">
+              <p className="mt-1.5 sm:mt-2 max-w-[580px] text-[13px] sm:text-[15px] lg:text-[16px] leading-[1.35] text-[#88847C]">
                 {residenceTitle ? `Experience life at ${residenceTitle}. ` : ""}
                 Guided tours run daily, 10am–7pm, and include a meal tasting.
                 Can&apos;t travel? Choose a video walk-through.
@@ -201,13 +213,13 @@ export function ScheduleVisitModal({
             </div>
 
             {errorMessage && (
-              <div className="mb-5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+              <div className="mb-4 sm:mb-5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs sm:text-sm text-rose-700">
                 {errorMessage}
               </div>
             )}
 
             <form onSubmit={handleScheduleSubmit}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                 <div>
                   <label htmlFor="fullName" className={labelClass}>
                     Full Name <span className="text-black">*</span>
@@ -306,22 +318,22 @@ export function ScheduleVisitModal({
                 </div>
               </div>
 
-              <label className="mt-6 sm:mt-10 flex cursor-pointer items-start gap-2 text-[12px] leading-[1.5] text-black">
+              <label className="mt-4 sm:mt-6 flex cursor-pointer items-start gap-2.5 text-[11.5px] sm:text-[12.5px] leading-[1.4] text-black">
                 <input
                   type="checkbox"
                   checked={agreed}
                   onChange={(e) => setAgreed(e.target.checked)}
                   disabled={isSubmitting}
-                  className="mb-[1px] h-[18px] w-[18px] shrink-0 accent-black"
+                  className="mb-[1px] h-[18px] w-[18px] shrink-0 accent-black mt-0.5 rounded"
                 />
 
-                <span className="uppercase text-[13px]">
+                <span className="uppercase text-[12px] sm:text-[13px]">
                   I agree to the{" "}
                   <a
                     href="/terms"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="underline underline-offset-2"
+                    className="underline underline-offset-2 hover:text-neutral-600"
                   >
                     terms
                   </a>{" "}
@@ -330,7 +342,7 @@ export function ScheduleVisitModal({
                     href="/policy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="underline underline-offset-2"
+                    className="underline underline-offset-2 hover:text-neutral-600"
                   >
                     privacy policy
                   </a>
@@ -341,7 +353,7 @@ export function ScheduleVisitModal({
               <button
                 type="submit"
                 disabled={isSubmitting || !agreed}
-                className="mt-4 flex h-[48px] w-full items-center justify-center rounded-full bg-black font-mono text-[12px] uppercase tracking-[2px] text-white transition-colors cursor-pointer hover:bg-black/80 disabled:cursor-not-allowed disabled:opacity-50"
+                className="mt-4 sm:mt-5 flex h-[46px] sm:h-[48px] w-full items-center justify-center rounded-full bg-black font-mono text-[11px] sm:text-[12px] uppercase tracking-[1.5px] sm:tracking-[2px] text-white transition-colors cursor-pointer hover:bg-black/80 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSubmitting ? "Submitting..." : "Request Visit"}
               </button>
@@ -349,7 +361,8 @@ export function ScheduleVisitModal({
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

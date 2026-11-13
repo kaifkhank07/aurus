@@ -6,9 +6,11 @@ import { nav } from "@/data/layout";
 import { ArrowRight } from "@/components/ui/Primitives";
 import Image from "next/image";
 import { useAssets } from "@/data";
+import { EnquiryModal } from "@/components/shared/EnquiryModal";
 
 export function Nav() {
   const [open, setOpen] = useState(false);
+  const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
   const assets = useAssets();
 
   return (
@@ -36,13 +38,14 @@ export function Nav() {
           ))}
         </nav>
 
-        <Link
-          href={nav.cta.href}
-          className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] hidden items-center gap-2 rounded-full border border-white/55 px-7 py-3.5 transition-colors hover:bg-white hover:text-ink lg:inline-flex"
+        <button
+          type="button"
+          onClick={() => setIsEnquiryOpen(true)}
+          className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] hidden items-center gap-2 rounded-full border border-white/55 px-7 py-3.5 transition-colors hover:bg-white hover:text-ink lg:inline-flex cursor-pointer"
         >
           {nav.cta.label}
           <ArrowRight />
-        </Link>
+        </button>
 
         <button
           type="button"
@@ -71,17 +74,26 @@ export function Nav() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              href={nav.cta.href}
-              onClick={() => setOpen(false)}
-              className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] mt-2 inline-flex w-fit items-center gap-2 rounded-full border border-white/55 px-6 py-3"
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                setIsEnquiryOpen(true);
+              }}
+              className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] mt-2 inline-flex w-fit items-center gap-2 rounded-full border border-white/55 px-6 py-3 cursor-pointer"
             >
               {nav.cta.label}
               <ArrowRight />
-            </Link>
+            </button>
           </nav>
         </div>
       )}
+
+      {/* Enquiry Modal */}
+      <EnquiryModal
+        isOpen={isEnquiryOpen}
+        onClose={() => setIsEnquiryOpen(false)}
+      />
     </header>
   );
 }

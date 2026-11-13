@@ -7,6 +7,7 @@ import { nav } from "@/data/layout";
 import { ArrowRight } from "@/components/ui/Primitives";
 import Image from "next/image";
 import { useAssets } from "@/data";
+import { EnquiryModal } from "@/components/shared/EnquiryModal";
 
 export interface NavbarProps {
     variant?: "auto" | "light" | "dark";
@@ -15,6 +16,7 @@ export interface NavbarProps {
 
 export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps) {
     const [open, setOpen] = useState(false);
+    const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
     const pathname = usePathname();
 
     const assets = useAssets();
@@ -88,24 +90,26 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
 
                 {/* Desktop CTA (Pill Button with Arrow - Right) */}
                 <div className="hidden lg:flex items-center justify-end shrink-0">
-                    <Link
-                        href={nav.cta.href}
-                        className={`font-mono uppercase text-[11px] lg:text-[12px] leading-none tracking-[2px] inline-flex items-center gap-2 rounded-full border px-5 py-2.5 lg:px-6 lg:py-2.5 transition-colors duration-200 ${desktopCtaClasses}`}
+                    <button
+                        type="button"
+                        onClick={() => setIsEnquiryOpen(true)}
+                        className={`font-mono uppercase text-[11px] lg:text-[12px] leading-none tracking-[2px] inline-flex items-center gap-2 rounded-full border px-5 py-2.5 lg:px-6 lg:py-2.5 transition-colors duration-200 cursor-pointer ${desktopCtaClasses}`}
                     >
                         <span className="uppercase">{nav.cta.label}</span>
                         <ArrowRight className="h-3 w-3" />
-                    </Link>
+                    </button>
                 </div>
 
                 {/* Mobile & Tablet Controls: ENQUIRE Button + 2-Line Hamburger */}
                 <div className="flex items-center gap-2.5 sm:gap-3.5 lg:hidden">
-                    <Link
-                        href={nav.cta.href}
-                        className={`font-mono uppercase text-[11px] sm:text-[12px] leading-none tracking-[1.5px] inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 sm:px-4 sm:py-2 transition-colors duration-200 active:scale-95 ${mobileCtaClasses}`}
+                    <button
+                        type="button"
+                        onClick={() => setIsEnquiryOpen(true)}
+                        className={`font-mono uppercase text-[11px] sm:text-[12px] leading-none tracking-[1.5px] inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 sm:px-4 sm:py-2 transition-colors duration-200 active:scale-95 cursor-pointer ${mobileCtaClasses}`}
                     >
                         <span>{nav.cta.label}</span>
                         <ArrowRight className="h-3 w-3" />
-                    </Link>
+                    </button>
 
                     {/* 2-line Hamburger Menu Toggle Button */}
                     <button
@@ -185,15 +189,18 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
                 </nav>
 
                 <div className="mt-auto flex flex-col items-end pb-8">
-                    <Link
-                        href={nav.cta.href}
+                    <button
+                        type="button"
                         tabIndex={open ? 0 : -1}
-                        onClick={() => setOpen(false)}
-                        className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 font-mono text-[10px] uppercase tracking-[1px] text-black transition-colors hover:bg-neutral-200"
+                        onClick={() => {
+                            setOpen(false);
+                            setIsEnquiryOpen(true);
+                        }}
+                        className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 font-mono text-[10px] uppercase tracking-[1px] text-black transition-colors hover:bg-neutral-200 cursor-pointer"
                     >
                         <span>{nav.cta.label}</span>
                         <ArrowRight className="h-3 w-3" />
-                    </Link>
+                    </button>
 
                     <a
                         href="tel:+9118005720709"
@@ -209,6 +216,12 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
                     </a>
                 </div>
             </aside>
+
+            {/* Enquiry Modal */}
+            <EnquiryModal
+                isOpen={isEnquiryOpen}
+                onClose={() => setIsEnquiryOpen(false)}
+            />
         </header>
     );
 }
