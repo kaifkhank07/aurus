@@ -7,6 +7,7 @@ import { ResidenceCard } from "@/components/residences/ResidenceCard";
 import { PublicCity } from "@/types/city.types";
 import { SafeHostel } from "@/types/hostel.types";
 import { useMasterStore } from "@/store/useMasterStore";
+import { useCitySeoStore } from "@/store/useCitySeoStore";
 
 function ChevronDown({ className = "" }: { className?: string }) {
   return (
@@ -24,8 +25,12 @@ function ChevronDown({ className = "" }: { className?: string }) {
 }
 
 interface CityResidenceContentProps {
-  city: PublicCity;
+  city?: PublicCity;
+  citySlug?: string;
   residences?: SafeHostel[];
+  gender?: "girls" | "boys" | "co-ed" | string;
+  localitySlug?: string;
+  instituteSlug?: string;
 }
 
 const genderWingOptions = [
@@ -37,21 +42,68 @@ const genderWingOptions = [
 
 export function CityResidenceContent({
   city,
+  citySlug,
   residences = [],
+  gender,
+  localitySlug,
+  instituteSlug,
 }: CityResidenceContentProps) {
+  const initialGender = useMemo(() => {
+    if (gender?.toLowerCase() === "girls") return "Girls Only";
+    if (gender?.toLowerCase() === "boys") return "Boys Only";
+    if (gender?.toLowerCase() === "co-ed") return "Co-ed Living";
+    return "All Wings (Girls / Boys / Co-ed)";
+  }, [gender]);
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedGender, setSelectedGender] = useState(
-    "All Wings (Girls / Boys / Co-ed)"
-  );
+  const [selectedGender, setSelectedGender] = useState(initialGender);
   const [selectedOccupancy, setSelectedOccupancy] = useState("All Occupancies");
 
+  // Keep selectedGender in sync if prop changes
+  useEffect(() => {
+    setSelectedGender(initialGender);
+  }, [initialGender]);
+
+  // Hide the filter bar on gender, locality, or institute specific pages
+  const hideFilterBar = Boolean(
+    (gender && (gender.toLowerCase() === "girls" || gender.toLowerCase() === "boys")) ||
+    localitySlug ||
+    instituteSlug
+  );
+
   const { publicOccupancies, fetchPublicOccupancies } = useMasterStore();
+  const {
+    currentCity,
+    cityHostels,
+    isLoadingCityHostels,
+    fetchCityHostels,
+    fetchCityDetails,
+  } = useCitySeoStore();
+
+  const targetSlug = (citySlug || city?.slug || "").toLowerCase().trim();
 
   useEffect(() => {
     if (publicOccupancies.length === 0) {
       void fetchPublicOccupancies();
     }
   }, [fetchPublicOccupancies, publicOccupancies.length]);
+
+  // Fetch hostels & details via useCitySeoStore for this specific city
+  useEffect(() => {
+    if (targetSlug) {
+      void fetchCityDetails(targetSlug);
+      void fetchCityHostels(targetSlug);
+    }
+  }, [targetSlug, fetchCityHostels, fetchCityDetails]);
+
+  // Source hostels from useCitySeoStore, falling back to server-rendered residences
+  const hostelSource = cityHostels.length > 0 ? cityHostels : residences;
+
+  const activeCity = city || (currentCity?.slug?.toLowerCase() === targetSlug ? currentCity : null);
+  const fallbackName = targetSlug
+    ? targetSlug.charAt(0).toUpperCase() + targetSlug.slice(1).replace(/-/g, " ")
+    : "City";
+  const cityName = activeCity?.name || activeCity?.city || fallbackName;
 
   const occupancyOptions = useMemo(() => {
     const dynamicNames = publicOccupancies
@@ -62,13 +114,13 @@ export function CityResidenceContent({
 
   const resetFilters = () => {
     setSearchQuery("");
-    setSelectedGender("All Wings (Girls / Boys / Co-ed)");
+    setSelectedGender(initialGender);
     setSelectedOccupancy("All Occupancies");
   };
 
   const filteredItems = useMemo(() => {
-    return residences.filter((hostel) => {
-      // 1. Text Search Filter
+    return hostelSource.filter((hostel) => {
+      // 1. Text Search Filter (name/title, subtitle, address, locality, and institute/college)
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim();
         const title = (hostel.title || "").toLowerCase();
@@ -82,11 +134,34 @@ export function CityResidenceContent({
             ? hostel.location.locality.toLowerCase()
             : "";
 
+        const instituteNames = Array.isArray(hostel.institute)
+          ? hostel.institute
+              .map((inst) => {
+                if (typeof inst === "object" && inst !== null) {
+                  return (inst.name || "").toLowerCase();
+                }
+                if (typeof inst === "string") {
+                  return inst.toLowerCase();
+                }
+                return "";
+              })
+              .filter(Boolean)
+              .join(" ")
+          : "";
+
         const keywords = Array.isArray(hostel.metadata?.keywords)
           ? hostel.metadata.keywords.map((k) => (k || "").toLowerCase())
           : [];
 
-        const combinedText = [title, subtitle, address, localityName, ...keywords].join(" ");
+        const combinedText = [
+          title,
+          subtitle,
+          address,
+          localityName,
+          instituteNames,
+          ...keywords,
+        ].join(" ");
+
         if (!combinedText.includes(query)) {
           return false;
         }
@@ -126,103 +201,142 @@ export function CityResidenceContent({
         if (!matchesOcc) return false;
       }
 
+      // 4. Locality Filter (strictly when localitySlug is provided; does not treat locality as an institute)
+      if (localitySlug) {
+        const normLocSlug = localitySlug.toLowerCase().trim();
+        const rawLoc = hostel.location?.locality;
+        let matchesLoc = false;
+        if (typeof rawLoc === "object" && rawLoc !== null) {
+          matchesLoc =
+            (rawLoc.slug || "").toLowerCase().trim() === normLocSlug ||
+            String(rawLoc.id || (rawLoc as any)._id || "").toLowerCase() === normLocSlug;
+        } else if (typeof rawLoc === "string") {
+          matchesLoc = rawLoc.toLowerCase().trim() === normLocSlug;
+        }
+        if (!matchesLoc) return false;
+      }
+
+      // 5. Institute Filter (strictly when instituteSlug is provided; does not treat institute as a locality)
+      if (instituteSlug) {
+        const normInstSlug = instituteSlug.toLowerCase().trim();
+        const rawInstitutes = Array.isArray(hostel.institute) ? hostel.institute : [];
+        const matchesInst = rawInstitutes.some((inst) => {
+          if (typeof inst === "object" && inst !== null) {
+            return (
+              (inst.slug || "").toLowerCase().trim() === normInstSlug ||
+              String(inst.id || (inst as any)._id || "").toLowerCase() === normInstSlug
+            );
+          }
+          if (typeof inst === "string") {
+            return inst.toLowerCase().trim() === normInstSlug;
+          }
+          return false;
+        });
+        if (!matchesInst) return false;
+      }
+
       return true;
     });
-  }, [residences, searchQuery, selectedGender, selectedOccupancy]);
-
-  const cityName = city.name || city.city || "City";
+  }, [hostelSource, searchQuery, selectedGender, selectedOccupancy, localitySlug, instituteSlug]);
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">
       <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
-        {/* Filter Bar */}
-        <ViewReveal duration={800}>
-          <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.8fr_1.3fr_1.3fr_auto] gap-3.5 sm:gap-4 items-end p-4 sm:p-5 lg:p-6 rounded-[20px] border border-ink/10 bg-[#FAF8F5]">
-            {/* Field 1: Search */}
-            <div className="w-full">
-              <label
-                htmlFor="search-city-residences"
-                className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[2px] text-[#88847c] font-medium block mb-2"
-              >
-                SEARCH IN {cityName.toUpperCase()}
-              </label>
-              <input
-                id="search-city-residences"
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={`Search by locality or chapter in ${cityName}...`}
-                className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 text-[13px] text-ink placeholder:text-[#88847c]/70 placeholder:text-[11.5px] sm:placeholder:text-[12.5px] outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
-              />
-            </div>
-
-            {/* Field 2: Gender Wing */}
-            <div className="w-full">
-              <label
-                htmlFor="filter-city-gender"
-                className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[2px] text-[#88847c] font-medium block mb-2"
-              >
-                GENDER WING
-              </label>
-              <div className="relative w-full">
-                <select
-                  id="filter-city-gender"
-                  value={selectedGender}
-                  onChange={(e) => setSelectedGender(e.target.value)}
-                  className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
+        {/* Filter Bar - only rendered on default city-level pages */}
+        {!hideFilterBar && (
+          <ViewReveal duration={800}>
+            <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.8fr_1.3fr_1.3fr_auto] gap-3.5 sm:gap-4 items-end p-4 sm:p-5 lg:p-6 rounded-[20px] border border-ink/10 bg-[#FAF8F5]">
+              {/* Field 1: Search */}
+              <div className="w-full">
+                <label
+                  htmlFor="search-city-residences"
+                  className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[2px] text-[#88847c] font-medium block mb-2"
                 >
-                  {genderWingOptions.map((wing) => (
-                    <option key={wing} value={wing}>
-                      {wing}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-ink/60 h-3.5 w-3.5" />
+                  SEARCH IN {cityName.toUpperCase()}
+                </label>
+                <input
+                  id="search-city-residences"
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={`Search by residence, locality, or college in ${cityName}...`}
+                  className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 text-[13px] text-ink placeholder:text-[#88847c]/70 placeholder:text-[11.5px] sm:placeholder:text-[12.5px] outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
+                />
+              </div>
+
+              {/* Field 2: Gender Wing */}
+              <div className="w-full">
+                <label
+                  htmlFor="filter-city-gender"
+                  className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[2px] text-[#88847c] font-medium block mb-2"
+                >
+                  GENDER WING
+                </label>
+                <div className="relative w-full">
+                  <select
+                    id="filter-city-gender"
+                    value={selectedGender}
+                    onChange={(e) => setSelectedGender(e.target.value)}
+                    className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
+                  >
+                    {genderWingOptions.map((wing) => (
+                      <option key={wing} value={wing}>
+                        {wing}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-ink/60 h-3.5 w-3.5" />
+                </div>
+              </div>
+
+              {/* Field 3: Room Occupancy */}
+              <div className="w-full">
+                <label
+                  htmlFor="filter-city-occupancy"
+                  className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[2px] text-[#88847c] font-medium block mb-2"
+                >
+                  OCCUPANCY OPTION
+                </label>
+                <div className="relative w-full">
+                  <select
+                    id="filter-city-occupancy"
+                    value={selectedOccupancy}
+                    onChange={(e) => setSelectedOccupancy(e.target.value)}
+                    className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
+                  >
+                    {occupancyOptions.map((occ) => (
+                      <option key={occ} value={occ}>
+                        {occ}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-ink/60 h-3.5 w-3.5" />
+                </div>
+              </div>
+
+              {/* Action: Reset Filters */}
+              <div className="mt-1 md:mt-0 w-full lg:w-auto">
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="flex h-[46px] w-full lg:w-auto items-center justify-center rounded-full border border-ink/30 px-6 font-mono text-[10px] sm:text-[11px] uppercase tracking-[2px] text-ink transition-colors duration-200 hover:bg-ink hover:text-white cursor-pointer whitespace-nowrap"
+                >
+                  RESET FILTERS
+                </button>
               </div>
             </div>
-
-            {/* Field 3: Room Occupancy */}
-            <div className="w-full">
-              <label
-                htmlFor="filter-city-occupancy"
-                className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[2px] text-[#88847c] font-medium block mb-2"
-              >
-                OCCUPANCY OPTION
-              </label>
-              <div className="relative w-full">
-                <select
-                  id="filter-city-occupancy"
-                  value={selectedOccupancy}
-                  onChange={(e) => setSelectedOccupancy(e.target.value)}
-                  className="w-full h-[46px] rounded-xl border border-ink/10 bg-[#F5F3EE] px-4 pr-9 text-[13px] text-ink appearance-none cursor-pointer outline-none transition-all duration-200 focus:border-ink/50 focus:bg-[#F5F3EE]"
-                >
-                  {occupancyOptions.map((occ) => (
-                    <option key={occ} value={occ}>
-                      {occ}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-ink/60 h-3.5 w-3.5" />
-              </div>
-            </div>
-
-            {/* Action: Reset Filters */}
-            <div className="mt-1 md:mt-0 w-full lg:w-auto">
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="flex h-[46px] w-full lg:w-auto items-center justify-center rounded-full border border-ink/30 px-6 font-mono text-[10px] sm:text-[11px] uppercase tracking-[2px] text-ink transition-colors duration-200 hover:bg-ink hover:text-white cursor-pointer whitespace-nowrap"
-              >
-                RESET FILTERS
-              </button>
-            </div>
-          </div>
-        </ViewReveal>
+          </ViewReveal>
+        )}
 
         {/* Counter Summary */}
         <p className="font-mono uppercase text-[11px] sm:text-[12px] tracking-[2px] text-[#88847c] mt-6 mb-4 lg:mt-0 lg:mb-6">
           SHOWING {String(filteredItems.length).padStart(2, "0")}{" "}
           {filteredItems.length === 1 ? "RESIDENCE" : "RESIDENCES"} IN {cityName.toUpperCase()}
+          {isLoadingCityHostels && (
+            <span className="ml-2 lowercase text-[10px] text-muted tracking-normal">
+              (refreshing...)
+            </span>
+          )}
         </p>
 
         {/* Cards Grid */}
@@ -255,4 +369,3 @@ export function CityResidenceContent({
 }
 
 export default CityResidenceContent;
-

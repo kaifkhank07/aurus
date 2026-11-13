@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         .select("slug")
         .lean();
       if (city) {
-        redirect(`/${city.slug}`);
+        redirect(`/hostels/${city.slug}`);
       }
 
       return {
@@ -117,7 +117,7 @@ export default async function HostelDetailsPage({ params }: PageProps) {
     .select("slug")
     .lean();
   if (city) {
-    redirect(`/${city.slug}`);
+    redirect(`/hostels/${city.slug}`);
   }
 
   return (

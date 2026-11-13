@@ -1,17 +1,35 @@
 "use client";
 
+import { useEffect } from "react";
 import { Container, Eyebrow } from "@/components/ui/Primitives";
 import { Heading } from "@/components/utils/Heading";
 import { ViewReveal } from "@/components/animation";
 import { PublicCity } from "@/types/city.types";
+import { useCitySeoStore } from "@/store/useCitySeoStore";
 
 interface CityHeroProps {
-  city: PublicCity;
+  city?: PublicCity;
+  citySlug?: string;
 }
 
-export function CityHero({ city }: CityHeroProps) {
-  const cityName = city.name || city.city || "City";
-  const chapterCount = city.count ?? city.activeHostelsCount ?? 0;
+export function CityHero({ city, citySlug }: CityHeroProps) {
+  const { currentCity, fetchCityDetails } = useCitySeoStore();
+
+  const targetSlug = (citySlug || city?.slug || "").toLowerCase().trim();
+
+  useEffect(() => {
+    if (targetSlug) {
+      void fetchCityDetails(targetSlug);
+    }
+  }, [targetSlug, fetchCityDetails]);
+
+  const activeCity = city || (currentCity?.slug?.toLowerCase() === targetSlug ? currentCity : null);
+
+  const fallbackName = targetSlug
+    ? targetSlug.charAt(0).toUpperCase() + targetSlug.slice(1).replace(/-/g, " ")
+    : "City";
+  const cityName = activeCity?.name || activeCity?.city || fallbackName;
+  const chapterCount = activeCity?.count ?? activeCity?.activeHostelsCount ?? 0;
 
   return (
     <section className="pt-8 sm:pt-12 lg:pt-16 pb-4 sm:pb-6">
@@ -20,9 +38,9 @@ export function CityHero({ city }: CityHeroProps) {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Eyebrow>AURUS CHAPTERS · {cityName.toUpperCase()}</Eyebrow>
             <div className="flex items-center gap-2">
-              {(city.state || city.country) && (
+              {activeCity && (activeCity.state || activeCity.country) && (
                 <span className="font-mono uppercase text-[9px] sm:text-[11px] tracking-[1.5px] text-ink/70 px-3 py-1 rounded-full border border-ink/15 bg-[#FAF8F5]">
-                  {[city.state, city.country].filter(Boolean).join(", ")}
+                  {[activeCity.state, activeCity.country].filter(Boolean).join(", ")}
                 </span>
               )}
               <span className="font-mono uppercase text-[9px] sm:text-[11px] tracking-[1.5px] text-ink font-medium px-3 py-1 rounded-full bg-[#C5A059]/20 border border-[#C5A059]/40">

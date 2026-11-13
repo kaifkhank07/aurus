@@ -1,13 +1,11 @@
 import { Metadata } from "next";
-import { notFound } from "next/navigation";
 import connectToDatabase from "@/lib/mongodb";
 import { City } from "@/models/city.model";
-import { Hostel } from "@/models/hostel.model";
 import CityHero from "@/components/city/CityHero";
 import CityResidenceContent from "@/components/city/CityResidenceContent";
 import CityIntroduction from "@/components/city/CityIntroduction";
-import { PublicCity } from "@/types/city.types";
-import { SafeHostel } from "@/types/hostel.types";
+import CityFaq from "@/components/city/CityFaq";
+import CityFooterLinks from "@/components/city/CityFooterLinks";
 
 export const dynamicParams = true;
 
@@ -60,12 +58,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       Array.isArray(cityDoc.metadata?.keywords) && cityDoc.metadata.keywords.length > 0
         ? cityDoc.metadata.keywords
         : [
-            `residences in ${cityName}`,
-            `student hostel ${cityName}`,
-            `student accommodation ${cityName}`,
-            `luxury hostel ${cityName}`,
-            "Aurus",
-          ];
+          `residences in ${cityName}`,
+          `student hostel ${cityName}`,
+          `student accommodation ${cityName}`,
+          `luxury hostel ${cityName}`,
+          "Aurus",
+        ];
 
     const imageUrl = cityDoc.image?.url;
 
@@ -74,12 +72,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       keywords,
       alternates: {
-        canonical: `/${cityDoc.slug}`,
+        canonical: `/hostels/${cityDoc.slug}`,
       },
       openGraph: {
         title,
         description,
-        url: `/${cityDoc.slug}`,
+        url: `/hostels/${cityDoc.slug}`,
         type: "website",
         images: imageUrl ? [{ url: imageUrl }] : undefined,
       },
@@ -100,85 +98,24 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function DynamicCityPage({ params }: PageProps) {
   const { citySlug } = await params;
-  const normalizedSlug = (citySlug || "").toLowerCase().trim();
-
-  await connectToDatabase();
-
-  const cityDoc = await City.findOne({
-    slug: normalizedSlug,
-    isActive: true,
-  }).lean();
-
-  if (!cityDoc) {
-    notFound();
-  }
-
-  // Fetch only active, published residences belonging to this city
-  const rawResidences = await Hostel.find({
-    "location.city": cityDoc._id,
-    isActive: true,
-  })
-    .populate("location.city", "city state country slug")
-    .populate("location.locality", "name slug")
-    .populate("amenities", "name image")
-    .populate("occupancy", "name image")
-    .populate("room", "name image")
-    .populate("services", "name image")
-    .populate("institute", "name slug")
-    .populate("rent.frequency", "name")
-    .sort({ createdAt: -1 })
-    .lean();
-
-  const city: PublicCity = {
-    id: cityDoc._id.toString(),
-    _id: cityDoc._id.toString(),
-    country: cityDoc.country,
-    state: cityDoc.state,
-    city: cityDoc.city,
-    name: cityDoc.city,
-    slug: cityDoc.slug,
-    image: cityDoc.image,
-    sortOrder: cityDoc.sortOrder ?? 0,
-    isActive: cityDoc.isActive ?? true,
-    activeHostelsCount: rawResidences.length,
-    count: rawResidences.length,
-    metadata: cityDoc.metadata
-      ? {
-          title: cityDoc.metadata.title,
-          description: cityDoc.metadata.description,
-          keywords: cityDoc.metadata.keywords,
-        }
-      : undefined,
-    createdAt: cityDoc.createdAt
-      ? new Date(cityDoc.createdAt).toISOString()
-      : new Date().toISOString(),
-    updatedAt: cityDoc.updatedAt
-      ? new Date(cityDoc.updatedAt).toISOString()
-      : new Date().toISOString(),
-  };
-
-  const safeResidences: SafeHostel[] = rawResidences.map((h: any) => ({
-    ...h,
-    id: h._id?.toString() || h.id || "",
-    _id: h._id?.toString() || h.id || "",
-    createdAt: h.createdAt
-      ? new Date(h.createdAt).toISOString()
-      : new Date().toISOString(),
-    updatedAt: h.updatedAt
-      ? new Date(h.updatedAt).toISOString()
-      : new Date().toISOString(),
-  }));
 
   return (
     <main>
       {/* Dynamic City Hero */}
-      <CityHero city={city} />
+      <CityHero citySlug={citySlug} />
 
       {/* Dynamic Filter Bar & Residences Grid */}
-      <CityResidenceContent city={city} residences={safeResidences} />
+      <CityResidenceContent citySlug={citySlug} />
 
       {/* Dynamic City Introduction */}
-      <CityIntroduction city={city} />
+      <CityIntroduction citySlug={citySlug} />
+
+      {/* Dynamic City FAQ */}
+      <CityFaq citySlug={citySlug} />
+
+      {/* Dynamic City Footer Links */}
+      <CityFooterLinks citySlug={citySlug} />
     </main>
   );
 }
+

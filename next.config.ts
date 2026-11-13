@@ -12,16 +12,16 @@ const nextConfig: NextConfig = {
         destination: "/hostels",
         permanent: true,
       },
-      {
-        source: "/residences/:slug+",
-        destination: "/hostel-details/:slug+",
-        permanent: true,
-      },
-      {
-        source: "/hostels/:slug+",
-        destination: "/hostel-details/:slug+",
-        permanent: true,
-      },
+      // {
+      //   source: "/residences/:slug+",
+      //   destination: "/hostel-details/:slug+",
+      //   permanent: true,
+      // },
+      // {
+      //   source: "/hostels/:slug+",
+      //   destination: "/hostel-details/:slug+",
+      //   permanent: true,
+      // },
       {
         source: "/managed-residences",
         destination: "/managed-hostels",

@@ -1,16 +1,33 @@
 "use client";
 
+import { useEffect } from "react";
 import { Container, Eyebrow } from "@/components/ui/Primitives";
 import { Heading } from "@/components/utils/Heading";
 import { ViewReveal } from "@/components/animation";
 import { PublicCity } from "@/types/city.types";
+import { useCitySeoStore } from "@/store/useCitySeoStore";
 
 interface CityIntroductionProps {
-  city: PublicCity;
+  city?: PublicCity;
+  citySlug?: string;
 }
 
-export function CityIntroduction({ city }: CityIntroductionProps) {
-  const cityName = city.name || city.city || "City";
+export function CityIntroduction({ city, citySlug }: CityIntroductionProps) {
+  const { currentCity, fetchCityDetails } = useCitySeoStore();
+
+  const targetSlug = (citySlug || city?.slug || "").toLowerCase().trim();
+
+  useEffect(() => {
+    if (targetSlug) {
+      void fetchCityDetails(targetSlug);
+    }
+  }, [targetSlug, fetchCityDetails]);
+
+  const activeCity = city || (currentCity?.slug?.toLowerCase() === targetSlug ? currentCity : null);
+  const fallbackName = targetSlug
+    ? targetSlug.charAt(0).toUpperCase() + targetSlug.slice(1).replace(/-/g, " ")
+    : "City";
+  const cityName = activeCity?.name || activeCity?.city || fallbackName;
 
   const highlights = [
     {
@@ -36,7 +53,7 @@ export function CityIntroduction({ city }: CityIntroductionProps) {
   ];
 
   return (
-    <section className="py-8 sm:py-12 lg:py-14 border-t border-b border-ink/10 bg-[#FAF8F5]/50">
+    <section className="py-8 sm:py-12 lg:py-14 border-t border-b border-ink/10">
       <Container className="space-y-6 sm:space-y-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-start">
           {/* Left Column */}

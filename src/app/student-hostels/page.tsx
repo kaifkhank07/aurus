@@ -6,9 +6,10 @@ import { Residences } from "@/components/student-residences/Residences";
 import { Locations } from "@/components/shared/Locations";
 import { Amenities } from "@/components/student-residences/Amenities";
 import { RealLife } from "@/components/shared/RealLife";
-import { Culture } from "@/components/shared/Culture";
+// import { Culture } from "@/components/shared/Culture";
 import { Testimonial } from "@/components/shared/Testimonial";
 import { Journey } from "@/components/shared/Journey";
+import AurusPlaylist from "@/components/shared/AurusPlaylist";
 
 export const metadata: Metadata = {
   title: "Purpose-Built Student Hostels | AURUS",
@@ -53,6 +54,7 @@ export default function StudentHostelsPage() {
       <Amenities />
       <RealLife havingTopSpace={true} />
       {/* <Culture /> */}
+      <AurusPlaylist />
       <Testimonial />
       <Journey />
     </main>

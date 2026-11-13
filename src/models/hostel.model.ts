@@ -2,6 +2,16 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 import { IFileOption, ISeoMetadata } from "@/types/general.types";
 import { TENANT_TYPES, TenantType } from "@/types/hostel.types";
 
+// Ensure referenced schemas are registered in Mongoose for population
+import "./city.model";
+import "./locality.model";
+import "./amenity.model";
+import "./occupancy.model";
+import "./room.model";
+import "./service.model";
+import "./institute.model";
+import "./rent-frequency.model";
+
 export interface IHostelRating {
   star: number;
   userCount: number;

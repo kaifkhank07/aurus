@@ -4,6 +4,7 @@ export * from "./home";
 export * from "./about";
 export * from "./student-residences";
 export * from "./residences";
+export * from "./city";
 export * from "./lifeataurus";
 export * from "./developers";
 export * from "./contact";

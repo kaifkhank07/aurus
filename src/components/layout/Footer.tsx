@@ -117,7 +117,7 @@ export function Footer() {
                 {publicCities.map((city, index) => (
                   <li key={index}>
                     <Link
-                      href={`/${city.slug}`}
+                      href={`/hostels/${city.slug}`}
                       className="text-[#77736B] hover:text-white transition-colors duration-200 block"
                     >
                       Residences in {city.city}

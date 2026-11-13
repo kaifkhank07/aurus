@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
+import "./city.model";
 
 export interface ILocalityDocument extends Document {
   name: string;
