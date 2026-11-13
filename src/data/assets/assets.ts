@@ -40,7 +40,7 @@ export const useAssets = () => {
         aurusprevileges5: "/images/static/image-17.png",
         aurusprevileges6: "/images/static/image-18.png",
 
-        // Residences page
+        // Residences Page
         auruslife1: "/images/static/image-21.jpg",
         auruslife2: "/images/static/image-22.png",
         auruslife3: "/images/static/image-23.png",
@@ -49,7 +49,7 @@ export const useAssets = () => {
         auruslife6: "/images/static/image-26.png",
 
 
-        // Life At Aurus
+        // Life At Aurus Page
         lifeHeroImage1: "/images/static/image-27.jpg",
         lifeHeroImage2: "/images/static/image-28.png",
         lifeHeroImage3: "/images/static/image-29.jpg",
@@ -87,9 +87,28 @@ export const useAssets = () => {
         moment8: "/images/static/image-51.jpg",
 
 
-        // Developers page
+        // Developers Page
         developerHero: "/images/static/image-52.png",
         developerIdialAssets: "/images/static/image-53.png",
+
+        operatedCommunity: "/images/static/image-54.png",
+
+
+        // Aurus Years Page
+        aurusevet1: "/images/static/image-55.png",
+        aurusevet2: "/images/static/image-56.png",
+        aurusevet3: "/images/static/image-57.png",
+        aurusevet4: "/images/static/image-58.png",
+        aurusevet5: "/images/static/image-59.png",
+        aurusevet6: "/images/static/image-60.png",
+        aurusevet7: "/images/static/image-61.png",
+        aurusevet8: "/images/static/image-62.png",
+        aurusevet9: "/images/static/image-63.png",
+        aurusevet10: "/images/static/image-64.png",
+        aurusevet11: "/images/static/image-65.png",
+        aurusevet12: "/images/static/image-66.png",
+        aurusevet13: "/images/static/image-67.png",
+
 
         // Other
         projectplaceholder: "/images/static/workplaceholder.jpg",

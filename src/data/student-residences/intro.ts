@@ -14,7 +14,7 @@ export interface introData {
 export const intro: introData = {
   statement:
     "Where living becomes an experience. AURUS brings together considered design, elevated hospitality and a vibrant community to create a student living experience that feels effortless, inspiring and distinctly your own.",
-  cta: { label: "About Page", href: "/about" },
+  cta: { label: "Come live at Aurus", href: "/about" },
   eyebrow: "02 // A Growing Community",
   stats: [
     { value: "5+", label: "Cities" },

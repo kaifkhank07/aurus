@@ -7,7 +7,7 @@ import { useContentStore } from "@/store/useContentStore";
 import { Container } from "../ui/Primitives";
 import { ViewReveal } from "../animation";
 import { Heading } from "../utils/Heading";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Phone, Mail } from "lucide-react";
 
 interface FaqAccordionItemProps {
   id: string;
@@ -270,25 +270,43 @@ export default function FaqSection() {
               )}
 
               {/* Bottom Banner: Still have a question? CTA */}
-              <div className="bg-white rounded-[20px] sm:rounded-[24px] lg:rounded-[28px] p-6 sm:p-8 lg:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+              <div className="bg-white rounded-[20px] sm:rounded-[24px] lg:rounded-[28px] p-6 sm:p-8 lg:p-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
                 <div>
-                  <h3 className="font-sans font-regular text-[12px] sm:text-[16px] lg:text-[20px] text-ink">
+                  <h3 className="font-sans font-regular text-[14px] sm:text-[18px] lg:text-[20px] text-ink">
                     {faqCta.title}
                   </h3>
-                  <p className="font-sans font-light text-[10px] sm:text-[12px] lg:text-[14px] text-muted leading-relaxed mt-1">
+                  <p className="font-sans font-light text-[11px] sm:text-[13px] lg:text-[14px] text-muted leading-relaxed mt-1">
                     {faqCta.subtitle}
                   </p>
                 </div>
 
-                <a
-                  href={faqCta.whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[2px] font-medium inline-flex items-center justify-center gap-2.5 rounded-full bg-ink text-paper px-6 sm:px-8 py-3.5 transition-all duration-300 hover:bg-neutral-800 shrink-0 w-full sm:w-auto text-center"
-                >
-                  <MessageCircle className="w-4 h-4 shrink-0" />
-                  <span>{faqCta.buttonLabel}</span>
-                </a>
+                <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
+                  {/* <a
+                    href={faqCta.phoneUrl}
+                    className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[1.5px] font-medium inline-flex items-center justify-center gap-2 rounded-full border border-ink/20 text-ink bg-transparent px-4 sm:px-5 py-3 transition-all duration-300 hover:border-ink hover:bg-ink hover:text-paper shrink-0 w-full sm:w-auto text-center"
+                  >
+                    <Phone className="w-3.5 h-3.5 shrink-0" />
+                    <span>Call Us</span>
+                  </a> */}
+
+                  <a
+                    href={faqCta.whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[1.5px] font-medium inline-flex items-center justify-center gap-2 rounded-full bg-ink text-paper px-5 sm:px-6 py-3 transition-all duration-300 hover:bg-neutral-800 shrink-0 w-full sm:w-auto text-center"
+                  >
+                    <MessageCircle className="w-4 h-4 shrink-0" />
+                    <span>{faqCta.buttonLabel}</span>
+                  </a>
+
+                  {/* <a
+                    href={faqCta.emailUrl}
+                    className="font-mono uppercase text-[10px] sm:text-[11px] tracking-[1.5px] font-medium inline-flex items-center justify-center gap-2 rounded-full border border-ink/20 text-ink bg-transparent px-4 sm:px-5 py-3 transition-all duration-300 hover:border-ink hover:bg-ink hover:text-paper shrink-0 w-full sm:w-auto text-center"
+                  >
+                    <Mail className="w-3.5 h-3.5 shrink-0" />
+                    <span>Email</span>
+                  </a> */}
+                </div>
               </div>
             </div>
           </div>

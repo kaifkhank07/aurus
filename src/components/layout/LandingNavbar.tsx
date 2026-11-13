@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { nav } from "@/data/layout";
+import { nav, navmenu } from "@/data/layout";
 import { ArrowRight } from "@/components/ui/Primitives";
 import Image from "next/image";
 import { useAssets } from "@/data";
@@ -172,7 +172,7 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
                 </div>
 
                 <nav aria-label="Primary mobile" className="flex flex-col">
-                    {nav.links.map((link, index) => (
+                    {navmenu.links.map((link, index) => (
                         <Link
                             key={link.href}
                             href={link.href}
@@ -183,13 +183,13 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
                             <span className="text-[18px] mb-1.5">
                                 {String(index + 1).padStart(2, "0")}.
                             </span>
-                            <span className="text-[30px]">{link.label}</span>
+                            <span className="text-[28px] whitespace-nowrap">{link.label}</span>
                         </Link>
                     ))}
                 </nav>
 
                 <div className="mt-auto flex flex-col items-end pb-8">
-                    <button
+                    {/* <button
                         type="button"
                         tabIndex={open ? 0 : -1}
                         onClick={() => {
@@ -200,7 +200,7 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
                     >
                         <span>{nav.cta.label}</span>
                         <ArrowRight className="h-3 w-3" />
-                    </button>
+                    </button> */}
 
                     <a
                         href="tel:+9118005720709"

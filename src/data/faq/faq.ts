@@ -1,3 +1,5 @@
+import { componyInfoData } from "../compony/infro";
+
 export interface FaqPageHero {
   titleTop: string;
   titleAccent: string;
@@ -9,7 +11,13 @@ export interface FaqPageCta {
   subtitle: string;
   buttonLabel: string;
   whatsappUrl: string;
+  phoneUrl: string;
+  phoneNumber: string;
+  emailUrl: string;
+  email: string;
 }
+
+const formattedMobile = `+91 ${String(componyInfoData.mobile).replace(/(\d{5})(\d{5})/, "$1 $2")}`;
 
 export const faqHero: FaqPageHero = {
   titleTop: "QUESTIONS,",
@@ -19,9 +27,15 @@ export const faqHero: FaqPageHero = {
 
 export const faqCta: FaqPageCta = {
   title: "Still have a question?",
-  subtitle: "Our team is on chat 10am-7pm every day.",
+  subtitle: "Our team is here 10am-7pm every day.",
   buttonLabel: "ASK ON WHATSAPP",
-  whatsappUrl: "https://wa.me/917208950935?text=Hi%20Aurus%20team,%20I%20have%20a%20question%20about%20residences.",
+  whatsappUrl: `https://wa.me/91${componyInfoData.whatsapp}?text=${encodeURIComponent(
+    componyInfoData.defaultWhatsAppMessage || "Hi Aurus team, I have a question about residences."
+  )}`,
+  phoneUrl: `tel:${componyInfoData.mobile}`,
+  phoneNumber: formattedMobile,
+  emailUrl: `mailto:${componyInfoData.email}`,
+  email: componyInfoData.email,
 };
 
 export const faqData = {

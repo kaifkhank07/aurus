@@ -6,6 +6,7 @@ export * from "./student-residences";
 export * from "./residences";
 export * from "./city";
 export * from "./lifeataurus";
+export * from "./aurusyear";
 export * from "./developers";
 export * from "./contact";
 export * from "./faq";

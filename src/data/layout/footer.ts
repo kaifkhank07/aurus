@@ -16,8 +16,10 @@ export const footer = {
       links: [
         { label: "About Us", href: "/about" },
         { label: "Life @ Aurus", href: "/life-at-aurus" },
-        { label: "Hostels", href: "/hostels" },
-        { label: "Real Stories", href: "/real-stories" },
+        { label: "Residences", href: "/hostels" },
+        { label: "Stories", href: "/real-stories" },
+        { label: "The Aurus Year", href: "/aurusyear" },
+        { label: "Developers", href: "/developers" },
         { label: "FAQ", href: "/faq" },
         { label: "Blogs", href: "/blogs" },
         { label: "Contact Us", href: "/contact" },

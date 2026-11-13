@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { nav } from "@/data/layout";
+import { nav, navmenu } from "@/data/layout";
 import { ArrowRight } from "@/components/ui/Primitives";
 import Image from "next/image";
 import { useAssets } from "@/data";
@@ -64,7 +64,7 @@ export function Nav() {
           className="mx-5 rounded-2xl border border-white/15 bg-ink/90 p-6 backdrop-blur-md lg:hidden"
         >
           <nav className="flex flex-col gap-5" aria-label="Primary mobile">
-            {nav.links.map((link) => (
+            {navmenu.links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -74,7 +74,7 @@ export function Nav() {
                 {link.label}
               </Link>
             ))}
-            <button
+            {/* <button
               type="button"
               onClick={() => {
                 setOpen(false);
@@ -84,7 +84,7 @@ export function Nav() {
             >
               {nav.cta.label}
               <ArrowRight />
-            </button>
+            </button> */}
           </nav>
         </div>
       )}

@@ -25,8 +25,8 @@ export const hero: heroData = {
   body: "Thoughtfully designed residences for independent living, meaningful connections, and everything your next chapter deserves.",
   cities: "Mumbai · Noida · Ahmedabad · Pune · Jalandhar",
   actions: [
-    { label: "Explore Hostels", href: "/hostels" },
-    { label: "Residences Page", href: "/hostels" },
+    { label: "Explore residences", href: "/hostels" },
+    { label: "Discover AURUS", href: "/hostels" },
   ],
   image: assets.studentHeroBg,
 };
