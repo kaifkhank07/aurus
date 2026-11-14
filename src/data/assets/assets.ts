@@ -109,6 +109,9 @@ export const useAssets = () => {
         aurusevet12: "/images/static/image-66.png",
         aurusevet13: "/images/static/image-67.png",
 
+        aurusvoyages1: "/images/static/image-68.png",
+        aurusvoyages2: "/images/static/image-69.png",
+
 
         // Other
         projectplaceholder: "/images/static/workplaceholder.jpg",

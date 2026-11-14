@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { nav, navmenu } from "@/data/layout";
 import { ArrowRight, Container } from "@/components/ui/Primitives";
 import Image from "next/image";
-import { useAssets } from "@/data";
+import { componyInfoData, useAssets } from "@/data";
 import { EnquiryModal } from "@/components/shared/EnquiryModal";
 
 export interface NavbarProps {
@@ -31,9 +31,14 @@ export function Navbar({ variant = "auto", className = "" }: NavbarProps) {
 
   // If explicitly dark variant, allow dark overlay; for auto and light, render the cream navbar matching the design reference
   const headerClasses = isDark
-    ? `absolute inset-x-0 top-0 z-50 transition-colors duration-300 ${open ? "bg-cream text-ink border-b-transparent shadow-none" : "text-white"
-    }`
-    : `relative w-full z-50 transition-colors duration-300 ${headerBg}`;
+    ? `absolute inset-x-0 top-0 transition-colors duration-300 ${
+        open
+          ? "z-[70] bg-cream text-ink border-b-transparent shadow-none"
+          : "z-50 text-white"
+      }`
+    : `relative w-full transition-colors duration-300 ${
+        open ? "z-[70]" : "z-50"
+      } ${headerBg}`;
 
   // Logo: dark logo on cream background (default/light/auto), inverted only if closed dark overlay
   const logoClasses =
@@ -72,7 +77,7 @@ export function Navbar({ variant = "auto", className = "" }: NavbarProps) {
 
         {/* Desktop Navigation Links */}
         <nav
-          className="hidden items-center gap-8 lg:gap-10 xl:gap-12 lg:flex"
+          className="hidden items-center gap-4 lg:gap-6 lg:flex"
           aria-label="Primary"
         >
           {nav.links.map((link) => {
@@ -87,7 +92,7 @@ export function Navbar({ variant = "auto", className = "" }: NavbarProps) {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`font-mono uppercase text-[12px] lg:text-[13px] leading-[1.7857] tracking-[2px] transition-opacity hover:opacity-70 ${isDark ? "text-white" : "text-ink"
+                className={`font-mono uppercase text-[12px] lg:text-[13px] leading-[1.7857] tracking-[1px] transition-opacity hover:opacity-70 ${isDark ? "text-white" : "text-ink"
                   } ${isActive ? "underline underline-offset-8 decoration-1" : ""
                   }`}
               >
@@ -95,6 +100,14 @@ export function Navbar({ variant = "auto", className = "" }: NavbarProps) {
               </Link>
             );
           })}
+
+          <Link
+            href={nav.cta0.href}
+            className={`font-mono uppercase text-[11px] lg:text-[12px] leading-none tracking-[2px] inline-flex items-center gap-2 rounded-full border px-6 py-2.5 lg:px-7 lg:py-3 transition-colors duration-200 cursor-pointer ${desktopCtaClasses}`}
+          >
+            <span className="uppercase">{nav.cta0.label}</span>
+            <ArrowRight className="h-3 w-3" />
+          </Link>
         </nav>
 
         {/* Desktop CTA (Pill Button with Arrow) */}
@@ -214,11 +227,11 @@ export function Navbar({ variant = "auto", className = "" }: NavbarProps) {
             <ArrowRight className="h-3 w-3" />
           </button> */}
 
-          <a href="tel:+9118005720709" className="mt-3 text-right font-sans font-light text-white/80 text-[16px] tracking-[1px] transition-opacity hover:opacity-60">
-            Toll-free: 1800-572-0709
+          <a href={`tel:${componyInfoData.mobile}`} className="mt-3 text-right font-sans font-light text-white/80 text-[16px] tracking-[1px] transition-opacity hover:opacity-60">
+            Toll-free: {componyInfoData.mobile}
           </a>
-          <a href="mailto:info@auruslife.com" className="text-right font-sans font-light text-white/80 text-[16px] tracking-[1px] transition-opacity hover:opacity-60">
-            info@auruslife.com
+          <a href={`mailto:${componyInfoData.email}`} className="text-right font-sans font-light text-white/80 text-[16px] tracking-[1px] transition-opacity hover:opacity-60">
+            {componyInfoData.email}
           </a>
         </div>
       </aside>

@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { nav, navmenu } from "@/data/layout";
 import { ArrowRight } from "@/components/ui/Primitives";
 import Image from "next/image";
-import { useAssets } from "@/data";
+import { componyInfoData, useAssets } from "@/data";
 import { EnquiryModal } from "@/components/shared/EnquiryModal";
 
 export interface NavbarProps {
@@ -28,8 +28,8 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
 
     // Header container classes
     const headerClasses = isDark
-        ? `relative w-full z-50 transition-colors duration-300 ${open ? "bg-cream text-ink" : "text-white"}`
-        : `relative w-full z-50 transition-colors duration-300 ${headerBg}`;
+        ? `relative w-full transition-colors duration-300 ${open ? "z-[70] bg-cream text-ink" : "z-50 text-white"}`
+        : `relative w-full transition-colors duration-300 ${open ? "z-[70]" : "z-50"} ${headerBg}`;
 
     // Mobile CTA styles
     const mobileCtaClasses = open
@@ -64,7 +64,7 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
 
                 {/* Desktop Navigation Links (Center) */}
                 <nav
-                    className="hidden items-center gap-7 lg:gap-9 xl:gap-11 lg:flex"
+                    className="hidden items-center gap-4 lg:gap-6 lg:flex"
                     aria-label="Primary"
                 >
                     {nav.links.map((link) => {
@@ -79,13 +79,21 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className={`font-mono uppercase text-[11px] lg:text-[12px] xl:text-[13px] leading-none tracking-[2px] transition-opacity hover:opacity-70 ${isDark ? "text-white" : "text-ink"
+                                className={`font-mono uppercase text-[11px] lg:text-[12px] xl:text-[13px] leading-none tracking-[1px] transition-opacity hover:opacity-70 ${isDark ? "text-white" : "text-ink"
                                     } ${isActive ? "underline underline-offset-8 decoration-1" : ""}`}
                             >
                                 {link.label}
                             </Link>
                         );
                     })}
+
+                    <Link
+                        href={nav.cta0.href}
+                        className={`font-mono uppercase text-[11px] lg:text-[12px] leading-none tracking-[2px] inline-flex items-center gap-2 rounded-full border px-6 py-2.5 lg:px-7 lg:py-3 transition-colors duration-200 cursor-pointer ${desktopCtaClasses}`}
+                    >
+                        <span className="uppercase">{nav.cta0.label}</span>
+                        <ArrowRight className="h-3 w-3" />
+                    </Link>
                 </nav>
 
                 {/* Desktop CTA (Pill Button with Arrow - Right) */}
@@ -203,16 +211,16 @@ export function LandingNavbar({ variant = "auto", className = "" }: NavbarProps)
                     </button> */}
 
                     <a
-                        href="tel:+9118005720709"
+                        href={`tel:${componyInfoData.mobile}`}
                         className="mt-3 text-right font-sans font-light text-white/80 text-[16px] tracking-[1px] transition-opacity hover:opacity-60"
                     >
-                        Toll-free: 1800-572-0709
+                        Toll-free: {componyInfoData.mobile}
                     </a>
                     <a
-                        href="mailto:info@auruslife.com"
+                        href={`mailto:${componyInfoData.email}`}
                         className="text-right font-sans font-light text-white/80 text-[16px] tracking-[1px] transition-opacity hover:opacity-60"
                     >
-                        info@auruslife.com
+                        {componyInfoData.email}
                     </a>
                 </div>
             </aside>

@@ -5,9 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import SmoothScroll from "./SmoothScroll";
 import { Footer } from "./Footer";
 import { Navbar } from "./Navbar";
-import WhatsApp from "./WhatsApp"; // Update import path as needed
-import CallIcon from "./PhoneCall";
-import ScrollToTop from "./ScrollToTop";
+import FloatingActions from "./FloatingActions";
 
 /**
  * Resets scroll position on navigation while preserving anchor navigation.
@@ -129,28 +127,12 @@ function LayoutScroll() {
   return <SmoothScroll />;
 }
 
-function LayoutWhatsApp() {
+function LayoutFloatingActions() {
   const isAdmin = useIsAdminRoute();
 
   if (isAdmin) return null;
 
-  return <WhatsApp />;
-}
-
-function LayoutPhoneCall() {
-  const isAdmin = useIsAdminRoute();
-
-  if (isAdmin) return null;
-
-  return <CallIcon />;
-}
-
-function LayoutScrollToTop() {
-  const isAdmin = useIsAdminRoute();
-
-  if (isAdmin) return null;
-
-  return <ScrollToTop />;
+  return <FloatingActions />;
 }
 
 export default function ClientLayoutWrapper({
@@ -179,15 +161,7 @@ export default function ClientLayoutWrapper({
       </Suspense>
 
       <Suspense fallback={null}>
-        <LayoutWhatsApp />
-      </Suspense>
-
-      <Suspense fallback={null}>
-        <LayoutPhoneCall />
-      </Suspense>
-
-      <Suspense fallback={null}>
-        <LayoutScrollToTop />
+        <LayoutFloatingActions />
       </Suspense>
     </>
   );

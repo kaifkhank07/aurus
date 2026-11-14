@@ -6,6 +6,7 @@ export const nav = {
     { label: "Stories", href: "/real-stories" },
     { label: "Contact", href: "/contact" },
   ],
+  cta0: { label: "For Professionals", href: "/managed-hostels" },
   cta: { label: "Enquire", href: "/contact" },
 };
 
