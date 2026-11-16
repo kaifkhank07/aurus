@@ -63,7 +63,8 @@ export function Footer() {
                 <a
                   href={componyInfoData.location}
                   target="_blank"
-                  className="hover:text-white transition-colors duration-200">
+                  className="hover:text-white transition-colors duration-200"
+                >
                   {componyInfoData.address}
                 </a>
 
@@ -134,14 +135,14 @@ export function Footer() {
               </h3>
               <div className="font-mono text-[12px] sm:text-[14px] leading-[1.8] tracking-[1px] text-[#77736B] max-w-[28ch]">
                 <p>
-                  Concierge desk active 10:00 AM – 7:00 PM daily. On-site resident
-                  wardens 24/7.
+                  Concierge desk active 10:00 AM – 7:00 PM daily. On-site
+                  resident wardens 24/7.
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="w-full flex flex-col lg:flex-row gap-4 justify-between items-center">
+          {/* <div className="w-full flex flex-col lg:flex-row gap-4 justify-between items-center">
             <p className="font-mono uppercase text-[12px] sm:text-[14px] leading-[1.8] tracking-[1px] text-[#77736B] font-light">
               © 2026 Aurus Life · A Colstay Limited brand
             </p>
@@ -157,6 +158,44 @@ export function Footer() {
                 Refund
               </Link>
             </div>
+          </div> */}
+          <div className="w-full flex flex-col lg:flex-row gap-4 justify-between items-center">
+            <p className="font-mono uppercase text-[12px] sm:text-[14px] leading-[1.8] tracking-[1px] text-[#77736B] font-light">
+              © 2026 Aurus Life · A Colstay Limited brand
+            </p>
+
+            <div className="flex gap-3 sm:gap-6 font-mono uppercase text-[12px] sm:text-[14px] leading-[1.8] tracking-[1.5px]">
+              <Link
+                href="/privacy"
+                className="text-[#77736B] hover:text-white transition-colors duration-200 block"
+              >
+                Privacy
+              </Link>
+              <Link
+                href="/terms"
+                className="text-[#77736B] hover:text-white transition-colors duration-200 block"
+              >
+                Terms
+              </Link>
+              <Link
+                href="/refund"
+                className="text-[#77736B] hover:text-white transition-colors duration-200 block"
+              >
+                Refund
+              </Link>
+            </div>
+
+            <p className="font-mono uppercase text-[12px] sm:text-[14px] leading-[1.8] tracking-[1px] text-[#77736B] font-light">
+              Design & Developed by{" "}
+              <a
+                href="https://buzzlinkstudios.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#77736B] hover:text-white transition-colors duration-200"
+              >
+                Buzzlink Studios
+              </a>
+            </p>
           </div>
         </Panel>
       </ViewReveal>

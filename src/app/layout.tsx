@@ -31,6 +31,11 @@ export const metadata: Metadata = {
   title: "AURUS | Luxury Managed Residences",
   description:
     "Thoughtfully designed residences for independent living, meaningful connections, and everything your next chapter deserves.",
+  icons: {
+    icon: "/images/static/favicon.ico",
+    shortcut: "/images/static/favicon.ico",
+    apple: "/images/static/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({
