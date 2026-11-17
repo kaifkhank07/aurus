@@ -15,11 +15,17 @@ import { useCitySeoStore } from "@/store/useCitySeoStore";
 interface CityFooterLinksProps {
   city?: PublicCity;
   citySlug?: string;
+  /** Link columns built on the server, so the links are in the page HTML */
+  columns?: FooterLinkColumn[];
+  /** City name already known on the server */
+  cityName?: string;
 }
 
 export function CityFooterLinks({
   city,
   citySlug,
+  columns: serverColumns,
+  cityName: cityNameProp,
 }: CityFooterLinksProps) {
   const targetSlug = (citySlug || city?.slug || "mumbai").toLowerCase().trim();
 
@@ -33,18 +39,20 @@ export function CityFooterLinks({
   } = useCitySeoStore();
 
   useEffect(() => {
+    // Nothing to fetch when the server already supplied the link columns
+    if (serverColumns) return;
     if (targetSlug) {
       void fetchCityDetails(targetSlug);
       void fetchCityLocalities(targetSlug);
       void fetchCityInstitutes(targetSlug);
     }
-  }, [targetSlug, fetchCityLocalities, fetchCityInstitutes, fetchCityDetails]);
+  }, [targetSlug, serverColumns, fetchCityLocalities, fetchCityInstitutes, fetchCityDetails]);
 
   const activeCity = city || (currentCity?.slug?.toLowerCase() === targetSlug ? currentCity : null);
   const fallbackName = targetSlug
     ? targetSlug.charAt(0).toUpperCase() + targetSlug.slice(1).replace(/-/g, " ")
     : "City";
-  const cityName = activeCity?.name || activeCity?.city || fallbackName;
+  const cityName = cityNameProp || activeCity?.name || activeCity?.city || fallbackName;
 
   // Strictly filter localities and institutes by the current city slug
   // Never show default or another city's data
@@ -61,13 +69,14 @@ export function CityFooterLinks({
   }, [institutes, targetSlug]);
 
   const linkColumns: FooterLinkColumn[] = useMemo(() => {
+    if (serverColumns) return serverColumns;
     return generateCityFooterLinkColumns(
       cityName,
       targetSlug,
       citySpecificLocalities,
       citySpecificInstitutes
     );
-  }, [cityName, targetSlug, citySpecificLocalities, citySpecificInstitutes]);
+  }, [serverColumns, cityName, targetSlug, citySpecificLocalities, citySpecificInstitutes]);
 
   const gridColsClass = useMemo(() => {
     const count = linkColumns.length;

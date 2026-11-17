@@ -49,9 +49,18 @@ export const cityFaqData = [
 interface CityFaqProps {
   city?: PublicCity;
   citySlug?: string;
+  /** Page-specific FAQs (SEO listing pages). Falls back to the general city FAQs. */
+  items?: Array<{ question: string; answer: string }>;
+  /** Section heading. Defaults to "Frequently Asked". */
+  heading?: string;
 }
 
-export function CityFaq({ citySlug }: CityFaqProps) {
+export function CityFaq({ items, heading }: CityFaqProps) {
+  const faqItems =
+    items && items.length > 0
+      ? items.map((item, index) => ({ id: `seo-faq-${index + 1}`, ...item }))
+      : cityFaqData;
+
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
 
   const toggleItem = (itemId: string) => {
@@ -66,7 +75,7 @@ export function CityFaq({ citySlug }: CityFaqProps) {
       <Container className="space-y-4 sm:space-y-8 lg:space-y-12">
         {/* Section Heading & Subtitle */}
         <Heading
-          title1="Frequently Asked"
+          title1={heading || "Frequently Asked"}
           title2=""
           className="max-w-4xl uppercase sm:max-w-none text-center"
           title1ClassName="text-[24px] sm:text-[35px]"
@@ -77,9 +86,9 @@ export function CityFaq({ citySlug }: CityFaqProps) {
         <ViewReveal duration={800}>
           <div className="w-full max-w-5xl mx-auto space-y-10 sm:space-y-12">
             <div className="border-y border-ink/15">
-              {cityFaqData.map((item, index) => {
+              {faqItems.map((item, index) => {
                 const isOpen = !!openItems[item.id];
-                const isLast = index === cityFaqData.length - 1;
+                const isLast = index === faqItems.length - 1;
 
                 return (
                   <FaqAccordionItem

@@ -1,11 +1,5 @@
-import { Metadata } from "next";
-import { CityListingView } from "@/components/city/CityListingView";
-import {
-  generateCityLocalityStaticParams,
-  generateListingMetadata,
-} from "@/lib/city-listing-helpers";
-
-export const dynamicParams = true;
+import { notFound, permanentRedirect } from "next/navigation";
+import { legacyRedirectForSubSlug } from "@/lib/city-listing-helpers";
 
 interface PageProps {
   params: Promise<{
@@ -14,28 +8,16 @@ interface PageProps {
   }>;
 }
 
-export async function generateStaticParams() {
-  return generateCityLocalityStaticParams();
-}
-
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+/**
+ * This URL shape is not the public one. Locality and college listing pages live
+ * on the URLs the previous website used (/girls-hostel-listings/{locality}/{city}),
+ * so anything arriving here is sent there with a permanent redirect.
+ */
+export default async function GirlsHostelListingSubRedirect({ params }: PageProps) {
   const { citySlug, localitySlug } = await params;
-  return generateListingMetadata({
-    routePrefix: "/girls-hostel-listing",
-    categoryLabel: "Girls Hostel",
-    citySlug,
-    localitySlug,
-  });
+  const target = await legacyRedirectForSubSlug("girls-hostel", citySlug, localitySlug, "locality");
+  if (!target) {
+    notFound();
+  }
+  permanentRedirect(target);
 }
-
-export default async function GirlsHostelListingLocalityPage({ params }: PageProps) {
-  const { citySlug, localitySlug } = await params;
-  return (
-    <CityListingView
-      citySlug={citySlug}
-      localitySlug={localitySlug}
-      gender="girls"
-    />
-  );
-}
-

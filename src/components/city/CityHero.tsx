@@ -10,9 +10,21 @@ import { useCitySeoStore } from "@/store/useCitySeoStore";
 interface CityHeroProps {
   city?: PublicCity;
   citySlug?: string;
+  /** Page-specific H1 (SEO listing pages). Falls back to "Student Residences in {city}." */
+  heading?: string;
+  /** Page-specific intro paragraph shown under the H1 */
+  description?: string;
+  /** City name already known on the server, so the first render is correct */
+  cityName?: string;
 }
 
-export function CityHero({ city, citySlug }: CityHeroProps) {
+export function CityHero({
+  city,
+  citySlug,
+  heading,
+  description,
+  cityName: cityNameProp,
+}: CityHeroProps) {
   const { currentCity, fetchCityDetails } = useCitySeoStore();
 
   const targetSlug = (citySlug || city?.slug || "").toLowerCase().trim();
@@ -28,7 +40,7 @@ export function CityHero({ city, citySlug }: CityHeroProps) {
   const fallbackName = targetSlug
     ? targetSlug.charAt(0).toUpperCase() + targetSlug.slice(1).replace(/-/g, " ")
     : "City";
-  const cityName = activeCity?.name || activeCity?.city || fallbackName;
+  const cityName = activeCity?.name || activeCity?.city || cityNameProp || fallbackName;
   const chapterCount = activeCity?.count ?? activeCity?.activeHostelsCount ?? 0;
 
   return (
@@ -52,13 +64,22 @@ export function CityHero({ city, citySlug }: CityHeroProps) {
 
         <ViewReveal duration={800} startDelay={100}>
           <div className="max-w-[48ch] sm:max-w-none">
-            <Heading
-              title1="Student Residences in"
-              title2={`${cityName}.`}
-              className="uppercase max-w-[24ch] sm:max-w-none"
-            />
+            {heading ? (
+              <Heading as="h1" title1={heading} className="uppercase sm:max-w-none" />
+            ) : (
+              <Heading
+                as="h1"
+                title1="Student Residences in"
+                title2={`${cityName}.`}
+                className="uppercase max-w-[24ch] sm:max-w-none"
+              />
+            )}
             <p className="mt-4 sm:mt-5 lg:mt-6 max-w-[56ch] lg:max-w-[48ch] font-sans font-normal text-[15px] sm:text-[17px] lg:text-[19px] leading-[1.4] tracking-[-0.03em] text-muted">
-              Discover premier student accommodation across {cityName}. Every Aurus Chapter offers private and shared luxury residences with daily chef-curated dining, high-speed fibre Wi-Fi, and 24/7 biometric security.
+              {description || (
+                <>
+                  Discover premier student accommodation across {cityName}. Every Aurus Chapter offers private and shared luxury residences with daily chef-curated dining, high-speed fibre Wi-Fi, and 24/7 biometric security.
+                </>
+              )}
             </p>
           </div>
         </ViewReveal>

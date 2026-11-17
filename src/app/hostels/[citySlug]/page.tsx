@@ -6,6 +6,7 @@ import CityResidenceContent from "@/components/city/CityResidenceContent";
 import CityIntroduction from "@/components/city/CityIntroduction";
 import CityFaq from "@/components/city/CityFaq";
 import CityFooterLinks from "@/components/city/CityFooterLinks";
+import { getCityFooterColumns } from "@/lib/city-listing-helpers";
 
 export const dynamicParams = true;
 
@@ -98,6 +99,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function DynamicCityPage({ params }: PageProps) {
   const { citySlug } = await params;
+  // Built on the server so the SEO listing links are in the page HTML
+  const footer = await getCityFooterColumns(citySlug);
 
   return (
     <main>
@@ -114,7 +117,11 @@ export default async function DynamicCityPage({ params }: PageProps) {
       <CityFaq citySlug={citySlug} />
 
       {/* Dynamic City Footer Links */}
-      <CityFooterLinks citySlug={citySlug} />
+      <CityFooterLinks
+        citySlug={citySlug}
+        columns={footer?.columns}
+        cityName={footer?.cityName}
+      />
     </main>
   );
 }

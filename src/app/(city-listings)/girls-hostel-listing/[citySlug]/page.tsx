@@ -1,8 +1,10 @@
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { CityListingView } from "@/components/city/CityListingView";
 import {
   generateCityStaticParams,
   generateListingMetadata,
+  resolveCityListing,
 } from "@/lib/city-listing-helpers";
 
 export const dynamicParams = true;
@@ -19,15 +21,30 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { citySlug } = await params;
+  const listing = await resolveCityListing("girls-hostel", citySlug);
+  if (!listing.found) {
+    return { title: "City Not Found | Aurus" };
+  }
   return generateListingMetadata({
     routePrefix: "/girls-hostel-listing",
     categoryLabel: "Girls Hostels",
-    citySlug,
+    citySlug: listing.citySlug,
+    legacy: listing.legacy,
+    canonicalPath: listing.path,
   });
 }
 
 export default async function GirlsHostelListingCityPage({ params }: PageProps) {
   const { citySlug } = await params;
-  return <CityListingView citySlug={citySlug} gender="girls" />;
+  const listing = await resolveCityListing("girls-hostel", citySlug);
+  if (!listing.found) {
+    notFound();
+  }
+  return (
+    <CityListingView
+      citySlug={listing.citySlug}
+      cityName={listing.cityName} gender="girls"
+      legacy={listing.legacy}
+    />
+  );
 }
-

@@ -1,13 +1,5 @@
-import { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { CityListingView } from "@/components/city/CityListingView";
-import {
-  generateCitySubSlugStaticParams,
-  generateListingMetadata,
-  resolveSubSlugType,
-} from "@/lib/city-listing-helpers";
-
-export const dynamicParams = true;
+import { notFound, permanentRedirect } from "next/navigation";
+import { legacyRedirectForSubSlug } from "@/lib/city-listing-helpers";
 
 interface PageProps {
   params: Promise<{
@@ -16,43 +8,16 @@ interface PageProps {
   }>;
 }
 
-export async function generateStaticParams() {
-  return generateCitySubSlugStaticParams();
-}
-
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+/**
+ * This URL shape is not the public one. Locality and college listing pages live
+ * on the URLs the previous website used (/hostel-listings/{locality}/{city}, /hostel_listings/{college}/{city}),
+ * so anything arriving here is sent there with a permanent redirect.
+ */
+export default async function HostelListingSubRedirect({ params }: PageProps) {
   const { citySlug, slug } = await params;
-  const resolution = await resolveSubSlugType(citySlug, slug);
-
-  if (resolution.type === "not_found") {
-    return {
-      title: "Page Not Found | Aurus",
-    };
-  }
-
-  return generateListingMetadata({
-    routePrefix: "/hostel-listing",
-    categoryLabel: "Hostel",
-    citySlug,
-    localitySlug: resolution.localitySlug,
-    instituteSlug: resolution.instituteSlug,
-  });
-}
-
-export default async function HostelListingSubSlugPage({ params }: PageProps) {
-  const { citySlug, slug } = await params;
-  const resolution = await resolveSubSlugType(citySlug, slug);
-
-  if (resolution.type === "not_found") {
+  const target = await legacyRedirectForSubSlug("hostel", citySlug, slug);
+  if (!target) {
     notFound();
   }
-
-  return (
-    <CityListingView
-      citySlug={citySlug}
-      localitySlug={resolution.localitySlug}
-      instituteSlug={resolution.instituteSlug}
-    />
-  );
+  permanentRedirect(target);
 }
-

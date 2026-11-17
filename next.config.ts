@@ -22,6 +22,15 @@ const nextConfig: NextConfig = {
       //   destination: "/hostel-details/:slug+",
       //   permanent: true,
       // },
+      // Old hostel page addresses from the previous website
+      { source: "/hostel-details/chapter-1", destination: "/hostel-details/chapter-i", permanent: true },
+      { source: "/hostel-details/chapter-2", destination: "/hostel-details/chapter-ii", permanent: true },
+      { source: "/hostel-details/chapter-3", destination: "/hostel-details/chapter-iii", permanent: true },
+      { source: "/hostel-details/chapter-4-luxury-residences-for-boys", destination: "/hostel-details/chapter-iv", permanent: true },
+      { source: "/hostel-details/chapter-5-luxury-residences-for-boys", destination: "/hostel-details/chapter-v", permanent: true },
+      { source: "/hostel-details/chapter-5-luxury-residences-for-boys-girls", destination: "/hostel-details/chapter-v", permanent: true },
+      { source: "/hostel-details/chapter-6-luxury-residences-for-boys", destination: "/hostel-details/chapter-vi", permanent: true },
+      { source: "/hostel-details/chapter-vi-luxury-residences-for-boys", destination: "/hostel-details/chapter-vi", permanent: true },
       {
         source: "/managed-residences",
         destination: "/managed-hostels",
