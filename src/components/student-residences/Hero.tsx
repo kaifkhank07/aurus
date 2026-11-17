@@ -119,7 +119,7 @@ export function Hero() {
 
                 return (
                   <Link
-                    key={action.href}
+                    key={index}
                     href={action.href}
                     onClick={(e) => handleScroll(e, action.href)}
                     className={`font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] flex h-[44px] sm:h-[50px] w-full items-center justify-center gap-2.5 rounded-full text-[12px] sm:text-[13px] tracking-[2px] uppercase transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-ink/40 active:scale-[0.99] ${isPrimary
@@ -180,12 +180,12 @@ export function Hero() {
             </p>
 
             <div className="mt-[clamp(16px,2.8vh,min(2.6vw,50px))] flex flex-wrap gap-4">
-              {hero.actions.map((action) => {
+              {hero.actions.map((action, index) => {
                 const isDiscover = action.label === "Discover Aurus";
 
                 return isDiscover ? (
                   <button
-                    key={action.href}
+                    key={index}
                     type="button"
                     onClick={(e) => handleScroll(e, action.href)}
                   >

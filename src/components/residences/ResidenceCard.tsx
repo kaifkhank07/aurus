@@ -40,6 +40,30 @@ export function ResidenceCard({ item }: ResidenceCardProps) {
       ? `${localityName} · ${cityName}`
       : localityName || cityName || item.location?.address || "Prime Location";
 
+  // Occupancy text
+  const occupancyNames = Array.isArray(item.occupancy)
+    ? Array.from(
+        new Set(
+          item.occupancy
+            .map((occ) => {
+              if (typeof occ === "object" && occ !== null && "name" in occ) {
+                return (occ as { name?: string }).name?.trim() || "";
+              }
+              if (typeof occ === "string") {
+                return occ.trim();
+              }
+              return "";
+            })
+            .filter((name): name is string => Boolean(name))
+        )
+      )
+    : [];
+
+  const occupancyDisplay =
+    occupancyNames.length > 0
+      ? occupancyNames.join(" | ")
+      : "Single | Double | Triple";
+
   // Price and Frequency
   const rentAmount = Number(item.rent?.amount || 0);
   const priceDisplay =
@@ -85,7 +109,7 @@ export function ResidenceCard({ item }: ResidenceCardProps) {
         </h3>
 
         <p className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] mt-2 text-[9px] uppercase tracking-[0.08em] text-[#88847c]">
-          {item.location?.address || "Prime location"}
+          {occupancyDisplay}
         </p>
 
         {/* Price and Action */}
