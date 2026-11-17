@@ -31,6 +31,10 @@ const nextConfig: NextConfig = {
       { source: "/hostel-details/chapter-5-luxury-residences-for-boys-girls", destination: "/hostel-details/chapter-v", permanent: true },
       { source: "/hostel-details/chapter-6-luxury-residences-for-boys", destination: "/hostel-details/chapter-vi", permanent: true },
       { source: "/hostel-details/chapter-vi-luxury-residences-for-boys", destination: "/hostel-details/chapter-vi", permanent: true },
+      { source: "/hostel-details/chapter-7-residences-for-girls", destination: "/hostel-details/chapter-vii", permanent: true },
+      { source: "/hostel-details/chapter-7-residences-for-Girls", destination: "/hostel-details/chapter-vii", permanent: true },
+      { source: "/hostel-details/chapter-8-residences-for-boys-girls", destination: "/hostel-details/chapter-viii", permanent: true },
+      { source: "/hostel-details/chapter-9-residences-for-boys-girls", destination: "/hostel-details/chapter-ix", permanent: true },
       {
         source: "/managed-residences",
         destination: "/managed-hostels",
@@ -81,6 +85,12 @@ const nextConfig: NextConfig = {
 
   images: {
     remotePatterns: [
+      {
+        // Images carried over from the previous website, served from /public/uploads
+        protocol: "https",
+        hostname: "www.auruslife.com",
+        pathname: "/uploads/**",
+      },
       {
         protocol: "https",
         hostname: "aurus-website.s3.ap-south-1.amazonaws.com",

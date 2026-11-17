@@ -27,7 +27,7 @@ for f in faq:
 # new-site slugs
 NEWCITY={'mumbai','pune','ahmedabad','noida','jalandhar'}
 NEWLOC={'mumbai':{'juhu':'juhu','vile-parle':'vile-parle','andheri':'andheri-west','churchgate':'churchgate','fort':'fort','st-xaviers':'st-xaviers','knowledge-park-2':'knowledge-park-2','knowledge-park-3':'knowledge-park-3'},
-        'pune':{'lavale':'lavale','susgaon':'susgaon'},'noida':{'sector-126':'sector-126'},'jalandhar':{'phagwara':'phagwara'}}
+        'ahmedabad':{'ambawadi':'ambawadi'},'pune':{'lavale':'lavale','susgaon':'susgaon'},'noida':{'sector-126':'sector-126'},'jalandhar':{'phagwara':'phagwara'}}
 NEWINST={'mumbai':{'mithibai-college':'mithibai-college','nm-college':'nm-college','upg-college':'upg-college','nmims':'nmims-college','raheja-college':'raheja-college','dj-sanghvi':'dj-sanghvi-college'},
          'pune':{'symbiosis':'symbiosis-college'},'noida':{'amity-university-noida':'amity-university'}}
 def paras(t):
