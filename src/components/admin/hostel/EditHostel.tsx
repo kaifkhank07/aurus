@@ -10,6 +10,7 @@ import { SafeHostel, TenantType, TENANT_TYPES } from "@/types/hostel.types";
 import { SafeLocality } from "@/types/locality.types";
 import { SafeInstitute } from "@/types/institute.types";
 import { getMediaUrl } from "@/lib/media";
+import { createBaseSlug } from "@/lib/slug";
 
 export interface EditHostelProps {
   open: boolean;
@@ -59,6 +60,7 @@ export default function EditHostel({
 
   // Basic Info
   const [title, setTitle] = useState(hostel?.title || "");
+  const [slug, setSlug] = useState(hostel?.slug || "");
   const [subtitle, setSubtitle] = useState(hostel?.subtitle || "");
 
   const initialTenantType: TenantType =
@@ -303,6 +305,34 @@ export default function EditHostel({
 
   if (!open || !hostel) return null;
 
+  const handleSlugChange = (newSlug: string) => {
+    const cleaned = newSlug
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, "-")
+      .replace(/-{2,}/g, "-");
+    setSlug(cleaned);
+    if (clientErrors.slug) {
+      setClientErrors((p) => {
+        const next = { ...p };
+        delete next.slug;
+        return next;
+      });
+    }
+  };
+
+  const handleSyncSlugWithTitle = () => {
+    if (title.trim()) {
+      setSlug(createBaseSlug(title));
+      if (clientErrors.slug) {
+        setClientErrors((p) => {
+          const next = { ...p };
+          delete next.slug;
+          return next;
+        });
+      }
+    }
+  };
+
   const handleCityChange = (newCityId: string) => {
     setCityId(newCityId);
     if (newCityId === initialCityId) {
@@ -453,6 +483,15 @@ export default function EditHostel({
       errors.title = "Title cannot exceed 200 characters.";
     }
 
+    if (slug.trim()) {
+      const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+      if (!slugRegex.test(slug.trim())) {
+        errors.slug = "Slug must contain only lowercase letters, numbers, and hyphens (e.g. 'aurus-prime').";
+      } else if (slug.trim().length > 200) {
+        errors.slug = "Slug cannot exceed 200 characters.";
+      }
+    }
+
     if (!tenantType) {
       errors.tenantType = "Tenant category is required.";
     }
@@ -502,7 +541,7 @@ export default function EditHostel({
 
     setClientErrors(errors);
 
-    if (errors.title || errors.tenantType || errors.description) {
+    if (errors.title || errors.slug || errors.tenantType || errors.description) {
       setActiveTab("basic");
     } else if (errors.city || errors.locality || errors.address || errors.coordinates) {
       setActiveTab("location");
@@ -527,6 +566,7 @@ export default function EditHostel({
 
     const formData = new FormData();
     formData.append("title", title.trim());
+    if (slug.trim()) formData.append("slug", slug.trim());
     formData.append("subtitle", subtitle.trim());
     formData.append("tenantType", tenantType);
     formData.append("isActive", String(isActive));
@@ -589,7 +629,12 @@ export default function EditHostel({
       onSuccess();
       onClose();
     } else {
-      setApiError(res.message || "Failed to update hostel residence. Please try again.");
+      const msg = res.message || "Failed to update hostel residence. Please try again.";
+      if (msg.toLowerCase().includes("slug")) {
+        setClientErrors((p) => ({ ...p, slug: msg }));
+        setActiveTab("basic");
+      }
+      setApiError(msg);
     }
   };
 
@@ -707,6 +752,40 @@ export default function EditHostel({
                   disabled={isSubmitting}
                   maxLength={200}
                 />
+              </FormField>
+
+              <FormField
+                label="Custom URL Slug (Optional)"
+                hint={
+                  slug.trim()
+                    ? `Public URL: /hostel-details/${slug.trim()}`
+                    : "Leave blank to auto-generate from title. Lowercase alphanumeric and hyphens."
+                }
+                error={clientErrors.slug}
+              >
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <TextInput
+                      value={slug}
+                      onChange={(e) => handleSlugChange(e.target.value)}
+                      placeholder="e.g. aurus-prime-co-living"
+                      error={!!clientErrors.slug}
+                      disabled={isSubmitting}
+                      maxLength={200}
+                    />
+                  </div>
+                  {title.trim() && (
+                    <button
+                      type="button"
+                      onClick={handleSyncSlugWithTitle}
+                      title="Sync slug with current title"
+                      disabled={isSubmitting}
+                      className="px-3 py-2 text-xs font-semibold text-slate-600 hover:text-orange-600 bg-slate-100 hover:bg-orange-50 rounded-xl border border-slate-200 transition shrink-0 cursor-pointer disabled:opacity-50"
+                    >
+                      Sync with Title
+                    </button>
+                  )}
+                </div>
               </FormField>
 
               <FormField label="Subtitle / Tagline (Optional)" hint="Short punchy highlight on cards.">

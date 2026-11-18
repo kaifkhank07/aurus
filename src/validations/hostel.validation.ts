@@ -114,6 +114,12 @@ export const createHostelSchema = z
       .trim()
       .min(1, { message: "Hostel title is required." })
       .max(200, { message: "Title cannot exceed 200 characters." }),
+    slug: z
+      .string()
+      .trim()
+      .max(200, { message: "Slug cannot exceed 200 characters." })
+      .optional()
+      .or(z.literal("")),
     subtitle: z.string().trim().max(300, { message: "Subtitle cannot exceed 300 characters." }).optional(),
     tenantType: z.enum(TENANT_TYPES, {
       message: "Tenant type must be 'girls', 'boys', or 'co-ed'.",
@@ -141,6 +147,7 @@ export const createHostelSchema = z
 export const updateHostelSchema = z
   .object({
     title: z.string().trim().min(1).max(200).optional(),
+    slug: z.string().trim().max(200).optional().or(z.literal("")),
     subtitle: z.string().trim().max(300).optional(),
     tenantType: z.enum(TENANT_TYPES).optional(),
     isActive: z.boolean().optional(),

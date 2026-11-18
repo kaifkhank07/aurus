@@ -8,13 +8,52 @@ import mongoose from "mongoose";
  * - Collapses consecutive hyphens
  * - Removes leading and trailing hyphens
  */
+
+// export function createBaseSlug(text: string): string {
+//   if (!text || typeof text !== "string") {
+//     return "item";
+//   }
+
+//   const slug = text
+//     .toString()
+//     .toLowerCase()
+//     .trim()
+//     .normalize("NFD")
+//     .replace(/[\u0300-\u036f]/g, "")
+//     .replace(/[^a-z0-9]+/g, "-")
+//     .replace(/^-+|-+$/g, "")
+//     .replace(/-{2,}/g, "-");
+
+//   return slug || "item";
+// }
+
 export function createBaseSlug(text: string): string {
   if (!text || typeof text !== "string") {
     return "item";
   }
 
+  const romanToNumber = (roman: string): string => {
+    const values: Record<string, number> = {
+      I: 1, V: 5, X: 10, L: 50,
+      C: 100, D: 500, M: 1000,
+    };
+
+    let total = 0;
+
+    for (let i = 0; i < roman.length; i++) {
+      const current = values[roman[i]];
+      const next = values[roman[i + 1]] || 0;
+
+      total += current < next ? -current : current;
+    }
+
+    return String(total);
+  };
+
   const slug = text
-    .toString()
+    .replace(/\b[IVXLCDM]+\b/gi, (roman) =>
+      romanToNumber(roman.toUpperCase())
+    )
     .toLowerCase()
     .trim()
     .normalize("NFD")
@@ -25,6 +64,7 @@ export function createBaseSlug(text: string): string {
 
   return slug || "item";
 }
+
 
 /**
  * Generates a unique slug against a given Mongoose model.

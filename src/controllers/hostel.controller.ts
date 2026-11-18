@@ -12,7 +12,7 @@ import { Service, IServiceDocument } from "@/models/service.model";
 import { Institute, IInstituteDocument } from "@/models/institute.model";
 import { RentFrequency, IRentFrequencyDocument } from "@/models/rent-frequency.model";
 import { authenticateAdmin } from "@/middleware/admin-auth";
-import { generateUniqueSlug } from "@/lib/slug";
+import { generateUniqueSlug, createBaseSlug } from "@/lib/slug";
 import {
   apiSuccess,
   apiError,
@@ -320,8 +320,20 @@ function handleError(error: unknown, operation = "general"): NextResponse {
     "code" in error &&
     (error as { code: number }).code === 11000
   ) {
+    const keyPattern = (error as { keyPattern?: Record<string, number> }).keyPattern;
+    const keyValue = (error as { keyValue?: Record<string, string> }).keyValue;
+    if (keyPattern && "slug" in keyPattern) {
+      const duplicateSlug = keyValue?.slug || "";
+      logger.warn("Hostel slug conflict", { operation, statusCode: 409, duplicateSlug });
+      return apiError(
+        duplicateSlug
+          ? `A hostel residence with the slug "${duplicateSlug}" already exists. Please choose a different slug.`
+          : "A hostel residence with this slug already exists. Please choose a different slug.",
+        409
+      );
+    }
     logger.warn("Hostel slug or title conflict", { operation, statusCode: 409 });
-    return apiError("A hostel with this slug or title already exists.", 409);
+    return apiError("A hostel residence with this slug or title already exists.", 409);
   }
 
   logger.error("Unhandled server error", error, { operation, statusCode: 500 });
@@ -657,8 +669,20 @@ export async function create(request: NextRequest): Promise<NextResponse> {
       }
     }
 
-    // Backend-managed slug generation
-    const slug = await generateUniqueSlug(Hostel, validated.title.trim());
+    // Slug handling: use custom slug if provided, else auto-generate from title
+    let slug: string;
+    if (validated.slug && validated.slug.trim()) {
+      slug = createBaseSlug(validated.slug.trim());
+      const existingHostel = await Hostel.findOne({ slug });
+      if (existingHostel) {
+        throw new AppError(
+          `A hostel residence with the slug "${slug}" already exists. Please choose a different slug.`,
+          409
+        );
+      }
+    } else {
+      slug = await generateUniqueSlug(Hostel, validated.title.trim());
+    }
 
     const newHostel = new Hostel({
       title: validated.title.trim(),
@@ -809,13 +833,36 @@ export async function update(
       throw new AppError("Hostel not found.", 404);
     }
 
-    // Handle Title & Slug update
-    if (validated.title !== undefined) {
+    // Handle Slug update
+    if (validated.slug !== undefined && validated.slug.trim()) {
+      const nextSlug = createBaseSlug(validated.slug.trim());
+      if (nextSlug !== hostel.slug) {
+        const existingHostel = await Hostel.findOne({
+          slug: nextSlug,
+          _id: { $ne: targetId },
+        });
+        if (existingHostel) {
+          throw new AppError(
+            `A hostel residence with the slug "${nextSlug}" already exists. Please choose a different slug.`,
+            409
+          );
+        }
+        hostel.slug = nextSlug;
+      }
+    } else if (validated.slug === "" && validated.title !== undefined) {
+      // If user explicitly sent an empty slug string, re-generate from title
+      const nextTitle = validated.title.trim();
+      hostel.slug = await generateUniqueSlug(Hostel, nextTitle, targetId);
+    } else if (validated.slug === undefined && validated.title !== undefined) {
+      // If slug was not provided in request body at all, but title changed:
       const nextTitle = validated.title.trim();
       if (nextTitle.toLowerCase() !== hostel.title.toLowerCase()) {
         hostel.slug = await generateUniqueSlug(Hostel, nextTitle, targetId);
       }
-      hostel.title = nextTitle;
+    }
+
+    if (validated.title !== undefined) {
+      hostel.title = validated.title.trim();
     }
 
     if (validated.subtitle !== undefined) {
