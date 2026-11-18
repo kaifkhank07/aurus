@@ -49,10 +49,16 @@ async function run() {
     }
 
     let localityName = "";
-    if (typeof hostel.location?.locality === "object" && hostel.location?.locality !== null) {
-      localityName = hostel.location.locality.name || "";
-    } else if (typeof hostel.location?.locality === "string") {
-      localityName = hostel.location.locality;
+    const rawLocList = Array.isArray(hostel.location?.locality)
+      ? hostel.location.locality
+      : hostel.location?.locality
+        ? [hostel.location.locality]
+        : [];
+    const mainLoc = rawLocList[0];
+    if (typeof mainLoc === "object" && mainLoc !== null) {
+      localityName = mainLoc.name || "";
+    } else if (typeof mainLoc === "string") {
+      localityName = mainLoc;
     }
 
     const localityText =

@@ -2,6 +2,7 @@ import axios, { AxiosInstance } from "axios";
 import { SafeAdmin, PaginatedAdminsResult, AdminQueryParams } from "@/types/admin.types";
 import { DashboardData } from "@/types/dashboard.types";
 import { ApiResponse } from "@/types/general.types";
+import { extractErrorMessage } from "@/lib/client-error";
 
 const ADMIN_STORAGE_KEY = "aurus_admin_user";
 
@@ -36,10 +37,7 @@ adminApiClient.interceptors.request.use((config) => {
  * Helper to safely extract ApiResponse payload from Axios response or AxiosError.
  */
 function extractResponse<T>(error: unknown): ApiResponse<T> {
-  if (axios.isAxiosError(error) && error.response?.data) {
-    return error.response.data as ApiResponse<T>;
-  }
-  const message = error instanceof Error ? error.message : "An unexpected network error occurred.";
+  const message = extractErrorMessage(error, "An unexpected network error occurred.");
   return {
     success: false,
     message,

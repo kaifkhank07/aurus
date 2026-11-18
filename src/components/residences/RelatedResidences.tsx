@@ -12,6 +12,35 @@ interface RelatedResidencesProps {
   items?: SafeHostel[];
 }
 
+function getCityIdentifier(h?: SafeHostel | null): { id: string; name: string } {
+  if (!h?.location?.city) return { id: "", name: "" };
+  if (typeof h.location.city === "object" && h.location.city !== null) {
+    const cityObj = h.location.city as { id?: string; _id?: string; city?: string };
+    return {
+      id: String(cityObj.id || cityObj._id || ""),
+      name: String(cityObj.city || "").toLowerCase().trim(),
+    };
+  }
+  return { id: "", name: String(h.location.city || "").toLowerCase().trim() };
+}
+
+function getLocalityIdentifiers(h?: SafeHostel | null): string[] {
+  if (!h?.location?.locality) return [];
+  const list = Array.isArray(h.location.locality)
+    ? h.location.locality
+    : [h.location.locality];
+
+  return list
+    .map((l) => {
+      if (typeof l === "object" && l !== null) {
+        const obj = l as { id?: string; _id?: string; slug?: string; name?: string };
+        return String(obj.id || obj._id || obj.slug || obj.name || "").toLowerCase().trim();
+      }
+      return String(l || "").toLowerCase().trim();
+    })
+    .filter(Boolean);
+}
+
 export function RelatedResidences({
   currentSlug,
   currentHostel,
@@ -26,46 +55,68 @@ export function RelatedResidences({
   }, [items, publicHostels.length, fetchPublicHostels]);
 
   const relatedItems = useMemo(() => {
+    // If pre-filtered items are explicitly provided
     if (items && items.length > 0) return items.slice(0, 3);
 
     const s = (currentSlug || currentHostel?.slug || "").toLowerCase().trim();
     const currentId = currentHostel?.id || currentHostel?._id || "";
 
+    // 1. Identify the current hostel (from prop or by matching slug/id in store)
+    const activeHostel =
+      currentHostel ||
+      publicHostels.find((h) => {
+        const matchSlug = s && h.slug?.toLowerCase().trim() === s;
+        const matchId = (h.id && h.id === currentId) || (h._id && h._id === currentId);
+        return matchSlug || matchId;
+      });
+
+    // 2. Filter out current hostel from candidates
     const candidates = publicHostels.filter((h) => {
-      const matchSlug = h.slug?.toLowerCase().trim() === s;
-      const matchId = (h.id && h.id === currentId) || (h._id && h._id === currentId);
+      const matchSlug = s && h.slug?.toLowerCase().trim() === s;
+      const matchId =
+        (activeHostel?.id && (h.id === activeHostel.id || h._id === activeHostel.id)) ||
+        (activeHostel?._id && (h._id === activeHostel._id || h.id === activeHostel._id));
       return !matchSlug && !matchId;
     });
 
-    // If we have a currentHostel city, prioritize hostels in the same city
-    const targetCity =
-      typeof currentHostel?.location?.city === "object" && currentHostel.location?.city !== null
-        ? currentHostel.location.city.city
-        : typeof currentHostel?.location?.city === "string"
-        ? currentHostel.location.city
-        : "";
+    const currentCity = getCityIdentifier(activeHostel);
+    const currentLocalities = getLocalityIdentifiers(activeHostel);
 
-    if (targetCity) {
-      candidates.sort((a, b) => {
-        const aCity =
-          typeof a.location?.city === "object" && a.location.city !== null
-            ? a.location.city.city
-            : typeof a.location?.city === "string"
-            ? a.location.city
-            : "";
-        const bCity =
-          typeof b.location?.city === "object" && b.location.city !== null
-            ? b.location.city.city
-            : typeof b.location?.city === "string"
-            ? b.location.city
-            : "";
-        if (aCity === targetCity && bCity !== targetCity) return -1;
-        if (bCity === targetCity && aCity !== targetCity) return 1;
-        return 0;
-      });
-    }
+    // 3. Separate candidates into priority buckets:
+    // Bucket 1: Same City & Same Locality
+    // Bucket 2: Same City, Other Localities
+    // Bucket 3: Other Cities (fallback)
+    const sameCitySameLocality: SafeHostel[] = [];
+    const sameCityOtherLocality: SafeHostel[] = [];
+    const otherCityHostels: SafeHostel[] = [];
 
-    return candidates.slice(0, 3);
+    candidates.forEach((hostel) => {
+      const hCity = getCityIdentifier(hostel);
+      const isSameCity =
+        (currentCity.id && hCity.id && currentCity.id === hCity.id) ||
+        (currentCity.name && hCity.name && currentCity.name === hCity.name);
+
+      if (isSameCity) {
+        const hLocalities = getLocalityIdentifiers(hostel);
+        const sharesLocality = hLocalities.some((loc) => currentLocalities.includes(loc));
+        if (sharesLocality) {
+          sameCitySameLocality.push(hostel);
+        } else {
+          sameCityOtherLocality.push(hostel);
+        }
+      } else {
+        otherCityHostels.push(hostel);
+      }
+    });
+
+    // Prioritize: Same city (same locality first, then other localities), then other cities
+    const prioritized = [
+      ...sameCitySameLocality,
+      ...sameCityOtherLocality,
+      ...otherCityHostels,
+    ];
+
+    return prioritized.slice(0, 3);
   }, [items, publicHostels, currentSlug, currentHostel]);
 
   if (relatedItems.length === 0) {

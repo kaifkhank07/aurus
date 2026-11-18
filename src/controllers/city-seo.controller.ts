@@ -558,6 +558,9 @@ export async function getLocalitiesForCity(
           },
         },
         {
+          $unwind: "$location.locality",
+        },
+        {
           $group: {
             _id: "$location.locality",
             count: { $sum: 1 },

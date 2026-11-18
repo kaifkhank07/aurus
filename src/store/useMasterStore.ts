@@ -3,6 +3,7 @@ import axios from "axios";
 import { adminApiClient } from "@/lib/admin-api";
 import { publicApiClient } from "@/lib/public-api";
 import { ApiResponse, PaginationMeta } from "@/types/general.types";
+import { extractErrorMessage } from "@/lib/client-error";
 import {
   SafeCity,
   PublicCity,
@@ -63,35 +64,7 @@ import {
   PaginatedRentFrequenciesResult,
 } from "@/types/rent-frequency.types";
 
-/**
- * Standardized error extractor across all master operations.
- */
-function extractErrorMessage(error: unknown, fallback: string): string {
-  if (axios.isAxiosError(error) && error.response?.data) {
-    const data = error.response.data as { message?: string; errors?: unknown };
-    if (data.message) {
-      if (data.errors && typeof data.errors === "object") {
-        if (Array.isArray(data.errors)) {
-          const list = data.errors
-            .map((e) => (typeof e === "string" ? e : e?.message || JSON.stringify(e)))
-            .filter(Boolean);
-          if (list.length > 0) return `${data.message} (${list.join(", ")})`;
-        } else {
-          const entries = Object.entries(data.errors as Record<string, string>);
-          if (entries.length > 0) {
-            const list = entries.map(([field, msg]) => `${field}: ${msg}`);
-            return `${data.message} (${list.join("; ")})`;
-          }
-        }
-      }
-      return data.message;
-    }
-  }
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return fallback;
-}
+
 
 export interface MasterState {
   // ── City Module State ──

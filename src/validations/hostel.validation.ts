@@ -5,10 +5,19 @@ import { TENANT_TYPES } from "@/types/hostel.types";
 
 export { objectIdSchema };
 
+const localityListSchema = z
+  .union([
+    objectIdSchema.transform((val) => [val]),
+    z
+      .array(objectIdSchema)
+      .min(1, { message: "At least one locality (Main Locality) is required." }),
+  ])
+  .transform((val) => Array.from(new Set(val)));
+
 const locationSchema = z
   .object({
     city: objectIdSchema,
-    locality: objectIdSchema,
+    locality: localityListSchema,
     address: z
       .string()
       .trim()
@@ -38,7 +47,7 @@ const locationSchema = z
 const updateLocationSchema = z
   .object({
     city: objectIdSchema.optional(),
-    locality: objectIdSchema.optional(),
+    locality: localityListSchema.optional(),
     address: z.string().trim().min(1).max(500).optional(),
     mapUrl: z.string().trim().url().optional().or(z.literal("")),
     longitude: z.number().min(-180).max(180).optional(),

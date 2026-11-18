@@ -20,12 +20,18 @@ export function ResidenceCard({ item }: ResidenceCardProps) {
     }
   };
 
-  // Locality and City text
+  // Main Locality and City text
+  const rawLocList = Array.isArray(item.location?.locality)
+    ? item.location.locality
+    : item.location?.locality
+      ? [item.location.locality]
+      : [];
+  const mainLoc = rawLocList[0];
   const localityName =
-    typeof item.location?.locality === "object" && item.location.locality !== null
-      ? item.location.locality.name
-      : typeof item.location?.locality === "string"
-        ? item.location.locality
+    typeof mainLoc === "object" && mainLoc !== null && "name" in mainLoc
+      ? (mainLoc as { name?: string }).name || ""
+      : typeof mainLoc === "string"
+        ? mainLoc
         : "";
 
   const cityName =

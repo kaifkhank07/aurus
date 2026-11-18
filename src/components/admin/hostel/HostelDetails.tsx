@@ -59,10 +59,21 @@ export default function HostelDetails({
       ? (hostel.location.city as { city?: string }).city || ""
       : String(hostel.location?.city || "—");
 
-  const localityName =
-    typeof hostel.location?.locality === "object" && hostel.location?.locality !== null
-      ? (hostel.location.locality as { name?: string }).name || ""
-      : String(hostel.location?.locality || "—");
+  // Localities extraction (array or legacy single object/string; index 0 is Main Locality)
+  const rawLocList = Array.isArray(hostel.location?.locality)
+    ? hostel.location.locality
+    : hostel.location?.locality
+      ? [hostel.location.locality]
+      : [];
+
+  const parsedLocalities = rawLocList.map((loc) =>
+    typeof loc === "object" && loc !== null
+      ? (loc as { name?: string }).name || "—"
+      : String(loc || "—")
+  );
+
+  const mainLocalityName = parsedLocalities[0] || "—";
+  const otherLocalities = parsedLocalities.slice(1);
 
   const rentAmount =
     typeof hostel.rent === "object" && hostel.rent !== null
@@ -277,8 +288,28 @@ export default function HostelDetails({
               )}
             </div>
 
-            <div className="text-sm font-bold text-slate-900">
-              {localityName}, {cityName}
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm font-bold text-slate-900">
+                  {mainLocalityName}, {cityName}
+                </span>
+                <span className="text-[10px] bg-amber-100 text-amber-800 border border-amber-300 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                  ★ Main Locality
+                </span>
+              </div>
+              {otherLocalities.length > 0 && (
+                <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                  <span className="text-[11px] font-semibold text-slate-400">Other Localities:</span>
+                  {otherLocalities.map((otherName, idx) => (
+                    <span
+                      key={idx}
+                      className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md border border-slate-200 font-medium"
+                    >
+                      {otherName}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
             <p className="text-xs text-slate-600 leading-relaxed">
               {hostel.location?.address}

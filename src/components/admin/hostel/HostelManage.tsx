@@ -426,10 +426,19 @@ export default function HostelManage() {
                       ? (hostel.location.city as { city?: string }).city || ""
                       : String(hostel.location?.city || "—");
 
-                  const localityName =
-                    typeof hostel.location?.locality === "object" && hostel.location?.locality !== null
-                      ? (hostel.location.locality as { name?: string }).name || ""
-                      : String(hostel.location?.locality || "—");
+                  const rawLocList = Array.isArray(hostel.location?.locality)
+                    ? hostel.location.locality
+                    : hostel.location?.locality
+                      ? [hostel.location.locality]
+                      : [];
+
+                  const parsedLocalities = rawLocList.map((loc) =>
+                    typeof loc === "object" && loc !== null
+                      ? (loc as { name?: string }).name || "—"
+                      : String(loc || "—")
+                  );
+                  const mainLocalityName = parsedLocalities[0] || "—";
+                  const otherCount = parsedLocalities.length > 1 ? parsedLocalities.length - 1 : 0;
 
                   const rentAmount =
                     typeof hostel.rent === "object" && hostel.rent !== null
@@ -494,7 +503,15 @@ export default function HostelManage() {
                       <td className="py-3 px-4 min-w-[160px]">
                         <div className="flex items-center gap-1 font-semibold text-slate-800">
                           <Icon name="pin" size={11} className="text-slate-400 shrink-0" />
-                          <span className="truncate">{localityName}, {cityName}</span>
+                          <span className="truncate">{mainLocalityName}, {cityName}</span>
+                          {otherCount > 0 && (
+                            <span
+                              title={`Other localities: ${parsedLocalities.slice(1).join(", ")}`}
+                              className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded font-medium shrink-0 cursor-default"
+                            >
+                              +{otherCount}
+                            </span>
+                          )}
                         </div>
                         <div className="text-[11px] text-slate-400 truncate max-w-[180px] mt-0.5 pl-3.5">
                           {hostel.location?.address}

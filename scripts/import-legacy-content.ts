@@ -141,7 +141,7 @@ async function run() {
       description: h.description,
       location: {
         city: city._id,
-        locality: locality._id,
+        locality: [locality._id],
         address: h.address,
         mapUrl: h.mapUrl,
         latitude: h.latitude,

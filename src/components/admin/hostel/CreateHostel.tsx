@@ -57,7 +57,7 @@ export default function CreateHostel({
 
   // Location Details
   const [cityId, setCityId] = useState("");
-  const [localityId, setLocalityId] = useState("");
+  const [selectedLocalities, setSelectedLocalities] = useState<string[]>([]);
   const [address, setAddress] = useState("");
   const [mapUrl, setMapUrl] = useState("");
   const [latitude, setLatitude] = useState("");
@@ -229,7 +229,7 @@ export default function CreateHostel({
 
   const handleCityChange = (newCityId: string) => {
     setCityId(newCityId);
-    setLocalityId("");
+    setSelectedLocalities([]);
     setSelectedInstitutes([]); // Reset selected institutes when city changes
     if (clientErrors.city) {
       setClientErrors((p) => {
@@ -247,6 +247,26 @@ export default function CreateHostel({
     }
     loadLocalitiesForCity(newCityId);
     loadInstitutesForCity(newCityId);
+  };
+
+  const handleToggleLocality = (id: string) => {
+    setSelectedLocalities((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((l) => l !== id);
+      }
+      return [...prev, id];
+    });
+    if (clientErrors.locality) {
+      setClientErrors((p) => {
+        const next = { ...p };
+        delete next.locality;
+        return next;
+      });
+    }
+  };
+
+  const handleSetMainLocality = (id: string) => {
+    setSelectedLocalities((prev) => [id, ...prev.filter((l) => l !== id)]);
   };
 
   const handleToggleAmenity = (id: string) => {
@@ -283,7 +303,14 @@ export default function CreateHostel({
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        setClientErrors((p) => ({ ...p, frontImage: "Only image files are allowed." }));
+        setClientErrors((p) => ({ ...p, frontImage: "Only image files (JPEG, PNG, WebP, SVG) are allowed." }));
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        setClientErrors((p) => ({
+          ...p,
+          frontImage: `Front cover image "${file.name}" (${(file.size / (1024 * 1024)).toFixed(1)}MB) exceeds the 10MB limit. Please upload a smaller image.`,
+        }));
         return;
       }
       setClientErrors((p) => {
@@ -299,7 +326,30 @@ export default function CreateHostel({
   const handleGalleryFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
+      const oversized = files.filter((f) => f.size > 10 * 1024 * 1024);
+      if (oversized.length > 0) {
+        const names = oversized
+          .map((f) => `"${f.name}" (${(f.size / (1024 * 1024)).toFixed(1)}MB)`)
+          .join(", ");
+        setClientErrors((p) => ({
+          ...p,
+          galleryImages: `File size limit exceeded: ${names} ${oversized.length > 1 ? "exceed" : "exceeds"} the 10MB limit per image. Please upload smaller images.`,
+        }));
+        return;
+      }
       const validFiles = files.filter((f) => f.type.startsWith("image/"));
+      if (validFiles.length < files.length) {
+        setClientErrors((p) => ({
+          ...p,
+          galleryImages: "Only image files (JPEG, PNG, WebP, SVG) are allowed.",
+        }));
+      } else {
+        setClientErrors((p) => {
+          const n = { ...p };
+          delete n.galleryImages;
+          return n;
+        });
+      }
       const newUrls = validFiles.map((f) => URL.createObjectURL(f));
       setGalleryFiles((prev) => [...prev, ...validFiles]);
       setGalleryPreviewUrls((prev) => [...prev, ...newUrls]);
@@ -316,6 +366,26 @@ export default function CreateHostel({
   const handleBrochureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+      if (!isPdf) {
+        setClientErrors((p) => ({
+          ...p,
+          brochure: "Only PDF documents are allowed for brochures.",
+        }));
+        return;
+      }
+      if (file.size > 25 * 1024 * 1024) {
+        setClientErrors((p) => ({
+          ...p,
+          brochure: `Brochure "${file.name}" (${(file.size / (1024 * 1024)).toFixed(1)}MB) exceeds the 25MB limit. Please upload a smaller PDF.`,
+        }));
+        return;
+      }
+      setClientErrors((p) => {
+        const n = { ...p };
+        delete n.brochure;
+        return n;
+      });
       setBrochureFile(file);
       setBrochureName(file.name);
     }
@@ -338,8 +408,8 @@ export default function CreateHostel({
       errors.city = "City is required.";
     }
 
-    if (!localityId) {
-      errors.locality = "Locality is required.";
+    if (selectedLocalities.length === 0) {
+      errors.locality = "At least one locality (Main Locality) is required.";
     }
 
     if (!address.trim()) {
@@ -356,6 +426,17 @@ export default function CreateHostel({
 
     if (!frontImageFile) {
       errors.frontImage = "Front cover image is required.";
+    } else if (frontImageFile.size > 10 * 1024 * 1024) {
+      errors.frontImage = "Front cover image exceeds the 10MB limit. Please upload a smaller image.";
+    }
+
+    const oversizedGallery = galleryFiles.filter((f) => f.size > 10 * 1024 * 1024);
+    if (oversizedGallery.length > 0) {
+      errors.galleryImages = "One or more gallery images exceed the 10MB limit per image.";
+    }
+
+    if (brochureFile && brochureFile.size > 25 * 1024 * 1024) {
+      errors.brochure = "Brochure exceeds the 25MB limit. Please upload a smaller PDF.";
     }
 
     if (isQuillEmpty(description)) {
@@ -376,7 +457,7 @@ export default function CreateHostel({
       setActiveTab("location");
     } else if (errors.rent || errors.rentFrequency) {
       setActiveTab("pricing");
-    } else if (errors.frontImage) {
+    } else if (errors.frontImage || errors.galleryImages || errors.brochure) {
       setActiveTab("media");
     }
 
@@ -417,7 +498,7 @@ export default function CreateHostel({
     // Location
     const locationObj: Record<string, unknown> = {
       city: cityId,
-      locality: localityId,
+      locality: selectedLocalities,
       address: address.trim(),
     };
     if (mapUrl.trim()) locationObj.mapUrl = mapUrl.trim();
@@ -680,8 +761,9 @@ export default function CreateHostel({
 
           {/* TAB 2: LOCATION */}
           {activeTab === "location" && (
-            <div className="space-y-4 animate-in fade-in duration-150">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-6 animate-in fade-in duration-150">
+              {/* City Selection */}
+              <div className="max-w-md">
                 <FormField label="City *" error={clientErrors.city}>
                   <select
                     value={cityId}
@@ -697,54 +779,229 @@ export default function CreateHostel({
                     ))}
                   </select>
                 </FormField>
-
-                <FormField
-                  label="Locality / Area *"
-                  hint={!cityId ? "Select a city first to view its localities." : undefined}
-                  error={clientErrors.locality || localityFetchError || undefined}
-                >
-                  <div className="relative">
-                    <select
-                      value={localityId}
-                      onChange={(e) => {
-                        setLocalityId(e.target.value);
-                        if (clientErrors.locality) {
-                          setClientErrors((p) => {
-                            const next = { ...p };
-                            delete next.locality;
-                            return next;
-                          });
-                        }
-                      }}
-                      disabled={!cityId || isLoadingLocalities || isSubmitting}
-                      className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-slate-300 disabled:opacity-50 cursor-pointer"
-                    >
-                      {!cityId ? (
-                        <option value="">Select a city first…</option>
-                      ) : isLoadingLocalities ? (
-                        <option value="">Loading localities…</option>
-                      ) : cityLocalities.length === 0 ? (
-                        <option value="">No localities found for this city</option>
-                      ) : (
-                        <>
-                          <option value="">Select Locality…</option>
-                          {cityLocalities.map((loc) => (
-                            <option key={loc.id} value={loc.id}>
-                              {loc.name}
-                            </option>
-                          ))}
-                        </>
-                      )}
-                    </select>
-                    {isLoadingLocalities && (
-                      <div className="absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none flex items-center">
-                        <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
-                      </div>
-                    )}
-                  </div>
-                </FormField>
               </div>
 
+              {/* Localities Multi-Select (Same card grid style as Institute, with Main Locality support) */}
+              <div className="space-y-2.5 p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Localities / Areas * ({selectedLocalities.length} Selected)
+                    </label>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      The first selected locality is the <span className="font-semibold text-amber-600">★ Main Locality</span> (mandatory). Additional selections are saved as <span className="font-semibold text-slate-700">Other Localities</span>.
+                    </p>
+                  </div>
+                  {selectedLocalities.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedLocalities([])}
+                      className="text-xs text-rose-600 font-bold hover:underline cursor-pointer self-start sm:self-auto"
+                    >
+                      Deselect All
+                    </button>
+                  )}
+                </div>
+
+                {/* Selected Localities Badge Summary */}
+                {selectedLocalities.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5 p-2 bg-white rounded-lg border border-slate-200/80">
+                    <span className="text-[11px] font-semibold text-slate-400 mr-1">Selected:</span>
+                    {selectedLocalities.map((locId, idx) => {
+                      const isMain = idx === 0;
+                      const locName = cityLocalities.find((l) => l.id === locId)?.name || locId;
+                      return (
+                        <div
+                          key={locId}
+                          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs transition ${
+                            isMain
+                              ? "bg-amber-100 text-amber-900 border border-amber-300 font-bold shadow-xs"
+                              : "bg-slate-100 text-slate-700 border border-slate-200 font-medium"
+                          }`}
+                        >
+                          {isMain ? (
+                            <span className="text-[9px] bg-amber-500 text-white px-1 py-0.2 rounded font-black tracking-wide">
+                              ★ MAIN
+                            </span>
+                          ) : (
+                            <span className="text-[9px] bg-slate-300 text-slate-700 px-1 py-0.2 rounded font-semibold">
+                              OTHER
+                            </span>
+                          )}
+                          <span className="truncate max-w-[120px]">{locName}</span>
+                          {!isMain && (
+                            <button
+                              type="button"
+                              onClick={() => handleSetMainLocality(locId)}
+                              title="Make this the Main Locality"
+                              className="text-[10px] text-amber-700 hover:text-amber-900 font-semibold px-1 rounded hover:bg-amber-200/70 transition cursor-pointer"
+                            >
+                              ★ Set Main
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleLocality(locId)}
+                            title="Remove locality"
+                            className="text-slate-400 hover:text-rose-600 ml-0.5 text-xs font-bold cursor-pointer"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {clientErrors.locality && (
+                  <p className="text-xs text-rose-500 font-medium">{clientErrors.locality}</p>
+                )}
+
+                {!cityId ? (
+                  <p className="text-xs text-slate-400 italic p-3 border border-dashed border-slate-200 rounded-xl text-center bg-white">
+                    Please select a city first to view its localities.
+                  </p>
+                ) : isLoadingLocalities ? (
+                  <div className="flex items-center justify-center gap-2 p-3 border border-dashed border-slate-200 rounded-xl text-center text-xs text-slate-500 bg-white">
+                    <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                    <span>Loading localities for selected city…</span>
+                  </div>
+                ) : localityFetchError ? (
+                  <p className="text-xs text-rose-500 italic p-3 border border-dashed border-rose-200 rounded-xl text-center bg-rose-50/30">
+                    {localityFetchError}
+                  </p>
+                ) : cityLocalities.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic p-3 border border-dashed border-slate-200 rounded-xl text-center bg-white">
+                    No localities found for this city. You can add them under City Management.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-52 overflow-y-auto p-1 bg-white rounded-xl border border-slate-200/60">
+                    {cityLocalities.map((loc) => {
+                      const isSelected = selectedLocalities.includes(loc.id);
+                      const isMain = isSelected && selectedLocalities[0] === loc.id;
+                      return (
+                        <div
+                          key={loc.id}
+                          className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-between gap-1.5 transition ${
+                            isMain
+                              ? "bg-amber-50/90 border-amber-300 text-amber-950 font-bold shadow-xs"
+                              : isSelected
+                              ? "bg-orange-50 border-orange-300 text-orange-950 font-bold"
+                              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                          }`}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => handleToggleLocality(loc.id)}
+                            className="flex items-center gap-2 flex-1 min-w-0 text-left cursor-pointer"
+                          >
+                            <span
+                              className={`w-3.5 h-3.5 rounded flex items-center justify-center shrink-0 border ${
+                                isMain
+                                  ? "bg-amber-500 border-amber-500 text-white"
+                                  : isSelected
+                                  ? "bg-orange-500 border-orange-500 text-white"
+                                  : "border-slate-300 bg-white"
+                              }`}
+                            >
+                              {isSelected && <span className="text-[9px]">✓</span>}
+                            </span>
+                            <span className="truncate">{loc.name}</span>
+                          </button>
+
+                          {isMain && (
+                            <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-amber-200 text-amber-900 font-bold">
+                              ★ Main
+                            </span>
+                          )}
+                          {isSelected && !isMain && (
+                            <button
+                              type="button"
+                              onClick={() => handleSetMainLocality(loc.id)}
+                              title="Set as Main Locality"
+                              className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-white hover:bg-amber-100 text-slate-600 hover:text-amber-800 border border-slate-200 transition font-medium cursor-pointer"
+                            >
+                              Set Main
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Nearby Institutes Multi-Select (Moved to Location Step) */}
+              <div className="space-y-2 p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Nearby Institutes ({selectedInstitutes.length} Selected)
+                  </label>
+                  {cityInstitutes.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (selectedInstitutes.length === cityInstitutes.length) {
+                          setSelectedInstitutes([]);
+                        } else {
+                          setSelectedInstitutes(cityInstitutes.map((i) => i.id));
+                        }
+                      }}
+                      className="text-xs text-orange-600 font-bold hover:underline cursor-pointer"
+                    >
+                      {selectedInstitutes.length === cityInstitutes.length ? "Deselect All" : "Select All"}
+                    </button>
+                  )}
+                </div>
+
+                {!cityId ? (
+                  <p className="text-xs text-slate-400 italic p-3 border border-dashed border-slate-200 rounded-xl text-center bg-white">
+                    Please select a city first to view nearby institutes.
+                  </p>
+                ) : isLoadingInstitutes ? (
+                  <div className="flex items-center justify-center gap-2 p-3 border border-dashed border-slate-200 rounded-xl text-center text-xs text-slate-500 bg-white">
+                    <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                    <span>Loading institutes for selected city…</span>
+                  </div>
+                ) : instituteFetchError ? (
+                  <p className="text-xs text-rose-500 italic p-3 border border-dashed border-rose-200 rounded-xl text-center bg-rose-50/30">
+                    {instituteFetchError}
+                  </p>
+                ) : cityInstitutes.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic p-3 border border-dashed border-slate-200 rounded-xl text-center bg-white">
+                    No institutes found for this city. You can add them under City Management.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-48 overflow-y-auto p-1 bg-white rounded-xl border border-slate-200/60">
+                    {cityInstitutes.map((inst) => {
+                      const isSelected = selectedInstitutes.includes(inst.id);
+                      return (
+                        <button
+                          key={inst.id}
+                          type="button"
+                          onClick={() => handleToggleInstitute(inst.id)}
+                          className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition text-left cursor-pointer ${
+                            isSelected
+                              ? "bg-orange-50 border-orange-300 text-orange-950 font-bold"
+                              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                          }`}
+                        >
+                          <span
+                            className={`w-3.5 h-3.5 rounded flex items-center justify-center shrink-0 border ${
+                              isSelected ? "bg-orange-500 border-orange-500 text-white" : "border-slate-300 bg-white"
+                            }`}
+                          >
+                            {isSelected && <span className="text-[9px]">✓</span>}
+                          </span>
+                          <span className="truncate">{inst.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Complete Address & Map Coordinates */}
               <FormField label="Complete Street Address *" error={clientErrors.address}>
                 <textarea
                   rows={3}
@@ -966,74 +1223,6 @@ export default function CreateHostel({
                 </div>
               </div>
 
-              {/* Nearby Institutes Multi-Select (dependent on selected city) */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    Nearby Institutes ({selectedInstitutes.length} Selected)
-                  </label>
-                  {cityInstitutes.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (selectedInstitutes.length === cityInstitutes.length) {
-                          setSelectedInstitutes([]);
-                        } else {
-                          setSelectedInstitutes(cityInstitutes.map((i) => i.id));
-                        }
-                      }}
-                      className="text-xs text-orange-600 font-bold hover:underline cursor-pointer"
-                    >
-                      {selectedInstitutes.length === cityInstitutes.length ? "Deselect All" : "Select All"}
-                    </button>
-                  )}
-                </div>
-
-                {!cityId ? (
-                  <p className="text-xs text-slate-400 italic p-3 border border-dashed border-slate-200 rounded-xl text-center bg-slate-50/50">
-                    Please select a city first in the Location tab to view nearby institutes.
-                  </p>
-                ) : isLoadingInstitutes ? (
-                  <div className="flex items-center justify-center gap-2 p-3 border border-dashed border-slate-200 rounded-xl text-center text-xs text-slate-500">
-                    <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
-                    <span>Loading institutes for selected city…</span>
-                  </div>
-                ) : instituteFetchError ? (
-                  <p className="text-xs text-rose-500 italic p-3 border border-dashed border-rose-200 rounded-xl text-center bg-rose-50/30">
-                    {instituteFetchError}
-                  </p>
-                ) : cityInstitutes.length === 0 ? (
-                  <p className="text-xs text-slate-400 italic p-3 border border-dashed border-slate-200 rounded-xl text-center bg-slate-50/50">
-                    No institutes found for this city. You can add them under City Management.
-                  </p>
-                ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-48 overflow-y-auto p-1">
-                    {cityInstitutes.map((inst) => {
-                      const isSelected = selectedInstitutes.includes(inst.id);
-                      return (
-                        <button
-                          key={inst.id}
-                          type="button"
-                          onClick={() => handleToggleInstitute(inst.id)}
-                          className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition text-left cursor-pointer ${isSelected
-                              ? "bg-orange-50 border-orange-300 text-orange-950 font-bold"
-                              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                            }`}
-                        >
-                          <span
-                            className={`w-3.5 h-3.5 rounded flex items-center justify-center shrink-0 border ${isSelected ? "bg-orange-500 border-orange-500 text-white" : "border-slate-300 bg-white"
-                              }`}
-                          >
-                            {isSelected && <span className="text-[9px]">✓</span>}
-                          </span>
-                          <span className="truncate">{inst.name}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
               {/* Amenities Multi-Select */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -1154,10 +1343,17 @@ export default function CreateHostel({
                     No gallery photos added yet. Upload interior, dining, and bathroom photos.
                   </div>
                 )}
+                {clientErrors.galleryImages && (
+                  <p className="text-xs font-semibold text-rose-500 mt-1.5">{clientErrors.galleryImages}</p>
+                )}
               </div>
 
               {/* PDF Brochure */}
-              <FormField label="Hostel Brochure PDF (Optional)" hint="Downloadable property info sheet.">
+              <FormField
+                label="Hostel Brochure PDF (Optional)"
+                hint="Downloadable property info sheet (PDF up to 25MB)."
+                error={clientErrors.brochure}
+              >
                 <div className="flex items-center gap-3">
                   <label className="px-3.5 py-2 border border-slate-200 hover:bg-slate-50 rounded-xl text-xs font-bold text-slate-700 cursor-pointer transition flex items-center gap-2">
                     <Icon name="fileText" size={13} />

@@ -43,10 +43,17 @@ export default function DeleteHostel({ open, hostel, onClose, onSuccess }: Delet
       ? (hostel.location.city as { city?: string }).city || ""
       : String(hostel.location?.city || "—");
 
+  const rawLocList = Array.isArray(hostel.location?.locality)
+    ? hostel.location.locality
+    : hostel.location?.locality
+      ? [hostel.location.locality]
+      : [];
+
+  const mainLocality = rawLocList[0];
   const localityName =
-    typeof hostel.location?.locality === "object" && hostel.location?.locality !== null
-      ? (hostel.location.locality as { name?: string }).name || ""
-      : String(hostel.location?.locality || "—");
+    typeof mainLocality === "object" && mainLocality !== null
+      ? (mainLocality as { name?: string }).name || ""
+      : String(mainLocality || "—");
 
   const rentAmount =
     typeof hostel.rent === "object" && hostel.rent !== null

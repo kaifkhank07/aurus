@@ -127,12 +127,21 @@ export function CityResidenceContent({
         const subtitle = (hostel.subtitle || "").toLowerCase();
         const address = (hostel.location?.address || "").toLowerCase();
 
-        const localityName =
-          typeof hostel.location?.locality === "object" && hostel.location?.locality !== null
-            ? (hostel.location.locality.name || "").toLowerCase()
-            : typeof hostel.location?.locality === "string"
-            ? hostel.location.locality.toLowerCase()
-            : "";
+        const rawLocList = Array.isArray(hostel.location?.locality)
+          ? hostel.location.locality
+          : hostel.location?.locality
+            ? [hostel.location.locality]
+            : [];
+        const localityNames = rawLocList
+          .map((loc) => {
+            if (typeof loc === "object" && loc !== null && "name" in loc) {
+              return ((loc as { name?: string }).name || "").toLowerCase();
+            }
+            if (typeof loc === "string") return loc.toLowerCase();
+            return "";
+          })
+          .filter(Boolean)
+          .join(" ");
 
         const instituteNames = Array.isArray(hostel.institute)
           ? hostel.institute
@@ -157,7 +166,7 @@ export function CityResidenceContent({
           title,
           subtitle,
           address,
-          localityName,
+          localityNames,
           instituteNames,
           ...keywords,
         ].join(" ");
@@ -204,15 +213,24 @@ export function CityResidenceContent({
       // 4. Locality Filter (strictly when localitySlug is provided; does not treat locality as an institute)
       if (localitySlug) {
         const normLocSlug = localitySlug.toLowerCase().trim();
-        const rawLoc = hostel.location?.locality;
-        let matchesLoc = false;
-        if (typeof rawLoc === "object" && rawLoc !== null) {
-          matchesLoc =
-            (rawLoc.slug || "").toLowerCase().trim() === normLocSlug ||
-            String(rawLoc.id || (rawLoc as any)._id || "").toLowerCase() === normLocSlug;
-        } else if (typeof rawLoc === "string") {
-          matchesLoc = rawLoc.toLowerCase().trim() === normLocSlug;
-        }
+        const rawLocList = Array.isArray(hostel.location?.locality)
+          ? hostel.location.locality
+          : hostel.location?.locality
+            ? [hostel.location.locality]
+            : [];
+        const matchesLoc = rawLocList.some((rawLoc) => {
+          if (typeof rawLoc === "object" && rawLoc !== null) {
+            const locObj = rawLoc as { slug?: string; id?: string; _id?: string };
+            return (
+              (locObj.slug || "").toLowerCase().trim() === normLocSlug ||
+              String(locObj.id || locObj._id || "").toLowerCase() === normLocSlug
+            );
+          }
+          if (typeof rawLoc === "string") {
+            return rawLoc.toLowerCase().trim() === normLocSlug;
+          }
+          return false;
+        });
         if (!matchesLoc) return false;
       }
 

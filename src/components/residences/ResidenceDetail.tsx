@@ -158,11 +158,17 @@ export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailPro
           : "NOT AVAILABLE";
 
   // 2. Locality & City (Strict DB only - no hardcoded default city)
+  const rawLocList = Array.isArray(hostel.location?.locality)
+    ? hostel.location.locality
+    : hostel.location?.locality
+      ? [hostel.location.locality]
+      : [];
+  const mainLoc = rawLocList[0];
   const localityName =
-    typeof hostel.location?.locality === "object" && hostel.location?.locality !== null
-      ? (hostel.location.locality as { name?: string }).name?.trim() || ""
-      : typeof hostel.location?.locality === "string"
-        ? hostel.location.locality.trim()
+    typeof mainLoc === "object" && mainLoc !== null && "name" in mainLoc
+      ? (mainLoc as { name?: string }).name?.trim() || ""
+      : typeof mainLoc === "string"
+        ? mainLoc.trim()
         : "";
 
   const cityName =

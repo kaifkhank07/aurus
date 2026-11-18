@@ -40,7 +40,7 @@ export interface IHostelDocument extends Document {
   description: string;
   location: {
     city: mongoose.Types.ObjectId;
-    locality: mongoose.Types.ObjectId;
+    locality: mongoose.Types.ObjectId[];
     address: string;
     mapUrl?: string;
     longitude?: number;
@@ -112,12 +112,13 @@ const HostelLocationSchema = new Schema(
       required: [true, "City reference is required"],
       index: true,
     },
-    locality: {
-      type: Schema.Types.ObjectId,
-      ref: "Locality",
-      required: [true, "Locality reference is required"],
-      index: true,
-    },
+    locality: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Locality",
+        index: true,
+      },
+    ],
     address: {
       type: String,
       required: [true, "Address is required"],

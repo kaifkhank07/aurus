@@ -75,27 +75,33 @@ function formatSafeHostel(doc: IHostelDocument): SafeHostel {
     formattedCity = rawCity ? String(rawCity) : "";
   }
 
-  // Format locality in location
-  let formattedLocality: string | SafeLocality;
+  // Format locality in location (array of localities; index 0 is Main Locality)
   const rawLocality = doc.location?.locality as unknown;
-  if (rawLocality && typeof rawLocality === "object" && "_id" in rawLocality) {
-    const locDoc = rawLocality as unknown as ILocalityDocument;
-    formattedLocality = {
-      id: locDoc._id.toString(),
-      name: locDoc.name,
-      slug: locDoc.slug,
-      isActive: locDoc.isActive ?? true,
-      city: locDoc.city ? String(locDoc.city) : "",
-      createdAt: locDoc.createdAt ? locDoc.createdAt.toISOString() : new Date().toISOString(),
-      updatedAt: locDoc.updatedAt ? locDoc.updatedAt.toISOString() : new Date().toISOString(),
-    };
-  } else {
-    formattedLocality = rawLocality ? String(rawLocality) : "";
-  }
+  const rawLocalityList: unknown[] = Array.isArray(rawLocality)
+    ? rawLocality
+    : rawLocality !== undefined && rawLocality !== null
+      ? [rawLocality]
+      : [];
+
+  const formattedLocalityList: (string | SafeLocality)[] = rawLocalityList.map((item) => {
+    if (item && typeof item === "object" && "_id" in item) {
+      const locDoc = item as unknown as ILocalityDocument;
+      return {
+        id: locDoc._id.toString(),
+        name: locDoc.name,
+        slug: locDoc.slug,
+        isActive: locDoc.isActive ?? true,
+        city: locDoc.city ? String(locDoc.city) : "",
+        createdAt: locDoc.createdAt ? locDoc.createdAt.toISOString() : new Date().toISOString(),
+        updatedAt: locDoc.updatedAt ? locDoc.updatedAt.toISOString() : new Date().toISOString(),
+      };
+    }
+    return String(item);
+  });
 
   const safeLocation: SafeHostelLocation = {
     city: formattedCity,
-    locality: formattedLocality,
+    locality: formattedLocalityList,
     address: doc.location?.address ?? "",
     mapUrl: doc.location?.mapUrl,
     longitude: doc.location?.longitude,
@@ -577,16 +583,20 @@ export async function create(request: NextRequest): Promise<NextResponse> {
       throw new AppError("Referenced city does not exist.", 404);
     }
 
-    // Verify Locality exists
-    const localityDoc = await Locality.findById(validated.location.locality);
-    if (!localityDoc) {
-      throw new AppError("Referenced locality does not exist.", 404);
+    // Verify Localities exist
+    const localityIds = validated.location.locality;
+    const localityDocs = await Locality.find({ _id: { $in: localityIds } });
+    if (localityDocs.length !== localityIds.length) {
+      throw new AppError("One or more referenced localities do not exist.", 404);
     }
 
-    // Verify Locality belongs to City
-    if (localityDoc.city.toString() !== validated.location.city) {
+    // Verify all Localities belong to City
+    const invalidLocality = localityDocs.find(
+      (loc) => loc.city.toString() !== validated.location.city
+    );
+    if (invalidLocality) {
       throw new AppError(
-        "Selected locality does not belong to the selected city.",
+        "One or more selected localities do not belong to the selected city.",
         400
       );
     }
@@ -671,7 +681,7 @@ export async function create(request: NextRequest): Promise<NextResponse> {
       description: validated.description.trim(),
       location: {
         city: new mongoose.Types.ObjectId(validated.location.city),
-        locality: new mongoose.Types.ObjectId(validated.location.locality),
+        locality: validated.location.locality.map((id) => new mongoose.Types.ObjectId(id)),
         address: validated.location.address.trim(),
         mapUrl: validated.location.mapUrl || undefined,
         longitude: validated.location.longitude,
@@ -936,30 +946,42 @@ export async function update(
     // Handle Location update
     if (validated.location !== undefined) {
       const nextCityId = validated.location.city || hostel.location.city.toString();
-      const nextLocalityId = validated.location.locality || hostel.location.locality.toString();
+      const nextLocalityIds: string[] | undefined = validated.location.locality;
 
-      if (validated.location.city !== undefined || validated.location.locality !== undefined) {
-        const [cityDoc, localityDoc] = await Promise.all([
-          City.findById(nextCityId),
-          Locality.findById(nextLocalityId),
-        ]);
-
+      if (validated.location.city !== undefined || nextLocalityIds !== undefined) {
+        const cityDoc = await City.findById(nextCityId);
         if (!cityDoc) {
           throw new AppError("Referenced city does not exist.", 404);
         }
-        if (!localityDoc) {
-          throw new AppError("Referenced locality does not exist.", 404);
-        }
 
-        if (localityDoc.city.toString() !== nextCityId) {
-          throw new AppError(
-            "Selected locality does not belong to the selected city.",
-            400
+        const checkLocalityIds = nextLocalityIds || (
+          Array.isArray(hostel.location.locality)
+            ? (hostel.location.locality as mongoose.Types.ObjectId[]).map((id) => id.toString())
+            : hostel.location.locality
+              ? [String(hostel.location.locality)]
+              : []
+        );
+
+        if (checkLocalityIds.length > 0) {
+          const localityDocs = await Locality.find({ _id: { $in: checkLocalityIds } });
+          if (localityDocs.length !== checkLocalityIds.length) {
+            throw new AppError("One or more referenced localities do not exist.", 404);
+          }
+          const invalidLocality = localityDocs.find(
+            (loc) => loc.city.toString() !== nextCityId
           );
+          if (invalidLocality) {
+            throw new AppError(
+              "One or more selected localities do not belong to the selected city.",
+              400
+            );
+          }
         }
 
         hostel.location.city = new mongoose.Types.ObjectId(nextCityId);
-        hostel.location.locality = new mongoose.Types.ObjectId(nextLocalityId);
+        if (nextLocalityIds !== undefined) {
+          hostel.location.locality = nextLocalityIds.map((id) => new mongoose.Types.ObjectId(id));
+        }
       }
 
       if (validated.location.address !== undefined) {

@@ -196,8 +196,8 @@ export function validateFileContent(
   if (buffer.length > maxSize) {
     const maxMb = Math.round(maxSize / (1024 * 1024));
     throw new AppError(
-      `File "${fileName}" exceeds maximum allowed size of ${maxMb}MB for ${mimeConfig.category}s.`,
-      400
+      `File "${fileName}" exceeds maximum allowed size of ${maxMb}MB for ${mimeConfig.category}s. Please upload a smaller file.`,
+      413
     );
   }
 

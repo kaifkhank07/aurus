@@ -28,7 +28,7 @@ export interface SafeHostelRent {
 
 export interface IHostelLocation {
   city: string;
-  locality: string;
+  locality: string | string[];
   address: string;
   mapUrl?: string;
   longitude?: number;
@@ -37,7 +37,7 @@ export interface IHostelLocation {
 
 export interface SafeHostelLocation {
   city: string | SafeCity;
-  locality: string | SafeLocality;
+  locality: (string | SafeLocality)[] | string | SafeLocality;
   address: string;
   mapUrl?: string;
   longitude?: number;

@@ -54,12 +54,21 @@ export function ExploreResidences() {
         const subtitle = (hostel.subtitle || "").toLowerCase();
         const address = (hostel.location?.address || "").toLowerCase();
 
-        const localityName =
-          typeof hostel.location?.locality === "object" && hostel.location?.locality !== null
-            ? (hostel.location.locality.name || "").toLowerCase()
-            : typeof hostel.location?.locality === "string"
-              ? hostel.location.locality.toLowerCase()
-              : "";
+        const rawLocList = Array.isArray(hostel.location?.locality)
+          ? hostel.location.locality
+          : hostel.location?.locality
+            ? [hostel.location.locality]
+            : [];
+        const localityNames = rawLocList
+          .map((loc) => {
+            if (typeof loc === "object" && loc !== null && "name" in loc) {
+              return ((loc as { name?: string }).name || "").toLowerCase();
+            }
+            if (typeof loc === "string") return loc.toLowerCase();
+            return "";
+          })
+          .filter(Boolean)
+          .join(" ");
 
         const cityName =
           typeof hostel.location?.city === "object" && hostel.location?.city !== null
@@ -76,7 +85,7 @@ export function ExploreResidences() {
           title,
           subtitle,
           address,
-          localityName,
+          localityNames,
           cityName,
           ...keywords,
         ].join(" ");
