@@ -14,11 +14,14 @@ import {
   SafeEnquiry,
   EnquiryQueryParams,
   EnquiryStatus,
+  EnquiryGender,
   ENQUIRY_STATUS_LABELS,
+  ENQUIRY_GENDER_LABELS,
 } from "@/types/enquiry.types";
 
 const PAGE_LIMIT = 10;
 type StatusFilter = "all" | EnquiryStatus;
+type GenderFilter = "all" | EnquiryGender;
 
 export default function EnquiryManage() {
   const {
@@ -40,6 +43,7 @@ export default function EnquiryManage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [genderFilter, setGenderFilter] = useState<GenderFilter>("all");
   const [sortOrderDir, setSortOrderDir] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -90,9 +94,13 @@ export default function EnquiryManage() {
         params.status = statusFilter;
       }
 
+      if (genderFilter !== "all") {
+        params.gender = genderFilter;
+      }
+
       await fetchEnquiries(params, force);
     },
-    [currentPage, debouncedSearch, statusFilter, sortOrderDir, fetchEnquiries]
+    [currentPage, debouncedSearch, statusFilter, genderFilter, sortOrderDir, fetchEnquiries]
   );
 
   useEffect(() => {
@@ -141,6 +149,7 @@ export default function EnquiryManage() {
     setSearch("");
     setDebouncedSearch("");
     setStatusFilter("all");
+    setGenderFilter("all");
     setSortOrderDir("desc");
     setCurrentPage(1);
   };
@@ -149,9 +158,10 @@ export default function EnquiryManage() {
     return (
       search.trim().length > 0 ||
       statusFilter !== "all" ||
+      genderFilter !== "all" ||
       sortOrderDir !== "desc"
     );
-  }, [search, statusFilter, sortOrderDir]);
+  }, [search, statusFilter, genderFilter, sortOrderDir]);
 
   const totalCount = enquiriesPagination?.total ?? enquiries.length;
   const totalPages =
@@ -207,7 +217,7 @@ export default function EnquiryManage() {
             <TextInput
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name, number, message or location…"
+              placeholder="Search by name, number, email, city, or message…"
               className="pl-9 pr-9"
             />
             {search && (
@@ -236,6 +246,20 @@ export default function EnquiryManage() {
               <option value="new">New</option>
               <option value="read">Read</option>
               <option value="complete">Complete</option>
+            </select>
+
+            {/* Gender Filter */}
+            <select
+              value={genderFilter}
+              onChange={(e) => {
+                setGenderFilter(e.target.value as GenderFilter);
+                setCurrentPage(1);
+              }}
+              className="text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300 transition cursor-pointer"
+            >
+              <option value="all">All Hostels</option>
+              <option value="boys">Boys Hostel</option>
+              <option value="girls">Girls Hostel</option>
             </select>
 
             {/* Sort Direction Dropdown */}
@@ -294,7 +318,7 @@ export default function EnquiryManage() {
               <tr className="border-b border-slate-200/80 bg-slate-50/75 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 <th className="py-3 px-4">Sender</th>
                 <th className="py-3 px-4">Contact</th>
-                <th className="py-3 px-4">Location</th>
+                <th className="py-3 px-4">Hostel City</th>
                 <th className="py-3 px-4">Message Snippet</th>
                 <th className="py-3 px-4 w-36">Status</th>
                 <th className="py-3 px-4 w-28">Received</th>
@@ -352,8 +376,8 @@ export default function EnquiryManage() {
                       key={enquiry.id}
                       className="hover:bg-slate-50/70 transition-colors group select-text"
                     >
-                      {/* Sender Name & Role */}
-                      <td className="py-3 px-4 min-w-[180px]">
+                      {/* Sender Name, Gender & Email */}
+                      <td className="py-3 px-4 min-w-[200px]">
                         <div className="flex items-center gap-3">
                           <div
                             className={`w-8 h-8 rounded-xl font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs text-white ${
@@ -366,12 +390,25 @@ export default function EnquiryManage() {
                           >
                             {enquiry.name.charAt(0).toUpperCase()}
                           </div>
-                          <div>
-                            <div className="font-bold text-slate-900 group-hover:text-amber-600 transition-colors">
+                          <div className="min-w-0">
+                            <div className="font-bold text-slate-900 group-hover:text-amber-600 transition-colors truncate">
                               {enquiry.name}
                             </div>
-                            <div className="text-[11px] font-medium text-slate-500">
-                              {enquiry.iam || "Prospective Tenant"}
+                            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                              <span
+                                className={`inline-block px-1.5 py-0.2 rounded text-[10px] font-semibold ${
+                                  enquiry.gender === "boys"
+                                    ? "bg-sky-100 text-sky-800"
+                                    : "bg-pink-100 text-pink-800"
+                                }`}
+                              >
+                                {ENQUIRY_GENDER_LABELS[enquiry.gender] || enquiry.gender}
+                              </span>
+                              {enquiry.email && (
+                                <span className="text-[11px] text-slate-400 truncate max-w-[130px]" title={enquiry.email}>
+                                  {enquiry.email}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -402,12 +439,12 @@ export default function EnquiryManage() {
                         </div>
                       </td>
 
-                      {/* Location */}
+                      {/* Hostel City */}
                       <td className="py-3 px-4 min-w-[140px]">
-                        {enquiry.location ? (
+                        {enquiry.hostelCity ? (
                           <div className="flex items-center gap-1 text-slate-700 font-medium truncate max-w-[160px]">
                             <Icon name="pin" size={12} className="text-slate-400 shrink-0" />
-                            <span className="truncate">{enquiry.location}</span>
+                            <span className="truncate">{enquiry.hostelCity}</span>
                           </div>
                         ) : (
                           <span className="text-slate-400">—</span>

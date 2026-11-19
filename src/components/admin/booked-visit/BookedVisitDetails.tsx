@@ -56,7 +56,7 @@ export default function BookedVisitDetails({
   };
 
   // Date parsing & upcoming/past calculation
-  const visitDateObj = visit.preferredDate ? new Date(visit.preferredDate) : null;
+  const visitDateObj = visit.wantToVisit ? new Date(visit.wantToVisit) : null;
   const isDateValid = visitDateObj && !isNaN(visitDateObj.getTime());
 
   const formattedVisitDate = isDateValid
@@ -66,7 +66,7 @@ export default function BookedVisitDetails({
       month: "long",
       day: "numeric",
     })
-    : visit.preferredDate || "Not specified";
+    : visit.wantToVisit || "Not specified";
 
   const isUpcoming = isDateValid
     ? new Date(visitDateObj.toDateString()) >= new Date(new Date().toDateString())
@@ -162,7 +162,7 @@ export default function BookedVisitDetails({
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-xs text-slate-500 font-medium">College:</span>
                   <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-white border border-slate-200 text-slate-700">
-                    {visit.college}
+                    {visit.collegeName}
                   </span>
                 </div>
               </div>
@@ -182,14 +182,15 @@ export default function BookedVisitDetails({
                       type="button"
                       disabled={isUpdatingStatus}
                       onClick={() => handleStatusUpdate(s)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold capitalize transition cursor-pointer ${isActive
-                        ? s === "new"
-                          ? "bg-amber-100 text-amber-800"
-                          : s === "read"
-                            ? "bg-sky-100 text-sky-800"
-                            : "bg-emerald-100 text-emerald-800"
-                        : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
-                        }`}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold capitalize transition cursor-pointer ${
+                        isActive
+                          ? s === "new"
+                            ? "bg-amber-100 text-amber-800"
+                            : s === "read"
+                              ? "bg-sky-100 text-sky-800"
+                              : "bg-emerald-100 text-emerald-800"
+                          : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
+                      }`}
                     >
                       {BOOKED_VISIT_STATUS_LABELS[s]}
                     </button>
@@ -264,51 +265,53 @@ export default function BookedVisitDetails({
                 )}
               </div>
 
-              <div className="text-sm font-bold text-slate-900 truncate" title={visit.email}>
-                {visit.email}
+              <div className="text-sm font-bold text-slate-900 truncate" title={visit.email || "Not provided"}>
+                {visit.email || <span className="text-slate-400 font-normal italic">Not provided</span>}
               </div>
 
-              <div className="flex items-center gap-1.5 pt-1">
-                <button
-                  type="button"
-                  onClick={() => handleCopy(visit.email, "email")}
-                  title="Copy email address"
-                  className="px-2 py-1 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition cursor-pointer flex items-center gap-1"
-                >
-                  <Icon name="copy" size={11} />
-                  <span>Copy</span>
-                </button>
+              {visit.email && (
+                <div className="flex items-center gap-1.5 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(visit.email!, "email")}
+                    title="Copy email address"
+                    className="px-2 py-1 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition cursor-pointer flex items-center gap-1"
+                  >
+                    <Icon name="copy" size={11} />
+                    <span>Copy</span>
+                  </button>
 
-                <a
-                  href={`mailto:${visit.email}`}
-                  className="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 text-xs font-semibold transition flex items-center gap-1"
-                >
-                  <Icon name="mail" size={11} />
-                  <span>Email</span>
-                </a>
-              </div>
+                  <a
+                    href={`mailto:${visit.email}`}
+                    className="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 text-xs font-semibold transition flex items-center gap-1"
+                  >
+                    <Icon name="mail" size={11} />
+                    <span>Email</span>
+                  </a>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Appointment Date & Location Grid */}
+          {/* Appointment Date & Hostel City Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Preferred Date */}
+            {/* Want to Visit (Preferred Date) */}
             <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-1">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Icon name="calendar" size={12} /> Scheduled Date
+                <Icon name="calendar" size={12} /> Scheduled Visit Date
               </span>
               <div className="text-sm font-bold text-slate-800 pt-0.5">
                 {formattedVisitDate}
               </div>
             </div>
 
-            {/* Location / Property */}
+            {/* Hostel City */}
             <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-1">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Icon name="pin" size={12} /> Location
+                <Icon name="pin" size={12} /> Hostel City
               </span>
-              <div className="text-sm font-bold text-slate-800 pt-0.5 truncate" title={visit.location}>
-                {visit.location}
+              <div className="text-sm font-bold text-slate-800 pt-0.5 truncate" title={visit.hostelCity}>
+                {visit.hostelCity}
               </div>
             </div>
           </div>
@@ -323,7 +326,6 @@ export default function BookedVisitDetails({
                 {BOOKED_VISIT_STATUS_LABELS[visit.status] || visit.status}
               </Chip>
             </div>
-
 
             <div>
               <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-0.5">

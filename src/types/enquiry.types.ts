@@ -9,12 +9,21 @@ export const ENQUIRY_STATUS_LABELS: Record<EnquiryStatus, string> = {
   complete: "Complete",
 };
 
+export const ENQUIRY_GENDERS = ["boys", "girls"] as const;
+export type EnquiryGender = (typeof ENQUIRY_GENDERS)[number];
+
+export const ENQUIRY_GENDER_LABELS: Record<EnquiryGender, string> = {
+  boys: "Boys",
+  girls: "Girls",
+};
+
 export interface SafeEnquiry {
   id: string;
   name: string;
   number: string;
-  location?: string | null;
-  iam?: string | null;
+  email?: string | null;
+  hostelCity: string;
+  gender: EnquiryGender;
   message?: string | null;
   status: EnquiryStatus;
   createdAt: string;
@@ -24,18 +33,20 @@ export interface SafeEnquiry {
 export interface CreateEnquiryInput {
   name: string;
   number: string;
-  location: string;
-  iam: string;
-  message: string;
+  email?: string | null;
+  hostelCity: string;
+  gender: EnquiryGender;
+  message?: string | null;
   status?: EnquiryStatus;
 }
 
 export interface UpdateEnquiryInput {
   name?: string;
   number?: string;
-  location?: string;
-  iam?: string;
-  message?: string;
+  email?: string | null;
+  hostelCity?: string;
+  gender?: EnquiryGender;
+  message?: string | null;
   status?: EnquiryStatus;
 }
 
@@ -43,9 +54,10 @@ export interface EnquiryQueryParams {
   page: number;
   limit: number;
   search?: string;
-  location?: string;
+  hostelCity?: string;
+  gender?: EnquiryGender | "all" | string;
   status?: EnquiryStatus | "all" | string;
-  sortBy?: "createdAt" | "name" | "status";
+  sortBy?: "createdAt" | "name" | "status" | "hostelCity";
   sortOrderDir?: "asc" | "desc";
 }
 

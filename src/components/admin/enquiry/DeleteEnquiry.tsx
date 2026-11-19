@@ -107,6 +107,20 @@ export default function DeleteEnquiry({
                   {ENQUIRY_STATUS_LABELS[enquiry.status || "new"]}
                 </Chip>
               </div>
+              <div>
+                <span className="text-slate-400 font-medium">Hostel City: </span>
+                <span className="font-semibold text-slate-700">{enquiry.hostelCity}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 font-medium">Gender: </span>
+                <span className="font-semibold text-slate-700 capitalize">{enquiry.gender}</span>
+              </div>
+              {enquiry.email && (
+                <div>
+                  <span className="text-slate-400 font-medium">Email: </span>
+                  <span className="font-semibold text-slate-700">{enquiry.email}</span>
+                </div>
+              )}
               {enquiry.message && (
                 <div className="text-slate-600 line-clamp-2 italic pt-1 border-t border-slate-200/60">
                   &ldquo;{enquiry.message}&rdquo;

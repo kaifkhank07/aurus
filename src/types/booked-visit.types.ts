@@ -13,11 +13,11 @@ export interface SafeBookedVisit {
   id: string;
   name: string;
   number: string;
-  email: string;
-  college: string;
-  location: string;
+  email?: string | null;
+  hostelCity: string;
+  collegeName: string;
+  wantToVisit: string;
   status: BookedVisitStatus;
-  preferredDate: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -25,20 +25,20 @@ export interface SafeBookedVisit {
 export interface CreateBookedVisitInput {
   name: string;
   number: string;
-  email: string;
-  college: string;
-  location: string;
-  preferredDate: string;
+  email?: string | null;
+  hostelCity: string;
+  collegeName: string;
+  wantToVisit: string;
   status?: BookedVisitStatus;
 }
 
 export interface UpdateBookedVisitInput {
   name?: string;
   number?: string;
-  email?: string;
-  college?: string;
-  location?: string;
-  preferredDate?: string;
+  email?: string | null;
+  hostelCity?: string;
+  collegeName?: string;
+  wantToVisit?: string;
   status?: BookedVisitStatus;
 }
 
@@ -46,10 +46,10 @@ export interface BookedVisitQueryParams {
   page: number;
   limit: number;
   search?: string;
-  location?: string;
+  hostelCity?: string;
   status?: BookedVisitStatus | "all" | string;
-  preferredDate?: string;
-  sortBy?: "createdAt" | "preferredDate" | "name" | "status";
+  wantToVisit?: string;
+  sortBy?: "createdAt" | "wantToVisit" | "name" | "status" | "hostelCity";
   sortOrderDir?: "asc" | "desc";
 }
 

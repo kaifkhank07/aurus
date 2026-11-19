@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import useMasterStore from "@/store/useMasterStore";
+import { EnquiryGender } from "@/types/enquiry.types";
 
 export interface EnquiryModalProps {
   isOpen: boolean;
@@ -54,8 +55,9 @@ export function EnquiryModal({
 
   const [fullName, setFullName] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
-  const [city, setCity] = useState(initialCity);
-  const [role, setRole] = useState("");
+  const [email, setEmail] = useState("");
+  const [hostelCity, setHostelCity] = useState(initialCity);
+  const [gender, setGender] = useState<EnquiryGender | "">("");
   const [message, setMessage] = useState("");
   const [agreed, setAgreed] = useState(false);
 
@@ -74,7 +76,7 @@ export function EnquiryModal({
 
   useEffect(() => {
     if (initialCity) {
-      setCity(initialCity);
+      setHostelCity(initialCity);
     }
   }, [initialCity]);
 
@@ -92,8 +94,9 @@ export function EnquiryModal({
 
     setFullName("");
     setMobileNumber("");
-    setCity(initialCity || "");
-    setRole("");
+    setEmail("");
+    setHostelCity(initialCity || "");
+    setGender("");
     setMessage("");
     setAgreed(false);
     setErrorMessage(null);
@@ -130,22 +133,17 @@ export function EnquiryModal({
     }
 
     if (!mobileNumber.trim()) {
-      setErrorMessage("Please enter your phone number.");
+      setErrorMessage("Please enter your mobile number.");
       return;
     }
 
-    if (!city.trim()) {
-      setErrorMessage("Please select a city.");
+    if (!hostelCity.trim()) {
+      setErrorMessage("Please select a hostel city.");
       return;
     }
 
-    if (!role.trim()) {
-      setErrorMessage("Please select your category / role.");
-      return;
-    }
-
-    if (!message.trim()) {
-      setErrorMessage("Please enter your message.");
+    if (!gender) {
+      setErrorMessage("Please select gender (boys or girls).");
       return;
     }
 
@@ -166,9 +164,10 @@ export function EnquiryModal({
         body: JSON.stringify({
           name: fullName.trim(),
           number: mobileNumber.trim(),
-          location: city.trim(),
-          iam: role.trim(),
-          message: message.trim(),
+          email: email.trim() || undefined,
+          hostelCity: hostelCity.trim(),
+          gender,
+          message: message.trim() || undefined,
           status: "new",
         }),
       });
@@ -257,7 +256,7 @@ export function EnquiryModal({
               </h3>
 
               <p className="mt-1.5 sm:mt-2 max-w-[580px] text-[13px] sm:text-[15px] lg:text-[16px] leading-[1.35] text-[#88847C]">
-                Have a question about room categories, dining, or amenities? Leave your details and our team will get back to you shortly.
+                Have a question about hostel availability, dining, or amenities? Leave your details and our team will get back to you shortly.
               </p>
             </div>
 
@@ -281,7 +280,7 @@ export function EnquiryModal({
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     disabled={isSubmitting}
-                    placeholder="John Doe"
+                    // placeholder="John Doe"
                     className={inputClass}
                   />
                 </div>
@@ -298,26 +297,43 @@ export function EnquiryModal({
                     value={mobileNumber}
                     onChange={(e) => setMobileNumber(e.target.value)}
                     disabled={isSubmitting}
-                    placeholder="+91 98765 43210"
+                    // placeholder="+91 98765 43210"
                     className={inputClass}
                   />
                 </div>
 
-                {/* City */}
+                {/* Email Address (Optional) */}
+                <div>
+                  <label htmlFor="enquiry-email" className={labelClass}>
+                    Email Address
+                    {/* <span className="text-[#88847C] font-normal lowercase">(optional)</span> */}
+                  </label>
+                  <input
+                    id="enquiry-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isSubmitting}
+                    // placeholder="john@example.com"
+                    className={inputClass}
+                  />
+                </div>
+
+                {/* Hostel City */}
                 <div>
                   <label htmlFor="enquiry-city" className={labelClass}>
-                    City <span className="text-black">*</span>
+                    Hostel City <span className="text-black">*</span>
                   </label>
                   <div className="relative w-full">
                     <select
                       id="enquiry-city"
-                      value={city}
+                      value={hostelCity}
                       required
-                      onChange={(e) => setCity(e.target.value)}
+                      onChange={(e) => setHostelCity(e.target.value)}
                       disabled={isSubmitting}
                       className={`${inputClass} appearance-none cursor-pointer pr-9`}
                     >
-                      <option value="">Select City</option>
+                      <option value="">Select Hostel City</option>
                       {cityOptions.map((c) => (
                         <option key={c} value={c}>
                           {c}
@@ -328,46 +344,43 @@ export function EnquiryModal({
                   </div>
                 </div>
 
-                {/* Category / Role */}
-                <div>
-                  <label htmlFor="enquiry-role" className={labelClass}>
-                    I Am A <span className="text-black">*</span>
+                {/* Gender (boys or girls) */}
+                <div className="sm:col-span-2">
+                  <label htmlFor="enquiry-gender" className={labelClass}>
+                    Gender <span className="text-black">*</span>
                   </label>
                   <div className="relative w-full">
                     <select
-                      id="enquiry-role"
-                      value={role}
+                      id="enquiry-gender"
+                      value={gender}
                       required
-                      onChange={(e) => setRole(e.target.value)}
+                      onChange={(e) => setGender(e.target.value as EnquiryGender)}
                       disabled={isSubmitting}
                       className={`${inputClass} appearance-none cursor-pointer pr-9`}
                     >
-                      <option value="">Select Category</option>
-                      <option value="Student">Student</option>
-                      <option value="Parent">Parent</option>
-                      <option value="Working Professional">Working Professional</option>
-                      <option value="Other">Other</option>
+                      <option value="">Select Gender</option>
+                      <option value="boys">Boys</option>
+                      <option value="girls">Girls</option>
                     </select>
                     <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-black/60 h-4 w-4" />
                   </div>
                 </div>
 
-                {/* Message */}
-                <div className="sm:col-span-2">
+                {/* Message (Optional) */}
+                {/* <div className="sm:col-span-2">
                   <label htmlFor="enquiry-message" className={labelClass}>
-                    Message <span className="text-black">*</span>
+                    Message <span className="text-[#88847C] font-normal lowercase">(optional)</span>
                   </label>
                   <textarea
                     id="enquiry-message"
                     rows={3}
-                    required
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     disabled={isSubmitting}
                     placeholder="Tell us what you're looking for or any questions you have…"
                     className="w-full rounded-[10px] border border-[#D4D4D4] bg-white p-3.5 text-[14px] text-black outline-none transition-colors focus:border-black resize-none disabled:opacity-60"
                   />
-                </div>
+                </div> */}
               </div>
 
               {/* Terms Agreement Checkbox */}
@@ -426,4 +439,3 @@ export function EnquiryModal({
 }
 
 export default EnquiryModal;
-

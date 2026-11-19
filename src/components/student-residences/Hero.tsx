@@ -189,7 +189,7 @@ export function Hero() {
                     type="button"
                     onClick={(e) => handleScroll(e, action.href)}
                   >
-                    <PillButton href="#" variant="light">
+                    <PillButton href={action.href} variant="light">
                       {action.label}
                     </PillButton>
                   </button>
@@ -197,15 +197,15 @@ export function Hero() {
                   // <PillButton key={action.href} href={action.href} variant="light">
                   //   {action.label}
                   // </PillButton>
-                  <button
+                  <Link
                     key={action.href}
-                    type="button"
-                    onClick={(e) => handleScroll(e, action.href)}
+                    href={action.href}
+                    // onClick={(e) => handleScroll(e, action.href)}
                     className="font-mono uppercase text-[clamp(11px,0.7292vw,14px)] leading-[1.7857] tracking-[2px] inline-flex h-[min(2.2917vw,44px)] min-h-[40px] items-center gap-2.5 rounded-full border border-white bg-white text-ink px-[min(1.4583vw,28px)] transition-colors duration-300 outline-none focus-visible:ring-2 focus-visible:ring-ink/40 hover:opacity-80 cursor-pointer"
                   >
                     {action.label}
                     <ArrowRight />
-                  </button>
+                  </Link>
                 );
               })}
             </div>

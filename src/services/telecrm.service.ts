@@ -5,8 +5,9 @@ const logger = createLogger("TeleCRMService");
 export interface TeleCrmLeadData {
   name: string;
   number: string;
-  location?: string | null;
-  iam?: string | null;
+  email?: string | null;
+  hostelCity: string;
+  gender: string;
   message?: string | null;
   status?: string;
   source?: string;
@@ -15,10 +16,10 @@ export interface TeleCrmLeadData {
 export interface TeleCrmBookedVisitData {
   name: string;
   number: string;
-  email: string;
-  college: string;
-  location: string;
-  preferredDate: string;
+  email?: string | null;
+  hostelCity: string;
+  collegeName: string;
+  wantToVisit: string;
   status?: string;
   source?: string;
 }
@@ -72,6 +73,27 @@ async function dispatchToTeleCRM(
   formattedPhone: string,
   operation: string
 ): Promise<TeleCrmResponse> {
+  // If running in development mode, do not dispatch to TeleCRM external API; log payload only
+  if (process.env.NODE_ENV?.trim() === "development") {
+    logger.info("TeleCRM dispatch bypassed in development mode (lead logged only)", {
+      operation,
+      name: leadName,
+      phone: formattedPhone,
+      fields: payload.fields,
+      actions: payload.actions,
+    });
+    return {
+      success: true,
+      skipped: true,
+      data: {
+        message: "TeleCRM dispatch bypassed in development mode",
+        name: leadName,
+        phone: formattedPhone,
+        payload,
+      },
+    };
+  }
+
   const apiUrl = process.env.TELECRM_API_URL;
   const apiKey = process.env.TELECRM_API_KEY;
 
@@ -129,10 +151,9 @@ async function dispatchToTeleCRM(
         logger.error(
           `TeleCRM rejected lead with HTTP ${response.status}`,
           new Error(
-            `HTTP ${response.status}: ${
-              typeof responseData === "string"
-                ? responseData
-                : JSON.stringify(responseData)
+            `HTTP ${response.status}: ${typeof responseData === "string"
+              ? responseData
+              : JSON.stringify(responseData)
             }`
           ),
           { operation, attempt, status: response.status }
@@ -146,10 +167,9 @@ async function dispatchToTeleCRM(
 
       // 5xx server error or 429 rate limit
       throw new Error(
-        `HTTP ${response.status}: ${
-          typeof responseData === "string"
-            ? responseData
-            : JSON.stringify(responseData)
+        `HTTP ${response.status}: ${typeof responseData === "string"
+          ? responseData
+          : JSON.stringify(responseData)
         }`
       );
     } catch (err) {
@@ -206,15 +226,14 @@ export async function sendEnquiryToTeleCRM(
 
   const leadSource = enquiry.source || "Website Enquiry";
 
-  // Build TeleCRM Async autoupdatelead payload
+  // Build TeleCRM Async autoupdatelead payload for Enquiry
   const payload: TeleCrmApiPayload = {
     fields: {
       name: enquiry.name.trim(),
       phone: formattedPhone,
-      city: enquiry.location?.trim() || undefined,
-      location: enquiry.location?.trim() || undefined,
-      iam: enquiry.iam?.trim() || undefined,
-      role: enquiry.iam?.trim() || undefined,
+      email: enquiry.email?.trim().toLowerCase() || undefined,
+      hostel_city: enquiry.hostelCity.trim(),
+      gender: enquiry.gender,
       message: enquiry.message?.trim() || undefined,
       status: enquiry.status || "new",
       source: leadSource,
@@ -225,8 +244,9 @@ export async function sendEnquiryToTeleCRM(
         type: "SYSTEM_NOTE",
         text: [
           `Lead Source: ${leadSource}`,
-          enquiry.location ? `City / Location: ${enquiry.location.trim()}` : null,
-          enquiry.iam ? `Category / Role: ${enquiry.iam.trim()}` : null,
+          `Hostel City: ${enquiry.hostelCity.trim()}`,
+          `Gender Category: ${enquiry.gender === "boys" ? "Boys Hostel" : "Girls Hostel"}`,
+          enquiry.email ? `Email: ${enquiry.email.trim().toLowerCase()}` : null,
           enquiry.message ? `Message: ${enquiry.message.trim()}` : null,
         ]
           .filter(Boolean)
@@ -262,7 +282,7 @@ export async function sendBookedVisitToTeleCRM(
 
   const formattedDate = (() => {
     try {
-      const d = new Date(visit.preferredDate);
+      const d = new Date(visit.wantToVisit);
       if (!isNaN(d.getTime())) {
         return d.toLocaleDateString("en-IN", {
           weekday: "short",
@@ -274,7 +294,7 @@ export async function sendBookedVisitToTeleCRM(
     } catch {
       // ignore
     }
-    return visit.preferredDate;
+    return visit.wantToVisit;
   })();
 
   // Build TeleCRM Async autoupdatelead payload for Booked Visit
@@ -282,12 +302,10 @@ export async function sendBookedVisitToTeleCRM(
     fields: {
       name: visit.name.trim(),
       phone: formattedPhone,
-      email: visit.email.trim().toLowerCase(),
-      college: visit.college.trim(),
-      location: visit.location.trim(),
-      city: visit.location.trim(),
-      residence: visit.location.trim(),
-      preferred_date: formattedDate,
+      email: visit.email?.trim().toLowerCase() || undefined,
+      hostel_city: visit.hostelCity.trim(),
+      college_name: visit.collegeName.trim(),
+      want_to_visit: formattedDate,
       status: visit.status || "new",
       source: leadSource,
       lead_source: leadSource,
@@ -297,9 +315,9 @@ export async function sendBookedVisitToTeleCRM(
         type: "SYSTEM_NOTE",
         text: [
           `Lead Type: Booked Visit (${leadSource})`,
-          visit.location ? `Residence / Location: ${visit.location.trim()}` : null,
-          formattedDate ? `Preferred Visit Date: ${formattedDate}` : null,
-          visit.college ? `College: ${visit.college.trim()}` : null,
+          `Hostel City: ${visit.hostelCity.trim()}`,
+          `Want to Visit: ${formattedDate}`,
+          `College: ${visit.collegeName.trim()}`,
           visit.email ? `Email: ${visit.email.trim().toLowerCase()}` : null,
         ]
           .filter(Boolean)

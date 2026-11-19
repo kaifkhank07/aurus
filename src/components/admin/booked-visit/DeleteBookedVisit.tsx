@@ -2,9 +2,9 @@
 
 import React, { useState } from "react";
 import { useHostelAndEnquiryStore } from "@/store/useHostelAndEnquiryStore";
-import { Btn } from "../ui/AdminUI";
+import { Btn, Chip } from "../ui/AdminUI";
 import Icon from "../ui/AdminIcons";
-import { SafeBookedVisit } from "@/types/booked-visit.types";
+import { SafeBookedVisit, BOOKED_VISIT_STATUS_LABELS, BookedVisitStatus } from "@/types/booked-visit.types";
 
 export interface DeleteBookedVisitProps {
   open: boolean;
@@ -40,13 +40,19 @@ export default function DeleteBookedVisit({
     }
   };
 
-  const formattedDate = visit.preferredDate
-    ? new Date(visit.preferredDate).toLocaleDateString("en-US", {
+  const formattedDate = visit.wantToVisit
+    ? new Date(visit.wantToVisit).toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
         year: "numeric",
       })
     : "—";
+
+  const statusToneMap: Record<BookedVisitStatus, "amber" | "sea" | "mint"> = {
+    new: "amber",
+    read: "sea",
+    complete: "mint",
+  };
 
   return (
     <div
@@ -103,21 +109,31 @@ export default function DeleteBookedVisit({
               ({visit.number})?
             </p>
             <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-1">
-              <div>
-                <span className="text-slate-400 font-medium">Email: </span>
-                <span className="font-semibold text-slate-700">{visit.email}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-slate-400 font-medium">Status: </span>
+                <Chip tone={statusToneMap[visit.status || "new"]}>
+                  {BOOKED_VISIT_STATUS_LABELS[visit.status || "new"]}
+                </Chip>
               </div>
               <div>
-                <span className="text-slate-400 font-medium">College: </span>
-                <span className="font-semibold text-slate-700">{visit.college}</span>
+                <span className="text-slate-400 font-medium">Hostel City: </span>
+                <span className="font-semibold text-slate-700">{visit.hostelCity}</span>
               </div>
+              {visit.email && (
+                <div>
+                  <span className="text-slate-400 font-medium">Email: </span>
+                  <span className="font-semibold text-slate-700">{visit.email}</span>
+                </div>
+              )}
+              {visit.collegeName && (
+                <div>
+                  <span className="text-slate-400 font-medium">College: </span>
+                  <span className="font-semibold text-slate-700">{visit.collegeName}</span>
+                </div>
+              )}
               <div>
-                <span className="text-slate-400 font-medium">Scheduled Date: </span>
+                <span className="text-slate-400 font-medium">Scheduled Visit: </span>
                 <span className="font-semibold text-slate-700">{formattedDate}</span>
-              </div>
-              <div>
-                <span className="text-slate-400 font-medium">Location: </span>
-                <span className="font-semibold text-slate-700">{visit.location}</span>
               </div>
             </div>
             <p className="text-xs text-slate-500 pt-1">

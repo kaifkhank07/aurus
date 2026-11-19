@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
+import useMasterStore from "@/store/useMasterStore";
 
 export interface ScheduleVisitModalProps {
   isOpen: boolean;
   onClose: () => void;
   residenceTitle?: string;
+  initialCity?: string;
   residenceLocation?: string;
 }
 
@@ -29,18 +31,36 @@ function CheckCircleIcon({ className = "w-6 h-6" }: { className?: string }) {
   );
 }
 
+function ChevronDown({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M5 7.5L10 12.5L15 7.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function ScheduleVisitModal({
   isOpen,
   onClose,
   residenceTitle,
-  residenceLocation,
+  initialCity = "",
+  residenceLocation = "",
 }: ScheduleVisitModalProps) {
+  const { publicCities, fetchPublicCities } = useMasterStore();
+
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [college, setCollege] = useState("");
-  const [location, setLocation] = useState(residenceLocation || "");
-  const [visitDate, setVisitDate] = useState("");
+  const [collegeName, setCollegeName] = useState("");
+  const [hostelCity, setHostelCity] = useState(initialCity || residenceLocation || "");
+  const [wantToVisit, setWantToVisit] = useState("");
   const [agreed, setAgreed] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,10 +73,25 @@ export function ScheduleVisitModal({
   }, []);
 
   useEffect(() => {
-    if (residenceLocation) {
-      setLocation(residenceLocation);
+    void fetchPublicCities();
+  }, [fetchPublicCities]);
+
+  useEffect(() => {
+    if (initialCity) {
+      setHostelCity(initialCity);
+    } else if (residenceLocation && !hostelCity) {
+      setHostelCity(residenceLocation);
     }
-  }, [residenceLocation]);
+  }, [initialCity, residenceLocation, hostelCity]);
+
+  const cityOptions = useMemo(() => {
+    if (publicCities && publicCities.length > 0) {
+      return publicCities
+        .map((c) => c.city || c.name)
+        .filter((n): n is string => Boolean(n));
+    }
+    return ["Mumbai", "Noida", "Ahmedabad", "Pune", "Jalandhar"];
+  }, [publicCities]);
 
   const handleClose = useCallback(() => {
     if (isSubmitting) return;
@@ -64,15 +99,15 @@ export function ScheduleVisitModal({
     setFullName("");
     setPhone("");
     setEmail("");
-    setCollege("");
-    setLocation(residenceLocation || "");
-    setVisitDate("");
+    setCollegeName("");
+    setHostelCity(initialCity || residenceLocation || "");
+    setWantToVisit("");
     setAgreed(false);
     setErrorMessage(null);
     setIsSubmitted(false);
 
     onClose();
-  }, [isSubmitting, onClose, residenceLocation]);
+  }, [isSubmitting, onClose, initialCity, residenceLocation]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -96,6 +131,31 @@ export function ScheduleVisitModal({
   const handleScheduleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!fullName.trim()) {
+      setErrorMessage("Please enter your name.");
+      return;
+    }
+
+    if (!phone.trim()) {
+      setErrorMessage("Please enter your mobile number.");
+      return;
+    }
+
+    if (!hostelCity.trim()) {
+      setErrorMessage("Please select a hostel city.");
+      return;
+    }
+
+    if (!collegeName.trim()) {
+      setErrorMessage("Please enter your college or university name.");
+      return;
+    }
+
+    if (!wantToVisit) {
+      setErrorMessage("Please choose your preferred visit date.");
+      return;
+    }
+
     if (!agreed) {
       setErrorMessage("Please agree to the terms and privacy policy.");
       return;
@@ -113,10 +173,10 @@ export function ScheduleVisitModal({
         body: JSON.stringify({
           name: fullName.trim(),
           number: phone.trim(),
-          email: email.trim().toLowerCase(),
-          college: college.trim(),
-          location: location.trim(),
-          preferredDate: visitDate,
+          email: email.trim() || undefined,
+          hostelCity: hostelCity.trim(),
+          collegeName: collegeName.trim(),
+          wantToVisit,
           status: "new",
         }),
       });
@@ -220,11 +280,11 @@ export function ScheduleVisitModal({
 
             <form onSubmit={handleScheduleSubmit}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                {/* Full Name */}
                 <div>
                   <label htmlFor="fullName" className={labelClass}>
                     Full Name <span className="text-black">*</span>
                   </label>
-
                   <input
                     id="fullName"
                     type="text"
@@ -232,15 +292,16 @@ export function ScheduleVisitModal({
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     disabled={isSubmitting}
+                    // placeholder="John Doe"
                     className={inputClass}
                   />
                 </div>
 
+                {/* Mobile Number */}
                 <div>
                   <label htmlFor="phone" className={labelClass}>
                     Mobile Number <span className="text-black">*</span>
                   </label>
-
                   <input
                     id="phone"
                     type="tel"
@@ -248,71 +309,83 @@ export function ScheduleVisitModal({
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     disabled={isSubmitting}
+                    // placeholder="+91 98765 43210"
                     className={inputClass}
                   />
                 </div>
 
+                {/* Email Address (Optional) */}
                 <div className="sm:col-span-2">
                   <label htmlFor="email" className={labelClass}>
-                    Email <span className="text-black">*</span>
+                    Email Address
+                    {/* <span className="text-[#88847C] font-normal lowercase">(optional)</span> */}
                   </label>
-
                   <input
                     id="email"
                     type="email"
-                    required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={isSubmitting}
+                    // placeholder="john@example.com"
                     className={inputClass}
                   />
                 </div>
 
+                {/* Hostel City */}
                 <div>
-                  <label htmlFor="location" className={labelClass}>
-                    City / Location <span className="text-black">*</span>
+                  <label htmlFor="hostelCity" className={labelClass}>
+                    Hostel City <span className="text-black">*</span>
                   </label>
-
-                  <input
-                    id="location"
-                    type="text"
-                    required
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    disabled={isSubmitting}
-                    className={inputClass}
-                  />
+                  <div className="relative w-full">
+                    <select
+                      id="hostelCity"
+                      value={hostelCity}
+                      required
+                      onChange={(e) => setHostelCity(e.target.value)}
+                      disabled={isSubmitting}
+                      className={`${inputClass} appearance-none cursor-pointer pr-9`}
+                    >
+                      <option value="">Select Hostel City</option>
+                      {cityOptions.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-black/60 h-4 w-4" />
+                  </div>
                 </div>
 
+                {/* Want to Visit (Preferred Date) */}
                 <div>
-                  <label htmlFor="visitDate" className={labelClass}>
-                    Preferred Date <span className="text-black">*</span>
+                  <label htmlFor="wantToVisit" className={labelClass}>
+                    Want to Visit <span className="text-black">*</span>
                   </label>
-
                   <input
-                    id="visitDate"
+                    id="wantToVisit"
                     type="date"
                     required
                     min={new Date().toISOString().split("T")[0]}
-                    value={visitDate}
-                    onChange={(e) => setVisitDate(e.target.value)}
+                    value={wantToVisit}
+                    onChange={(e) => setWantToVisit(e.target.value)}
                     disabled={isSubmitting}
                     className={inputClass}
                   />
                 </div>
 
+                {/* College Name */}
                 <div className="sm:col-span-2">
-                  <label htmlFor="college" className={labelClass}>
+                  <label htmlFor="collegeName" className={labelClass}>
                     College <span className="text-black">*</span>
                   </label>
-
                   <input
-                    id="college"
+                    id="collegeName"
                     type="text"
                     required
-                    value={college}
-                    onChange={(e) => setCollege(e.target.value)}
+                    value={collegeName}
+                    onChange={(e) => setCollegeName(e.target.value)}
                     disabled={isSubmitting}
+                    // placeholder="e.g. Symbiosis, NMIMS, etc."
                     className={inputClass}
                   />
                 </div>
@@ -321,6 +394,7 @@ export function ScheduleVisitModal({
               <label className="mt-4 sm:mt-6 flex cursor-pointer items-start gap-2.5 text-[11.5px] sm:text-[12.5px] leading-[1.4] text-black">
                 <input
                   type="checkbox"
+                  required
                   checked={agreed}
                   onChange={(e) => setAgreed(e.target.checked)}
                   disabled={isSubmitting}

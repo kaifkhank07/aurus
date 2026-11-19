@@ -4,16 +4,14 @@ import { BookedVisitStatus, BOOKED_VISIT_STATUSES } from "@/types/booked-visit.t
 export interface IBookedVisitDocument extends Document {
   name: string;
   number: string;
-  email: string;
-  college: string;
-  location: string;
-  preferredDate: Date;
+  email?: string | null;
+  hostelCity: string;
+  collegeName: string;
+  wantToVisit: Date;
   status: BookedVisitStatus;
   createdAt: Date;
   updatedAt: Date;
 }
-
-const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 const BookedVisitSchema = new Schema<IBookedVisitDocument>(
   {
@@ -31,29 +29,27 @@ const BookedVisitSchema = new Schema<IBookedVisitDocument>(
     },
     email: {
       type: String,
-      required: [true, "Email address is required"],
       trim: true,
       lowercase: true,
       maxlength: [255, "Email cannot exceed 255 characters"],
-      match: [emailRegex, "Please provide a valid email address"],
+      default: null,
+    },
+    hostelCity: {
+      type: String,
+      required: [true, "Hostel city is required"],
+      trim: true,
+      maxlength: [100, "Hostel city cannot exceed 100 characters"],
       index: true,
     },
-    college: {
+    collegeName: {
       type: String,
-      required: [true, "College is required"],
+      required: [true, "College name is required"],
       trim: true,
-      maxlength: [200, "College cannot exceed 200 characters"],
+      maxlength: [200, "College name cannot exceed 200 characters"],
     },
-    location: {
-      type: String,
-      required: [true, "Location is required"],
-      trim: true,
-      maxlength: [100, "Location cannot exceed 100 characters"],
-      index: true,
-    },
-    preferredDate: {
+    wantToVisit: {
       type: Date,
-      required: [true, "Preferred date is required"],
+      required: [true, "Visit date is required"],
       index: true,
     },
     status: {
@@ -75,7 +71,7 @@ const BookedVisitSchema = new Schema<IBookedVisitDocument>(
 // Indexes for query performance
 BookedVisitSchema.index({ createdAt: -1 });
 BookedVisitSchema.index({ status: 1, createdAt: -1 });
-BookedVisitSchema.index({ location: 1, preferredDate: 1 });
+BookedVisitSchema.index({ hostelCity: 1, wantToVisit: 1 });
 
 if (process.env.NODE_ENV !== "production" && mongoose.models.BookedVisit) {
   mongoose.deleteModel("BookedVisit");

@@ -27,9 +27,9 @@ export default function CreateBookedVisit({
   const [name, setName] = useState("");
   const [number, setNumber] = useState("");
   const [email, setEmail] = useState("");
-  const [college, setCollege] = useState("");
-  const [location, setLocation] = useState("");
-  const [preferredDate, setPreferredDate] = useState("");
+  const [collegeName, setCollegeName] = useState("");
+  const [hostelCity, setHostelCity] = useState("");
+  const [wantToVisit, setWantToVisit] = useState("");
   const [status, setStatus] = useState<BookedVisitStatus>("new");
 
   const [clientErrors, setClientErrors] = useState<Record<string, string>>({});
@@ -42,9 +42,9 @@ export default function CreateBookedVisit({
     setName("");
     setNumber("");
     setEmail("");
-    setCollege("");
-    setLocation("");
-    setPreferredDate("");
+    setCollegeName("");
+    setHostelCity("");
+    setWantToVisit("");
     setStatus("new");
     setClientErrors({});
     setApiError(null);
@@ -71,21 +71,23 @@ export default function CreateBookedVisit({
       errors.number = "A valid phone number (at least 7 characters) is required.";
     }
 
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!email.trim() || !emailRegex.test(email.trim())) {
-      errors.email = "Please enter a valid email address.";
+    if (email.trim()) {
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(email.trim())) {
+        errors.email = "Please enter a valid email address.";
+      }
     }
 
-    if (!college.trim()) {
-      errors.college = "College name is required.";
+    if (!hostelCity.trim()) {
+      errors.hostelCity = "Hostel city is required.";
     }
 
-    if (!location.trim()) {
-      errors.location = "Target location / property is required.";
+    if (!collegeName.trim()) {
+      errors.collegeName = "College / University name is required.";
     }
 
-    if (!preferredDate) {
-      errors.preferredDate = "Scheduled visit date is required.";
+    if (!wantToVisit) {
+      errors.wantToVisit = "Scheduled visit date is required.";
     }
 
     if (Object.keys(errors).length > 0) {
@@ -98,25 +100,24 @@ export default function CreateBookedVisit({
     const payload: CreateBookedVisitInput = {
       name: name.trim(),
       number: number.trim(),
-      email: email.trim().toLowerCase(),
-      college: college.trim(),
-      location: location.trim(),
-      preferredDate: new Date(preferredDate).toISOString(),
+      email: email.trim() || null,
+      hostelCity: hostelCity.trim(),
+      collegeName: collegeName.trim(),
+      wantToVisit,
       status,
     };
 
     try {
       const res = await createBookedVisit(payload);
-
       if (res.success) {
         resetForm();
         onSuccess();
         onClose();
       } else {
-        setApiError(res.message || "Failed to create booked visit appointment.");
+        setApiError(res.message || "Failed to create booked visit. Please check your inputs.");
       }
     } catch {
-      setApiError("An unexpected error occurred while creating the visit.");
+      setApiError("An unexpected server error occurred while creating booked visit.");
     } finally {
       setIsSubmitting(false);
     }
@@ -126,27 +127,28 @@ export default function CreateBookedVisit({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget) {
+        if (e.target === e.currentTarget && !isSubmitting) {
           handleClose();
         }
       }}
     >
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-8 animate-in zoom-in-95 duration-200">
-        {/* Modal Header */}
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-8 animate-in zoom-in-95 duration-200">
+        {/* Header */}
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center shrink-0">
-              <Icon name="calendar" size={18} />
+            <div className="w-9 h-9 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center shrink-0">
+              <Icon name="plus" size={17} />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900">
-                Create Booked Visit
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                New Visit Booking
               </h3>
-              <p className="text-xs text-slate-500">
-                Manually record a scheduled visit appointment or prospective inquiry.
+              <p className="text-xs text-slate-500 font-medium">
+                Manually record a scheduled property visit
               </p>
             </div>
           </div>
+
           <button
             type="button"
             onClick={handleClose}
@@ -158,141 +160,99 @@ export default function CreateBookedVisit({
           </button>
         </div>
 
-        {/* Modal Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {apiError && (
-            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-start gap-2.5 shadow-2xs">
-              <span className="text-rose-500 shrink-0 font-bold">!</span>
-              <span className="leading-relaxed">{apiError}</span>
-            </div>
-          )}
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="flex flex-col">
+          <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+            {apiError && (
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-start gap-2.5 shadow-2xs">
+                <span className="text-rose-500 shrink-0 font-bold">!</span>
+                <span className="leading-relaxed">{apiError}</span>
+              </div>
+            )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Visitor Name */}
-            <FormField
-              label="Visitor Name *"
-              error={clientErrors.name}
-            >
+            {/* Name */}
+            <FormField label="Visitor Full Name *" error={clientErrors.name}>
               <TextInput
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. John Doe"
+                placeholder="e.g. Priya Sharma"
                 disabled={isSubmitting}
               />
             </FormField>
 
-            {/* Phone Number */}
-            <FormField
-              label="Phone Number *"
-              error={clientErrors.number}
-            >
+            {/* Number */}
+            <FormField label="Mobile Number *" error={clientErrors.number}>
               <TextInput
+                type="tel"
                 value={number}
                 onChange={(e) => setNumber(e.target.value)}
-                placeholder="+91 98765 43210"
+                placeholder="e.g. +91 98765 43210"
                 disabled={isSubmitting}
               />
             </FormField>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Email Address */}
-            <FormField
-              label="Email Address *"
-              error={clientErrors.email}
-            >
+            {/* Email (Optional) */}
+            <FormField label="Email Address (Optional)" error={clientErrors.email}>
               <TextInput
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="john.doe@example.com"
+                placeholder="e.g. priya@example.com"
                 disabled={isSubmitting}
               />
             </FormField>
 
-            {/* College */}
-            <FormField
-              label="College / Institute *"
-              error={clientErrors.college}
-            >
+            {/* Hostel City */}
+            <FormField label="Hostel City *" error={clientErrors.hostelCity}>
               <TextInput
-                value={college}
-                onChange={(e) => setCollege(e.target.value)}
-                placeholder="e.g. NMIMS Mumbai"
+                value={hostelCity}
+                onChange={(e) => setHostelCity(e.target.value)}
+                placeholder="e.g. Pune, Mumbai, Noida"
                 disabled={isSubmitting}
               />
             </FormField>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Target Location / Property */}
-            <FormField
-              label="Location *"
-              error={clientErrors.location}
-            >
+            {/* College Name */}
+            <FormField label="College / University Name *" error={clientErrors.collegeName}>
               <TextInput
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g. Vile Parle, Mumbai"
+                value={collegeName}
+                onChange={(e) => setCollegeName(e.target.value)}
+                placeholder="e.g. Symbiosis International University"
                 disabled={isSubmitting}
               />
             </FormField>
 
-            {/* Preferred Date */}
-            <FormField
-              label="Preferred Visit Date *"
-              error={clientErrors.preferredDate}
-            >
+            {/* Want to Visit (Date) */}
+            <FormField label="Scheduled Visit Date *" error={clientErrors.wantToVisit}>
               <TextInput
                 type="date"
-                value={preferredDate}
-                onChange={(e) => setPreferredDate(e.target.value)}
+                min={new Date().toISOString().split("T")[0]}
+                value={wantToVisit}
+                onChange={(e) => setWantToVisit(e.target.value)}
                 disabled={isSubmitting}
               />
             </FormField>
+
+            {/* Status */}
+            <FormField label="Initial Status *">
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as BookedVisitStatus)}
+                disabled={isSubmitting}
+                className="w-full text-xs font-semibold text-slate-800 bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition cursor-pointer"
+              >
+                {BOOKED_VISIT_STATUSES.map((s) => (
+                  <option key={s} value={s}>
+                    {BOOKED_VISIT_STATUS_LABELS[s]}
+                  </option>
+                ))}
+              </select>
+            </FormField>
           </div>
 
-          {/* Status Selection */}
-          <FormField label="Initial Status *">
-            <div className="grid grid-cols-3 gap-2.5">
-              {BOOKED_VISIT_STATUSES.map((s) => {
-                const isSelected = status === s;
-                return (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setStatus(s)}
-                    disabled={isSubmitting}
-                    className={`py-2 px-3 rounded-xl border text-xs font-semibold capitalize transition flex items-center justify-center gap-2 cursor-pointer ${
-                      isSelected
-                        ? s === "new"
-                          ? "bg-amber-50 border-amber-300 text-amber-800 ring-2 ring-amber-200"
-                          : s === "read"
-                          ? "bg-sky-50 border-sky-300 text-sky-800 ring-2 ring-sky-200"
-                          : "bg-emerald-50 border-emerald-300 text-emerald-800 ring-2 ring-emerald-200"
-                        : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
-                    }`}
-                  >
-                    <span
-                      className={`w-2 h-2 rounded-full ${
-                        s === "new"
-                          ? "bg-amber-500"
-                          : s === "read"
-                          ? "bg-sky-500"
-                          : "bg-emerald-500"
-                      }`}
-                    />
-                    <span>{BOOKED_VISIT_STATUS_LABELS[s]}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </FormField>
-
-          {/* Form Actions */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+          {/* Footer */}
+          <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5">
             <Btn
-              type="button"
               variant="ghost"
               size="md"
               onClick={handleClose}
@@ -301,12 +261,24 @@ export default function CreateBookedVisit({
               Cancel
             </Btn>
             <Btn
-              type="submit"
               variant="brand"
               size="md"
+              type="submit"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Creating…" : "Create Visit"}
+              {isSubmitting ? (
+                <>
+                  <span className="inline-block animate-spin">
+                    <Icon name="refresh" size={13} />
+                  </span>
+                  <span>Saving…</span>
+                </>
+              ) : (
+                <>
+                  <Icon name="check" size={13} />
+                  <span>Book Visit</span>
+                </>
+              )}
             </Btn>
           </div>
         </form>

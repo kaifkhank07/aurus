@@ -13,32 +13,27 @@ export const phoneSchema = z
     message: "Phone number contains invalid characters.",
   });
 
-export const emailSchema = z
+export const optionalEmailSchema = z
   .string()
   .trim()
-  .min(1, { message: "Email is required." })
   .max(255, { message: "Email cannot exceed 255 characters." })
   .email({ message: "Please provide a valid email address." })
-  .toLowerCase();
-
-export const collegeSchema = z
-  .string()
-  .trim()
-  .min(1, { message: "College is required." })
-  .max(200, { message: "College cannot exceed 200 characters." });
+  .toLowerCase()
+  .optional()
+  .or(z.literal(""));
 
 export const bookedVisitStatusSchema = z.enum(BOOKED_VISIT_STATUSES);
 
 export const visitDateSchema = z
   .string()
   .trim()
-  .min(1, { message: "Preferred date is required." })
+  .min(1, { message: "Visit date is required." })
   .refine(
     (val) => {
       const timestamp = Date.parse(val);
       return !isNaN(timestamp);
     },
-    { message: "Preferred date must be a valid date string (e.g., 'YYYY-MM-DD')." }
+    { message: "Visit date must be a valid date string (e.g., 'YYYY-MM-DD')." }
   );
 
 export const createBookedVisitSchema = z
@@ -49,14 +44,18 @@ export const createBookedVisitSchema = z
       .min(1, { message: "Name is required." })
       .max(100, { message: "Name cannot exceed 100 characters." }),
     number: phoneSchema,
-    email: emailSchema,
-    college: collegeSchema,
-    location: z
+    email: optionalEmailSchema,
+    hostelCity: z
       .string()
       .trim()
-      .min(1, { message: "Location is required." })
-      .max(100, { message: "Location cannot exceed 100 characters." }),
-    preferredDate: visitDateSchema,
+      .min(1, { message: "Hostel city is required." })
+      .max(100, { message: "Hostel city cannot exceed 100 characters." }),
+    collegeName: z
+      .string()
+      .trim()
+      .min(1, { message: "College name is required." })
+      .max(200, { message: "College name cannot exceed 200 characters." }),
+    wantToVisit: visitDateSchema,
     status: bookedVisitStatusSchema.optional().default("new"),
   })
   .strict();
@@ -65,10 +64,15 @@ export const updateBookedVisitSchema = z
   .object({
     name: z.string().trim().min(1).max(100).optional(),
     number: phoneSchema.optional(),
-    email: emailSchema.optional(),
-    college: collegeSchema.optional(),
-    location: z.string().trim().min(1).max(100).optional(),
-    preferredDate: visitDateSchema.optional(),
+    email: optionalEmailSchema,
+    hostelCity: z.string().trim().min(1).max(100).optional(),
+    collegeName: z
+      .string()
+      .trim()
+      .min(1, { message: "College name cannot be empty." })
+      .max(200, { message: "College name cannot exceed 200 characters." })
+      .optional(),
+    wantToVisit: visitDateSchema.optional(),
     status: bookedVisitStatusSchema.optional(),
   })
   .strict()
@@ -95,9 +99,9 @@ export const bookedVisitQuerySchema = z.object({
         .max(100, "Limit cannot exceed 100 items per page.")
     ),
   search: z.string().trim().optional(),
-  location: z.string().trim().optional(),
+  hostelCity: z.string().trim().optional(),
   status: z.enum(["new", "read", "complete", "all"]).optional(),
-  preferredDate: z.string().trim().optional(),
-  sortBy: z.enum(["createdAt", "preferredDate", "name", "status"]).optional(),
+  wantToVisit: z.string().trim().optional(),
+  sortBy: z.enum(["createdAt", "wantToVisit", "name", "status", "hostelCity"]).optional(),
   sortOrderDir: z.enum(["asc", "desc"]).optional(),
 });

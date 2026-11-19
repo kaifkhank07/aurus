@@ -7,6 +7,7 @@ import {
   EnquiryStatus,
   ENQUIRY_STATUSES,
   ENQUIRY_STATUS_LABELS,
+  ENQUIRY_GENDER_LABELS,
 } from "@/types/enquiry.types";
 import { Chip, Btn } from "../ui/AdminUI";
 import Icon from "../ui/AdminIcons";
@@ -121,7 +122,7 @@ export default function EnquiryDetails({
                 </Chip>
               </div>
               <p className="text-xs text-slate-500 font-medium">
-                Detailed view of the enquiry
+                Detailed view of the enquiry lead
               </p>
             </div>
           </div>
@@ -149,9 +150,15 @@ export default function EnquiryDetails({
                   {enquiry.name}
                 </h4>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-slate-500 font-medium">Profile:</span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-white border border-slate-200 text-slate-700">
-                    {enquiry.iam || "Prospective Tenant"}
+                  <span className="text-xs text-slate-500 font-medium">Hostel Category:</span>
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold ${
+                      enquiry.gender === "boys"
+                        ? "bg-sky-100 text-sky-800"
+                        : "bg-pink-100 text-pink-800"
+                    }`}
+                  >
+                    {ENQUIRY_GENDER_LABELS[enquiry.gender] || enquiry.gender}
                   </span>
                 </div>
               </div>
@@ -171,14 +178,15 @@ export default function EnquiryDetails({
                       type="button"
                       disabled={isUpdatingStatus}
                       onClick={() => handleStatusUpdate(s)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold capitalize transition cursor-pointer ${isActive
-                        ? s === "new"
-                          ? "bg-amber-100 text-amber-800"
-                          : s === "read"
-                            ? "bg-sky-100 text-sky-800"
-                            : "bg-emerald-100 text-emerald-800"
-                        : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
-                        }`}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold capitalize transition cursor-pointer ${
+                        isActive
+                          ? s === "new"
+                            ? "bg-amber-100 text-amber-800"
+                            : s === "read"
+                              ? "bg-sky-100 text-sky-800"
+                              : "bg-emerald-100 text-emerald-800"
+                          : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
+                      }`}
                     >
                       {ENQUIRY_STATUS_LABELS[s]}
                     </button>
@@ -189,39 +197,40 @@ export default function EnquiryDetails({
           </div>
 
           {/* Contact Details Grid */}
-          <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Icon name="phone" size={12} /> Contact Number
-              </span>
-              {copiedField === "phone" && (
-                <span className="text-[11px] font-semibold text-emerald-600 animate-in fade-in">
-                  Copied!
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Phone & Communication */}
+            <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Icon name="phone" size={12} /> Contact Number
                 </span>
-              )}
-            </div>
+                {copiedField === "phone" && (
+                  <span className="text-[11px] font-semibold text-emerald-600 animate-in fade-in">
+                    Copied!
+                  </span>
+                )}
+              </div>
 
-            <div className="flex items-center justify-between gap-2 flex-wrap">
               <div className="text-base font-bold text-slate-900 font-mono tracking-tight">
                 {enquiry.number}
               </div>
 
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 pt-1">
                 <button
                   type="button"
                   onClick={() => handleCopy(enquiry.number, "phone")}
                   title="Copy phone number"
-                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition cursor-pointer flex items-center gap-1"
+                  className="px-2 py-1 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition cursor-pointer flex items-center gap-1"
                 >
-                  <Icon name="copy" size={12} />
+                  <Icon name="copy" size={11} />
                   <span>Copy</span>
                 </button>
 
                 <a
                   href={`tel:${cleanPhone}`}
-                  className="px-3 py-1.5 rounded-lg bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 text-xs font-semibold transition flex items-center gap-1"
+                  className="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 text-xs font-semibold transition flex items-center gap-1"
                 >
-                  <Icon name="phone" size={12} />
+                  <Icon name="phone" size={11} />
                   <span>Call</span>
                 </a>
 
@@ -230,27 +239,65 @@ export default function EnquiryDetails({
                     href={`https://wa.me/${cleanPhone.startsWith("91") ? cleanPhone : `91${cleanPhone}`}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 text-xs font-semibold transition flex items-center gap-1"
+                    className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 text-xs font-semibold transition flex items-center gap-1"
                   >
-                    <Icon name="chat" size={12} />
+                    <Icon name="chat" size={11} />
                     <span>WhatsApp</span>
                   </a>
                 )}
               </div>
             </div>
+
+            {/* Email Address */}
+            <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Icon name="mail" size={12} /> Email Address
+                </span>
+                {copiedField === "email" && (
+                  <span className="text-[11px] font-semibold text-emerald-600 animate-in fade-in">
+                    Copied!
+                  </span>
+                )}
+              </div>
+
+              <div className="text-sm font-bold text-slate-900 truncate" title={enquiry.email || "Not provided"}>
+                {enquiry.email || <span className="text-slate-400 font-normal italic">Not provided</span>}
+              </div>
+
+              {enquiry.email && (
+                <div className="flex items-center gap-1.5 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(enquiry.email!, "email")}
+                    title="Copy email address"
+                    className="px-2 py-1 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition cursor-pointer flex items-center gap-1"
+                  >
+                    <Icon name="copy" size={11} />
+                    <span>Copy</span>
+                  </button>
+
+                  <a
+                    href={`mailto:${enquiry.email}`}
+                    className="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 text-xs font-semibold transition flex items-center gap-1"
+                  >
+                    <Icon name="mail" size={11} />
+                    <span>Email</span>
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Location if provided */}
-          {enquiry.location && (
-            <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-1">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Icon name="pin" size={12} /> Location
-              </span>
-              <div className="text-sm font-bold text-slate-800 pt-0.5">
-                {enquiry.location}
-              </div>
+          {/* Hostel City */}
+          <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-1">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <Icon name="pin" size={12} /> Hostel City
+            </span>
+            <div className="text-sm font-bold text-slate-800 pt-0.5">
+              {enquiry.hostelCity}
             </div>
-          )}
+          </div>
 
           {/* Message Content */}
           <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-2">
@@ -279,7 +326,6 @@ export default function EnquiryDetails({
                 {ENQUIRY_STATUS_LABELS[currentStatus] || currentStatus}
               </Chip>
             </div>
-
 
             <div>
               <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-0.5">

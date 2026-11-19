@@ -4,14 +4,15 @@ dotenv.config();
 import mongoose from "mongoose";
 import connectToDatabase from "../src/lib/mongodb";
 import { Enquiry } from "../src/models/enquiry.model";
-import { EnquiryStatus } from "../src/types/enquiry.types";
+import { EnquiryStatus, EnquiryGender } from "../src/types/enquiry.types";
 
 interface SeedEnquiryItem {
   name: string;
   number: string;
-  location: string;
-  iam: string;
-  message: string;
+  email?: string | null;
+  hostelCity: string;
+  gender: EnquiryGender;
+  message?: string | null;
   status: EnquiryStatus;
 }
 
@@ -19,8 +20,9 @@ const sampleEnquiries: SeedEnquiryItem[] = [
   {
     name: "Aarav Sharma",
     number: "+91 98765 11223",
-    location: "Pune",
-    iam: "Working Professional",
+    email: "aarav.sharma@example.com",
+    hostelCity: "Pune",
+    gender: "boys",
     message:
       "Looking for a private single occupancy room with dedicated workspace starting next month. Does the monthly rent include housekeeping, laundry, and high-speed Wi-Fi?",
     status: "new",
@@ -28,8 +30,9 @@ const sampleEnquiries: SeedEnquiryItem[] = [
   {
     name: "Sneha Patel",
     number: "+91 98220 33445",
-    location: "Pune",
-    iam: "Student",
+    email: "sneha.patel@example.com",
+    hostelCity: "Pune",
+    gender: "girls",
     message:
       "Looking for twin sharing accommodation near Symbiosis campus. Could you please share the security deposit details and notice period policy?",
     status: "read",
@@ -37,8 +40,9 @@ const sampleEnquiries: SeedEnquiryItem[] = [
   {
     name: "Rohan Verma",
     number: "+91 97112 55667",
-    location: "Mumbai",
-    iam: "Working Professional",
+    email: "rohan.verma@example.com",
+    hostelCity: "Mumbai",
+    gender: "boys",
     message:
       "Please arrange a callback regarding long-term corporate booking options and group discounts.",
     status: "complete",
@@ -46,8 +50,9 @@ const sampleEnquiries: SeedEnquiryItem[] = [
   {
     name: "Kavya Nair",
     number: "+91 90080 99001",
-    location: "Bangalore",
-    iam: "Intern",
+    email: "kavya.nair@example.com",
+    hostelCity: "Ahmedabad",
+    gender: "girls",
     message:
       "Do you provide short-term stays (3 months) for summer internship students? Please share available options and check-in procedure.",
     status: "new",
@@ -55,8 +60,9 @@ const sampleEnquiries: SeedEnquiryItem[] = [
   {
     name: "Dr. Meenakshi Sundaram",
     number: "+91 94440 77889",
-    location: "Noida",
-    iam: "Parent",
+    email: "meenakshi.s@example.com",
+    hostelCity: "Noida",
+    gender: "girls",
     message:
       "Requesting a callback from the residence warden to understand 24/7 security, biometric access, and meal plans for my daughter.",
     status: "read",
@@ -64,10 +70,11 @@ const sampleEnquiries: SeedEnquiryItem[] = [
   {
     name: "Vikramaditya Roy",
     number: "+91 98300 22334",
-    location: "Delhi",
-    iam: "Student",
+    email: null,
+    hostelCity: "Jalandhar",
+    gender: "boys",
     message:
-      "Immediate move-in needed this weekend near Delhi University. Please call me back with available bed availability.",
+      "Immediate move-in needed this weekend. Please call me back with available bed availability.",
     status: "complete",
   },
 ];
@@ -102,8 +109,9 @@ async function runSeed() {
         await Enquiry.create({
           name: enquiry.name,
           number: enquiry.number,
-          location: enquiry.location,
-          iam: enquiry.iam,
+          email: enquiry.email,
+          hostelCity: enquiry.hostelCity,
+          gender: enquiry.gender,
           message: enquiry.message,
           status: enquiry.status,
         });

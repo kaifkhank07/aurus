@@ -30,8 +30,9 @@ function formatSafeEnquiry(doc: IEnquiryDocument): SafeEnquiry {
     id: doc._id.toString(),
     name: doc.name,
     number: doc.number,
-    location: doc.location ?? null,
-    iam: doc.iam ?? null,
+    email: doc.email ?? null,
+    hostelCity: doc.hostelCity,
+    gender: doc.gender,
     message: doc.message ?? null,
     status: doc.status || "new",
     createdAt: doc.createdAt ? doc.createdAt.toISOString() : new Date().toISOString(),
@@ -76,7 +77,7 @@ function handleError(error: unknown, operation = "general"): NextResponse {
 
 /**
  * GET /api/admin/enquiries
- * Retrieves a paginated list of enquiries with search, status filter, and sorting
+ * Retrieves a paginated list of enquiries with search, status filter, gender filter, and sorting
  */
 export async function list(request: NextRequest): Promise<NextResponse> {
   const operation = "list";
@@ -90,15 +91,16 @@ export async function list(request: NextRequest): Promise<NextResponse> {
     });
 
     const validatedQuery = enquiryQuerySchema.parse(rawQuery);
-    const { page, limit, status, search, location, sortBy, sortOrderDir } = validatedQuery;
+    const { page, limit, status, gender, search, hostelCity, sortBy, sortOrderDir } = validatedQuery;
 
     logger.info("Listing enquiries started", {
       operation,
       page,
       limit,
       status,
+      gender,
       search,
-      location,
+      hostelCity,
       sortBy,
       sortOrderDir,
     });
@@ -111,8 +113,12 @@ export async function list(request: NextRequest): Promise<NextResponse> {
       filter.status = status;
     }
 
-    if (location) {
-      filter.location = { $regex: new RegExp(`^${location}$`, "i") };
+    if (gender && gender !== "all") {
+      filter.gender = gender;
+    }
+
+    if (hostelCity) {
+      filter.hostelCity = { $regex: new RegExp(`^${hostelCity}$`, "i") };
     }
 
     if (search) {
@@ -120,8 +126,8 @@ export async function list(request: NextRequest): Promise<NextResponse> {
       filter.$or = [
         { name: searchRegex },
         { number: searchRegex },
-        { location: searchRegex },
-        { iam: searchRegex },
+        { email: searchRegex },
+        { hostelCity: searchRegex },
         { message: searchRegex },
       ];
     }
@@ -173,9 +179,10 @@ async function createEnquiryDoc(body: unknown): Promise<SafeEnquiry> {
   const newDoc = new Enquiry({
     name: validated.name.trim(),
     number: validated.number.trim(),
-    location: validated.location.trim(),
-    iam: validated.iam.trim(),
-    message: validated.message.trim(),
+    email: validated.email ? validated.email.trim().toLowerCase() : null,
+    hostelCity: validated.hostelCity.trim(),
+    gender: validated.gender,
+    message: validated.message ? validated.message.trim() : null,
     status: validated.status || "new",
   });
 
@@ -241,8 +248,9 @@ export async function createPublic(request: NextRequest): Promise<NextResponse> 
       await sendEnquiryToTeleCRM({
         name: enquiry.name,
         number: enquiry.number,
-        location: enquiry.location,
-        iam: enquiry.iam,
+        email: enquiry.email,
+        hostelCity: enquiry.hostelCity,
+        gender: enquiry.gender,
         message: enquiry.message,
         status: enquiry.status,
         source: "Website Enquiry",
@@ -327,14 +335,17 @@ export async function update(
     if (validated.number !== undefined) {
       doc.number = validated.number.trim();
     }
-    if (validated.location !== undefined) {
-      doc.location = validated.location.trim();
+    if (validated.email !== undefined) {
+      doc.email = validated.email ? validated.email.trim().toLowerCase() : null;
     }
-    if (validated.iam !== undefined) {
-      doc.iam = validated.iam.trim();
+    if (validated.hostelCity !== undefined) {
+      doc.hostelCity = validated.hostelCity.trim();
+    }
+    if (validated.gender !== undefined) {
+      doc.gender = validated.gender;
     }
     if (validated.message !== undefined) {
-      doc.message = validated.message.trim();
+      doc.message = validated.message ? validated.message.trim() : null;
     }
     if (validated.status !== undefined) {
       doc.status = validated.status;

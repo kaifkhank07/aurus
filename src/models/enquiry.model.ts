@@ -1,12 +1,18 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
-import { EnquiryStatus, ENQUIRY_STATUSES } from "@/types/enquiry.types";
+import {
+  EnquiryStatus,
+  ENQUIRY_STATUSES,
+  EnquiryGender,
+  ENQUIRY_GENDERS,
+} from "@/types/enquiry.types";
 
 export interface IEnquiryDocument extends Document {
   name: string;
   number: string;
-  location: string;
-  iam: string;
-  message: string;
+  email?: string | null;
+  hostelCity: string;
+  gender: EnquiryGender;
+  message?: string | null;
   status: EnquiryStatus;
   createdAt: Date;
   updatedAt: Date;
@@ -26,23 +32,34 @@ const EnquirySchema = new Schema<IEnquiryDocument>(
       trim: true,
       maxlength: [20, "Phone number cannot exceed 20 characters"],
     },
-    location: {
+    email: {
       type: String,
-      required: [true, "Location is required"],
       trim: true,
-      maxlength: [100, "Location cannot exceed 100 characters"],
+      lowercase: true,
+      maxlength: [255, "Email cannot exceed 255 characters"],
+      default: null,
     },
-    iam: {
+    hostelCity: {
       type: String,
-      required: [true, "Profile / I am selection is required"],
+      required: [true, "Hostel city is required"],
       trim: true,
-      maxlength: [100, "I am selection cannot exceed 100 characters"],
+      maxlength: [100, "Hostel city cannot exceed 100 characters"],
+      index: true,
+    },
+    gender: {
+      type: String,
+      required: [true, "Gender is required"],
+      enum: {
+        values: ENQUIRY_GENDERS,
+        message: "Gender must be either 'boys' or 'girls'",
+      },
+      index: true,
     },
     message: {
       type: String,
-      required: [true, "Message is required"],
       trim: true,
       maxlength: [2000, "Message cannot exceed 2000 characters"],
+      default: null,
     },
     status: {
       type: String,
@@ -63,6 +80,7 @@ const EnquirySchema = new Schema<IEnquiryDocument>(
 // Indexes
 EnquirySchema.index({ createdAt: -1 });
 EnquirySchema.index({ status: 1, createdAt: -1 });
+EnquirySchema.index({ hostelCity: 1, createdAt: -1 });
 
 if (process.env.NODE_ENV !== "production" && mongoose.models.Enquiry) {
   mongoose.deleteModel("Enquiry");

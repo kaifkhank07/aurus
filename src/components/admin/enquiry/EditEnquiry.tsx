@@ -7,8 +7,11 @@ import Icon from "../ui/AdminIcons";
 import {
   SafeEnquiry,
   EnquiryStatus,
+  EnquiryGender,
   ENQUIRY_STATUSES,
   ENQUIRY_STATUS_LABELS,
+  ENQUIRY_GENDERS,
+  ENQUIRY_GENDER_LABELS,
   UpdateEnquiryInput,
 } from "@/types/enquiry.types";
 
@@ -29,8 +32,9 @@ export default function EditEnquiry({
 
   const [name, setName] = useState("");
   const [number, setNumber] = useState("");
-  const [location, setLocation] = useState("");
-  const [iam, setIam] = useState("");
+  const [email, setEmail] = useState("");
+  const [hostelCity, setHostelCity] = useState("");
+  const [gender, setGender] = useState<EnquiryGender>("boys");
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<EnquiryStatus>("new");
 
@@ -42,8 +46,9 @@ export default function EditEnquiry({
     if (enquiry) {
       setName(enquiry.name || "");
       setNumber(enquiry.number || "");
-      setLocation(enquiry.location || "");
-      setIam(enquiry.iam || "");
+      setEmail(enquiry.email || "");
+      setHostelCity(enquiry.hostelCity || "");
+      setGender(enquiry.gender || "boys");
       setMessage(enquiry.message || "");
       setStatus(enquiry.status || "new");
 
@@ -74,16 +79,19 @@ export default function EditEnquiry({
       errors.number = "A valid phone number (at least 7 characters) is required.";
     }
 
-    if (!location.trim()) {
-      errors.location = "Location is required.";
+    if (email.trim()) {
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(email.trim())) {
+        errors.email = "Please enter a valid email address.";
+      }
     }
 
-    if (!iam.trim()) {
-      errors.iam = "Profile / I am selection is required.";
+    if (!hostelCity.trim()) {
+      errors.hostelCity = "Hostel city is required.";
     }
 
-    if (!message.trim()) {
-      errors.message = "Inquiry message is required.";
+    if (!gender) {
+      errors.gender = "Hostel gender category is required.";
     }
 
     if (Object.keys(errors).length > 0) {
@@ -96,23 +104,23 @@ export default function EditEnquiry({
     const payload: UpdateEnquiryInput = {
       name: name.trim(),
       number: number.trim(),
-      location: location.trim(),
-      iam: iam.trim(),
-      message: message.trim(),
+      email: email.trim() || null,
+      hostelCity: hostelCity.trim(),
+      gender,
+      message: message.trim() || null,
       status,
     };
 
     try {
       const res = await updateEnquiry(enquiry.id, payload);
-
       if (res.success) {
         onSuccess();
         onClose();
       } else {
-        setApiError(res.message || "Failed to update enquiry record.");
+        setApiError(res.message || "Failed to update enquiry. Please check your inputs.");
       }
     } catch {
-      setApiError("An unexpected error occurred while updating the enquiry.");
+      setApiError("An unexpected server error occurred while updating enquiry.");
     } finally {
       setIsSubmitting(false);
     }
@@ -122,27 +130,28 @@ export default function EditEnquiry({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget) {
+        if (e.target === e.currentTarget && !isSubmitting) {
           handleClose();
         }
       }}
     >
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-8 animate-in zoom-in-95 duration-200">
-        {/* Modal Header */}
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-8 animate-in zoom-in-95 duration-200">
+        {/* Header */}
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-              <Icon name="pen" size={18} />
+            <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+              <Icon name="pen" size={16} />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900">
-                Edit Enquiry
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                Edit Enquiry Lead
               </h3>
-              <p className="text-xs text-slate-500">
-                Update lead details, contact information, and inquiry status.
+              <p className="text-xs text-slate-500 font-medium">
+                Update customer contact or enquiry details
               </p>
             </div>
           </div>
+
           <button
             type="button"
             onClick={handleClose}
@@ -154,110 +163,106 @@ export default function EditEnquiry({
           </button>
         </div>
 
-        {/* Modal Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {apiError && (
-            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-start gap-2.5 shadow-2xs">
-              <span className="text-rose-500 shrink-0 font-bold">!</span>
-              <span className="leading-relaxed">{apiError}</span>
-            </div>
-          )}
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="flex flex-col">
+          <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+            {apiError && (
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-start gap-2.5 shadow-2xs">
+                <span className="text-rose-500 shrink-0 font-bold">!</span>
+                <span className="leading-relaxed">{apiError}</span>
+              </div>
+            )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Sender Name */}
-            <FormField label="Full Name *" error={clientErrors.name}>
+            {/* Name */}
+            <FormField label="Sender Full Name *" error={clientErrors.name}>
               <TextInput
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Aarav Sharma"
+                placeholder="Sender full name"
                 disabled={isSubmitting}
               />
             </FormField>
 
-            {/* Phone Number */}
-            <FormField label="Phone Number *" error={clientErrors.number}>
+            {/* Number */}
+            <FormField label="Mobile Number *" error={clientErrors.number}>
               <TextInput
+                type="tel"
                 value={number}
                 onChange={(e) => setNumber(e.target.value)}
-                placeholder="+91 98765 11223"
+                placeholder="Phone number"
                 disabled={isSubmitting}
               />
+            </FormField>
+
+            {/* Email (Optional) */}
+            <FormField label="Email Address (Optional)" error={clientErrors.email}>
+              <TextInput
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email address"
+                disabled={isSubmitting}
+              />
+            </FormField>
+
+            {/* Hostel City */}
+            <FormField label="Hostel City *" error={clientErrors.hostelCity}>
+              <TextInput
+                value={hostelCity}
+                onChange={(e) => setHostelCity(e.target.value)}
+                placeholder="Hostel city"
+                disabled={isSubmitting}
+              />
+            </FormField>
+
+            {/* Gender (boys or girls) */}
+            <FormField label="Hostel Gender Category *" error={clientErrors.gender}>
+              <select
+                value={gender}
+                onChange={(e) => setGender(e.target.value as EnquiryGender)}
+                disabled={isSubmitting}
+                className="w-full text-xs font-semibold text-slate-800 bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition cursor-pointer"
+              >
+                {ENQUIRY_GENDERS.map((g) => (
+                  <option key={g} value={g}>
+                    {ENQUIRY_GENDER_LABELS[g]}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+
+            {/* Message (Optional) */}
+            <FormField label="Message / Inquiry Notes (Optional)" error={clientErrors.message}>
+              <textarea
+                rows={3}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Enquiry message content…"
+                disabled={isSubmitting}
+                className="w-full text-xs text-slate-800 bg-white border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition resize-none disabled:opacity-50"
+              />
+            </FormField>
+
+            {/* Status */}
+            <FormField label="Status *">
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as EnquiryStatus)}
+                disabled={isSubmitting}
+                className="w-full text-xs font-semibold text-slate-800 bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition cursor-pointer"
+              >
+                {ENQUIRY_STATUSES.map((s) => (
+                  <option key={s} value={s}>
+                    {ENQUIRY_STATUS_LABELS[s]}
+                  </option>
+                ))}
+              </select>
             </FormField>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Location */}
-            <FormField label="Location *" error={clientErrors.location}>
-              <TextInput
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g. Koramangala, Bangalore"
-                disabled={isSubmitting}
-              />
-            </FormField>
-
-            {/* Profile / I Am */}
-            <FormField label="Profile / I Am *" error={clientErrors.iam}>
-              <TextInput
-                value={iam}
-                onChange={(e) => setIam(e.target.value)}
-                placeholder="e.g. Student, Working Professional"
-                disabled={isSubmitting}
-              />
-            </FormField>
-          </div>
-
-          {/* Message Content */}
-          <FormField label="Inquiry Message *" error={clientErrors.message}>
-            <textarea
-              rows={4}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Enter prospective tenant message or notes..."
-              disabled={isSubmitting}
-              className="w-full rounded-xl border border-slate-200 p-3 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 transition"
-            />
-          </FormField>
-
-          {/* Status Selection */}
-          <FormField label="Status *">
-            <div className="grid grid-cols-3 gap-2.5">
-              {ENQUIRY_STATUSES.map((s) => {
-                const isSelected = status === s;
-                return (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setStatus(s)}
-                    disabled={isSubmitting}
-                    className={`py-2 px-3 rounded-xl border text-xs font-semibold capitalize transition flex items-center justify-center gap-2 cursor-pointer ${isSelected
-                        ? s === "new"
-                          ? "bg-amber-50 border-amber-300 text-amber-800 ring-2 ring-amber-200"
-                          : s === "read"
-                            ? "bg-sky-50 border-sky-300 text-sky-800 ring-2 ring-sky-200"
-                            : "bg-emerald-50 border-emerald-300 text-emerald-800 ring-2 ring-emerald-200"
-                        : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
-                      }`}
-                  >
-                    <span
-                      className={`w-2 h-2 rounded-full ${s === "new"
-                          ? "bg-amber-500"
-                          : s === "read"
-                            ? "bg-sky-500"
-                            : "bg-emerald-500"
-                        }`}
-                    />
-                    <span>{ENQUIRY_STATUS_LABELS[s]}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </FormField>
-
-          {/* Form Actions */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+          {/* Footer */}
+          <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5">
             <Btn
-              type="button"
               variant="ghost"
               size="md"
               onClick={handleClose}
@@ -266,12 +271,24 @@ export default function EditEnquiry({
               Cancel
             </Btn>
             <Btn
-              type="submit"
               variant="brand"
               size="md"
+              type="submit"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Saving…" : "Save Changes"}
+              {isSubmitting ? (
+                <>
+                  <span className="inline-block animate-spin">
+                    <Icon name="refresh" size={13} />
+                  </span>
+                  <span>Saving…</span>
+                </>
+              ) : (
+                <>
+                  <Icon name="check" size={13} />
+                  <span>Save Changes</span>
+                </>
+              )}
             </Btn>
           </div>
         </form>
@@ -279,4 +296,3 @@ export default function EditEnquiry({
     </div>
   );
 }
-

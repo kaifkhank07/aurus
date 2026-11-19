@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import useMasterStore from "@/store/useMasterStore";
+import { EnquiryGender } from "@/types/enquiry.types";
 
 export interface CallbackFormProps {
   className?: string;
@@ -19,8 +20,9 @@ export function CallbackForm({
 
   const [fullName, setFullName] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
-  const [city, setCity] = useState(initialCity);
-  const [role, setRole] = useState("");
+  const [email, setEmail] = useState("");
+  const [hostelCity, setHostelCity] = useState(initialCity);
+  const [gender, setGender] = useState<EnquiryGender | "">("");
   const [message, setMessage] = useState("");
   const [agreed, setAgreed] = useState(false);
 
@@ -34,7 +36,7 @@ export function CallbackForm({
 
   useEffect(() => {
     if (initialCity) {
-      setCity(initialCity);
+      setHostelCity(initialCity);
     }
   }, [initialCity]);
 
@@ -56,22 +58,17 @@ export function CallbackForm({
     }
 
     if (!mobileNumber.trim()) {
-      setErrorMessage("Please enter your phone number.");
+      setErrorMessage("Please enter your mobile number.");
       return;
     }
 
-    if (!city.trim()) {
-      setErrorMessage("Please select a city.");
+    if (!hostelCity.trim()) {
+      setErrorMessage("Please select a hostel city.");
       return;
     }
 
-    if (!role.trim()) {
-      setErrorMessage("Please select your category / role.");
-      return;
-    }
-
-    if (!message.trim()) {
-      setErrorMessage("Please enter your message.");
+    if (!gender) {
+      setErrorMessage("Please select hostel gender (boys or girls).");
       return;
     }
 
@@ -92,9 +89,10 @@ export function CallbackForm({
         body: JSON.stringify({
           name: fullName.trim(),
           number: mobileNumber.trim(),
-          location: city.trim(),
-          iam: role.trim(),
-          message: message.trim(),
+          email: email.trim() || undefined,
+          hostelCity: hostelCity.trim(),
+          gender,
+          message: message.trim() || undefined,
           status: "new",
         }),
       });
@@ -111,8 +109,9 @@ export function CallbackForm({
       setIsSubmitted(true);
       setFullName("");
       setMobileNumber("");
-      setCity(initialCity || "");
-      setRole("");
+      setEmail("");
+      setHostelCity(initialCity || "");
+      setGender("");
       setMessage("");
       setAgreed(false);
 
@@ -164,7 +163,7 @@ export function CallbackForm({
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             disabled={isSubmitting}
-            placeholder="John Doe"
+            // placeholder="John Doe"
             className="w-full rounded-[10px] sm:rounded-[12px] bg-white/70 border border-ink/15 px-4 py-3 font-sans text-[13px] sm:text-[14px] text-ink focus:bg-white focus:outline-none focus:border-ink transition-all disabled:opacity-60"
           />
         </div>
@@ -179,27 +178,42 @@ export function CallbackForm({
             value={mobileNumber}
             onChange={(e) => setMobileNumber(e.target.value)}
             disabled={isSubmitting}
-            placeholder="+91 98765 43210"
+            // placeholder="+91 98765 43210"
             className="w-full rounded-[10px] sm:rounded-[12px] bg-white/70 border border-ink/15 px-4 py-3 font-sans text-[13px] sm:text-[14px] text-ink focus:bg-white focus:outline-none focus:border-ink transition-all disabled:opacity-60"
           />
         </div>
       </div>
 
-      {/* Row 2: City & I Am A */}
+      {/* Row 2: Email (Optional) & Hostel City */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="font-mono uppercase text-[10px] sm:text-[11px] lg:text-[14px] text-muted mb-2 block">
-            CITY *
+            EMAIL
+            {/* <span className="text-[10px] font-normal lowercase">(optional)</span> */}
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={isSubmitting}
+            // placeholder="john@example.com"
+            className="w-full rounded-[10px] sm:rounded-[12px] bg-white/70 border border-ink/15 px-4 py-3 font-sans text-[13px] sm:text-[14px] text-ink focus:bg-white focus:outline-none focus:border-ink transition-all disabled:opacity-60"
+          />
+        </div>
+
+        <div>
+          <label className="font-mono uppercase text-[10px] sm:text-[11px] lg:text-[14px] text-muted mb-2 block">
+            HOSTEL CITY *
           </label>
           <div className="relative">
             <select
-              value={city}
+              value={hostelCity}
               required
-              onChange={(e) => setCity(e.target.value)}
+              onChange={(e) => setHostelCity(e.target.value)}
               disabled={isSubmitting}
               className="w-full rounded-[10px] sm:rounded-[12px] bg-white/70 border border-ink/15 px-4 py-3 font-sans text-[13px] sm:text-[14px] text-ink focus:bg-white focus:outline-none focus:border-ink appearance-none cursor-pointer transition-all disabled:opacity-60"
             >
-              <option value="">Select City</option>
+              <option value="">Select Hostel City</option>
               {cityOptions.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -213,51 +227,49 @@ export function CallbackForm({
             </div>
           </div>
         </div>
+      </div>
 
-        <div>
-          <label className="font-mono uppercase text-[10px] sm:text-[11px] lg:text-[14px] text-muted mb-2 block">
-            I AM A *
-          </label>
-          <div className="relative">
-            <select
-              value={role}
-              required
-              onChange={(e) => setRole(e.target.value)}
-              disabled={isSubmitting}
-              className="w-full rounded-[10px] sm:rounded-[12px] bg-white/70 border border-ink/15 px-4 py-3 font-sans text-[13px] sm:text-[14px] text-ink focus:bg-white focus:outline-none focus:border-ink appearance-none cursor-pointer transition-all disabled:opacity-60"
-            >
-              <option value="">Select Category</option>
-              <option value="Student">Student</option>
-              <option value="Parent">Parent</option>
-              <option value="Working Professional">Working Professional</option>
-              <option value="Other">Other</option>
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-ink/60">
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-              </svg>
-            </div>
+      {/* Row 3: Gender Selection (boys or girls) */}
+      <div>
+        <label className="font-mono uppercase text-[10px] sm:text-[11px] lg:text-[14px] text-muted mb-2 block">
+          GENDER *
+        </label>
+        <div className="relative">
+          <select
+            value={gender}
+            required
+            onChange={(e) => setGender(e.target.value as EnquiryGender)}
+            disabled={isSubmitting}
+            className="w-full rounded-[10px] sm:rounded-[12px] bg-white/70 border border-ink/15 px-4 py-3 font-sans text-[13px] sm:text-[14px] text-ink focus:bg-white focus:outline-none focus:border-ink appearance-none cursor-pointer transition-all disabled:opacity-60"
+          >
+            <option value="">Select Gender</option>
+            <option value="boys">Boys</option>
+            <option value="girls">Girls</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-ink/60">
+            <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+            </svg>
           </div>
         </div>
       </div>
 
-      {/* Row 3: Message */}
+      {/* Row 4: Message (Optional) */}
       <div>
         <label className="font-mono uppercase text-[10px] sm:text-[11px] lg:text-[14px] text-muted mb-2 block">
-          MESSAGE *
+          MESSAGE <span className="text-[10px] font-normal lowercase">(optional)</span>
         </label>
         <textarea
           rows={4}
-          required
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           disabled={isSubmitting}
-          placeholder="Tell us what you're looking for or any questions you have…"
+          // placeholder="Tell us what you're looking for or any questions you have…"
           className="w-full rounded-[10px] sm:rounded-[12px] bg-white/70 border border-ink/15 px-4 py-3 font-sans text-[13px] sm:text-[14px] text-ink focus:bg-white focus:outline-none focus:border-ink resize-none transition-all disabled:opacity-60"
         />
       </div>
 
-      {/* Row 4: Checkbox Agreement */}
+      {/* Row 5: Checkbox Agreement */}
       <div className="pt-1">
         <label className="flex items-start gap-2.5 cursor-pointer select-none">
           <input
@@ -282,7 +294,7 @@ export function CallbackForm({
         </label>
       </div>
 
-      {/* Row 5: Submit Button */}
+      {/* Row 6: Submit Button */}
       <div className="pt-2">
         <button
           type="submit"

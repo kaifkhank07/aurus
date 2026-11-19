@@ -9,10 +9,10 @@ import { BookedVisitStatus } from "../src/types/booked-visit.types";
 interface SeedVisitItem {
   name: string;
   number: string;
-  email: string;
-  college: string;
-  location: string;
-  preferredDate: Date;
+  email?: string | null;
+  hostelCity: string;
+  collegeName: string;
+  wantToVisit: Date;
   status: BookedVisitStatus;
 }
 
@@ -28,54 +28,54 @@ const sampleVisits: SeedVisitItem[] = [
     name: "Aditya Kulkarni",
     number: "+91 98234 56789",
     email: "aditya.kulkarni@example.com",
-    college: "Christ University, Bangalore",
-    location: "Koramangala, Bangalore",
-    preferredDate: getUpcomingDate(2),
+    collegeName: "Christ University",
+    hostelCity: "Pune",
+    wantToVisit: getUpcomingDate(2),
     status: "new",
   },
   {
     name: "Tanvi Deshmukh",
     number: "+91 98765 43210",
     email: "tanvi.deshmukh@example.com",
-    college: "NMIMS Mumbai",
-    location: "HSR Layout, Bangalore",
-    preferredDate: getUpcomingDate(3),
+    collegeName: "NMIMS Mumbai",
+    hostelCity: "Mumbai",
+    wantToVisit: getUpcomingDate(3),
     status: "read",
   },
   {
     name: "Rajesh Singhal",
     number: "+91 94123 45678",
     email: "rajesh.singhal@example.com",
-    college: "Amity University, Noida",
-    location: "Sector 62, Noida",
-    preferredDate: getUpcomingDate(4),
+    collegeName: "Amity University, Noida",
+    hostelCity: "Noida",
+    wantToVisit: getUpcomingDate(4),
     status: "complete",
   },
   {
     name: "Neha Ranganathan",
     number: "+91 99401 23456",
     email: "neha.ranganathan@example.com",
-    college: "Symbiosis Institute, Pune",
-    location: "Viman Nagar, Pune",
-    preferredDate: getUpcomingDate(5),
+    collegeName: "Symbiosis Institute, Pune",
+    hostelCity: "Pune",
+    wantToVisit: getUpcomingDate(5),
     status: "new",
   },
   {
     name: "Farhan Siddiqui",
     number: "+91 98112 34567",
-    email: "farhan.siddiqui@example.com",
-    college: "Delhi University, North Campus",
-    location: "North Campus, Delhi",
-    preferredDate: getUpcomingDate(6),
+    email: null,
+    collegeName: "Delhi University",
+    hostelCity: "Jalandhar",
+    wantToVisit: getUpcomingDate(6),
     status: "read",
   },
   {
     name: "Ananya Mukherjee",
     number: "+91 98301 23456",
     email: "ananya.mukherjee@example.com",
-    college: "Mithibai College, Mumbai",
-    location: "Andheri West, Mumbai",
-    preferredDate: getUpcomingDate(7),
+    collegeName: "Nirma University",
+    hostelCity: "Ahmedabad",
+    wantToVisit: getUpcomingDate(7),
     status: "complete",
   },
 ];
@@ -94,17 +94,16 @@ async function runSeed() {
     let createdCount = 0;
     let existingCount = 0;
 
-    // 2. Iterate and upsert/insert sample visits
+    // 2. Iterate and insert sample visits
     for (const visit of sampleVisits) {
-      // Check if a visit with the same phone number and location already exists
       const existing = await BookedVisit.findOne({
         number: visit.number,
-        location: visit.location,
+        hostelCity: visit.hostelCity,
       });
 
       if (existing) {
         console.log(
-          `ℹ️  Visit for "${visit.name}" (${visit.number} at ${visit.location}) already exists. Skipping.`
+          `ℹ️  Visit for "${visit.name}" (${visit.number} at ${visit.hostelCity}) already exists. Skipping.`
         );
         existingCount++;
       } else {
@@ -112,14 +111,14 @@ async function runSeed() {
           name: visit.name,
           number: visit.number,
           email: visit.email,
-          college: visit.college,
-          location: visit.location,
-          preferredDate: visit.preferredDate,
+          hostelCity: visit.hostelCity,
+          collegeName: visit.collegeName,
+          wantToVisit: visit.wantToVisit,
           status: visit.status,
         });
 
         console.log(
-          `✅ Created booked visit: "${visit.name}" (${visit.number}) for ${visit.preferredDate.toDateString()} [Status: ${visit.status}]`
+          `✅ Created booked visit: "${visit.name}" (${visit.number}) for ${visit.wantToVisit.toDateString()} [Status: ${visit.status}]`
         );
         createdCount++;
       }

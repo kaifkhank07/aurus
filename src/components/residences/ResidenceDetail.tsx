@@ -716,7 +716,7 @@ export function ResidenceDetail({ slug, hostel: propHostel }: ResidenceDetailPro
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         residenceTitle={hostel.title}
-        residenceLocation={address}
+        initialCity={cityName}
       />
 
       {/* Slide-by-slide Photo Gallery Modal */}

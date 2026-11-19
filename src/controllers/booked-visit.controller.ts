@@ -30,12 +30,12 @@ function formatSafeBookedVisit(doc: IBookedVisitDocument): SafeBookedVisit {
     id: doc._id.toString(),
     name: doc.name,
     number: doc.number,
-    email: doc.email,
-    college: doc.college,
-    location: doc.location,
+    email: doc.email ?? null,
+    hostelCity: doc.hostelCity,
+    collegeName: doc.collegeName,
     status: doc.status || "new",
-    preferredDate: doc.preferredDate
-      ? doc.preferredDate.toISOString()
+    wantToVisit: doc.wantToVisit
+      ? doc.wantToVisit.toISOString()
       : new Date().toISOString(),
     createdAt: doc.createdAt ? doc.createdAt.toISOString() : new Date().toISOString(),
     updatedAt: doc.updatedAt ? doc.updatedAt.toISOString() : new Date().toISOString(),
@@ -93,7 +93,7 @@ export async function list(request: NextRequest): Promise<NextResponse> {
     });
 
     const validatedQuery = bookedVisitQuerySchema.parse(rawQuery);
-    const { page, limit, search, location, status, preferredDate, sortBy, sortOrderDir } =
+    const { page, limit, search, hostelCity, status, wantToVisit, sortBy, sortOrderDir } =
       validatedQuery;
 
     logger.info("Listing booked visits started", {
@@ -101,9 +101,9 @@ export async function list(request: NextRequest): Promise<NextResponse> {
       page,
       limit,
       search,
-      location,
+      hostelCity,
       status,
-      preferredDate,
+      wantToVisit,
       sortBy,
       sortOrderDir,
     });
@@ -112,22 +112,22 @@ export async function list(request: NextRequest): Promise<NextResponse> {
 
     const filter: Record<string, unknown> = {};
 
-    if (location) {
-      filter.location = { $regex: new RegExp(`^${location}$`, "i") };
+    if (hostelCity) {
+      filter.hostelCity = { $regex: new RegExp(`^${hostelCity}$`, "i") };
     }
 
     if (status && status !== "all") {
       filter.status = status;
     }
 
-    if (preferredDate) {
-      const parsed = new Date(preferredDate);
+    if (wantToVisit) {
+      const parsed = new Date(wantToVisit);
       if (!isNaN(parsed.getTime())) {
         const start = new Date(parsed);
         start.setUTCHours(0, 0, 0, 0);
         const end = new Date(parsed);
         end.setUTCHours(23, 59, 59, 999);
-        filter.preferredDate = { $gte: start, $lte: end };
+        filter.wantToVisit = { $gte: start, $lte: end };
       }
     }
 
@@ -137,8 +137,8 @@ export async function list(request: NextRequest): Promise<NextResponse> {
         { name: searchRegex },
         { number: searchRegex },
         { email: searchRegex },
-        { college: searchRegex },
-        { location: searchRegex },
+        { collegeName: searchRegex },
+        { hostelCity: searchRegex },
       ];
     }
 
@@ -189,11 +189,11 @@ async function createBookedVisitDoc(body: unknown): Promise<SafeBookedVisit> {
   const newDoc = new BookedVisit({
     name: validated.name.trim(),
     number: validated.number.trim(),
-    email: validated.email.trim().toLowerCase(),
-    college: validated.college.trim(),
-    location: validated.location.trim(),
+    email: validated.email ? validated.email.trim().toLowerCase() : null,
+    hostelCity: validated.hostelCity.trim(),
+    collegeName: validated.collegeName.trim(),
     status: validated.status || "new",
-    preferredDate: new Date(validated.preferredDate),
+    wantToVisit: new Date(validated.wantToVisit),
   });
 
   await newDoc.save();
@@ -259,9 +259,9 @@ export async function createPublic(request: NextRequest): Promise<NextResponse> 
         name: bookedVisit.name,
         number: bookedVisit.number,
         email: bookedVisit.email,
-        college: bookedVisit.college,
-        location: bookedVisit.location,
-        preferredDate: bookedVisit.preferredDate,
+        hostelCity: bookedVisit.hostelCity,
+        collegeName: bookedVisit.collegeName,
+        wantToVisit: bookedVisit.wantToVisit,
         status: bookedVisit.status,
         source: "Website Schedule Visit",
       });
@@ -346,19 +346,19 @@ export async function update(
       doc.number = validated.number.trim();
     }
     if (validated.email !== undefined) {
-      doc.email = validated.email.trim().toLowerCase();
+      doc.email = validated.email ? validated.email.trim().toLowerCase() : null;
     }
-    if (validated.college !== undefined) {
-      doc.college = validated.college.trim();
+    if (validated.hostelCity !== undefined) {
+      doc.hostelCity = validated.hostelCity.trim();
     }
-    if (validated.location !== undefined) {
-      doc.location = validated.location.trim();
+    if (validated.collegeName !== undefined) {
+      doc.collegeName = validated.collegeName.trim();
     }
     if (validated.status !== undefined) {
       doc.status = validated.status;
     }
-    if (validated.preferredDate !== undefined) {
-      doc.preferredDate = new Date(validated.preferredDate);
+    if (validated.wantToVisit !== undefined) {
+      doc.wantToVisit = new Date(validated.wantToVisit);
     }
 
     await doc.save();

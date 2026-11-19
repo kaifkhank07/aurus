@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useHostelAndEnquiryStore } from "@/store/useHostelAndEnquiryStore";
-import { Card, Chip, Btn, TextInput } from "../ui/AdminUI";
+import { Card, Btn, TextInput, Chip } from "../ui/AdminUI";
 import Icon from "../ui/AdminIcons";
 import BookedVisitHeader from "./BookedVisitHeader";
 import BookedVisitDetails from "./BookedVisitDetails";
@@ -36,11 +36,11 @@ export default function BookedVisitManage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deletingVisit, setDeletingVisit] = useState<SafeBookedVisit | null>(null);
 
-  // Search & Filter & Sorting state
+  // Search, Filter & Sorting state
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [sortBy, setSortBy] = useState<"createdAt" | "preferredDate">("createdAt");
+  const [sortBy, setSortBy] = useState<"createdAt" | "wantToVisit">("createdAt");
   const [sortOrderDir, setSortOrderDir] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -160,18 +160,12 @@ export default function BookedVisitManage() {
   const totalPages =
     bookedVisitsPagination?.totalPages ?? Math.max(1, Math.ceil(totalCount / PAGE_LIMIT));
 
-  const statusToneMap: Record<BookedVisitStatus, "amber" | "sea" | "mint"> = {
-    new: "amber",
-    read: "sea",
-    complete: "mint",
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <BookedVisitHeader
         title="Booked Visits"
-        sub="Monitor and manage scheduled property visits, appointments, and visitor inquiries."
+        sub="Manage prospective resident visit appointments, schedules, and property tour requests."
         totalCount={totalCount}
         onRefresh={() => loadVisitData(true)}
         refreshing={isLoadingBookedVisits}
@@ -181,15 +175,17 @@ export default function BookedVisitManage() {
       {/* Feedback Toast */}
       {feedback && (
         <div
-          className={`p-3.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-3 shadow-sm transition-all duration-300 animate-in slide-in-from-top-2 ${feedback.type === "success"
-            ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
-            : "bg-rose-50 border border-rose-200 text-rose-800"
-            }`}
+          className={`p-3.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-3 shadow-sm transition-all duration-300 animate-in slide-in-from-top-2 ${
+            feedback.type === "success"
+              ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
+              : "bg-rose-50 border border-rose-200 text-rose-800"
+          }`}
         >
           <div className="flex items-center gap-2.5">
             <span
-              className={`w-2 h-2 rounded-full ${feedback.type === "success" ? "bg-emerald-500" : "bg-rose-500"
-                }`}
+              className={`w-2 h-2 rounded-full ${
+                feedback.type === "success" ? "bg-emerald-500" : "bg-rose-500"
+              }`}
             />
             <span>{feedback.message}</span>
           </div>
@@ -214,7 +210,7 @@ export default function BookedVisitManage() {
             <TextInput
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by visitor name, phone, email, college…"
+              placeholder="Search by name, number, email, college, or city…"
               className="pl-9 pr-9"
             />
             {search && (
@@ -250,7 +246,7 @@ export default function BookedVisitManage() {
               value={`${sortBy}-${sortOrderDir}`}
               onChange={(e) => {
                 const [sb, sod] = e.target.value.split("-") as [
-                  "createdAt" | "preferredDate",
+                  "createdAt" | "wantToVisit",
                   "asc" | "desc"
                 ];
                 setSortBy(sb);
@@ -261,8 +257,8 @@ export default function BookedVisitManage() {
             >
               <option value="createdAt-desc">Newest Booking First</option>
               <option value="createdAt-asc">Oldest Booking First</option>
-              <option value="preferredDate-asc">Visit Date (Earliest First)</option>
-              <option value="preferredDate-desc">Visit Date (Latest First)</option>
+              <option value="wantToVisit-asc">Visit Date (Earliest First)</option>
+              <option value="wantToVisit-desc">Visit Date (Latest First)</option>
             </select>
 
             {/* Reset Filters */}
@@ -308,7 +304,8 @@ export default function BookedVisitManage() {
               <tr className="border-b border-slate-200/80 bg-slate-50/75 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 <th className="py-3 px-4">Visitor</th>
                 <th className="py-3 px-4">Contact</th>
-                <th className="py-3 px-4">Location</th>
+                <th className="py-3 px-4">Hostel City</th>
+                <th className="py-3 px-4">College</th>
                 <th className="py-3 px-4">Scheduled Visit</th>
                 <th className="py-3 px-4 w-36">Status</th>
                 <th className="py-3 px-4 w-28">Booked On</th>
@@ -318,7 +315,7 @@ export default function BookedVisitManage() {
             <tbody className="divide-y divide-slate-100">
               {isLoadingBookedVisits && bookedVisits.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-14 text-center">
+                  <td colSpan={8} className="py-14 text-center">
                     <div className="flex flex-col items-center justify-center gap-2 text-slate-400">
                       <span className="inline-block animate-spin text-sky-500">
                         <Icon name="refresh" size={20} />
@@ -329,7 +326,7 @@ export default function BookedVisitManage() {
                 </tr>
               ) : bookedVisits.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-14 text-center">
+                  <td colSpan={8} className="py-14 text-center">
                     <div className="flex flex-col items-center justify-center gap-2.5 max-w-sm mx-auto text-slate-400">
                       <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-1">
                         <Icon name="calendar" size={24} />
@@ -350,7 +347,7 @@ export default function BookedVisitManage() {
                 </tr>
               ) : (
                 bookedVisits.map((visit) => {
-                  const visitDateObj = visit.preferredDate ? new Date(visit.preferredDate) : null;
+                  const visitDateObj = visit.wantToVisit ? new Date(visit.wantToVisit) : null;
                   const isValidDate = visitDateObj && !isNaN(visitDateObj.getTime());
                   const formattedVisitDate = isValidDate
                     ? visitDateObj.toLocaleDateString("en-US", {
@@ -358,7 +355,7 @@ export default function BookedVisitManage() {
                       day: "numeric",
                       year: "numeric",
                     })
-                    : visit.preferredDate || "—";
+                    : visit.wantToVisit || "—";
 
                   const isUpcoming = isValidDate
                     ? new Date(visitDateObj.toDateString()) >= new Date(new Date().toDateString())
@@ -380,8 +377,8 @@ export default function BookedVisitManage() {
                       key={visit.id}
                       className="hover:bg-slate-50/70 transition-colors group select-text"
                     >
-                      {/* Visitor Name, Email & College */}
-                      <td className="py-3 px-4 min-w-[210px]">
+                      {/* Visitor Name & Email */}
+                      <td className="py-3 px-4 min-w-[200px]">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
                             {visit.name.charAt(0).toUpperCase()}
@@ -390,12 +387,11 @@ export default function BookedVisitManage() {
                             <div className="font-bold text-slate-900 group-hover:text-sky-600 transition-colors truncate">
                               {visit.name}
                             </div>
-                            <div className="text-[11px] text-slate-500 truncate" title={visit.email}>
-                              {visit.email}
-                            </div>
-                            {/*   <div className="text-[10px] text-slate-400 truncate" title={visit.college}>
-                              {visit.college}
-                            </div> */}
+                            {visit.email && (
+                              <div className="text-[11px] text-slate-500 truncate max-w-[150px]" title={visit.email}>
+                                {visit.email}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -425,16 +421,23 @@ export default function BookedVisitManage() {
                         </div>
                       </td>
 
-                      {/* Target Location */}
-                      <td className="py-3 px-4 min-w-[150px]">
+                      {/* Hostel City */}
+                      <td className="py-3 px-4 min-w-[130px]">
                         <div className="flex items-center gap-1.5 text-slate-700 font-medium">
                           <span className="text-slate-400 shrink-0">
                             <Icon name="pin" size={12} />
                           </span>
-                          <span className="truncate max-w-[170px]" title={visit.location}>
-                            {visit.location || "General Visit"}
+                          <span className="truncate max-w-[150px]" title={visit.hostelCity}>
+                            {visit.hostelCity}
                           </span>
                         </div>
+                      </td>
+
+                      {/* College Name */}
+                      <td className="py-3 px-4 min-w-[140px]">
+                        <span className="text-slate-700 font-medium truncate block max-w-[150px]" title={visit.collegeName}>
+                          {visit.collegeName}
+                        </span>
                       </td>
 
                       {/* Scheduled Visit Date */}
@@ -450,7 +453,7 @@ export default function BookedVisitManage() {
                       <td className="py-3 px-4 whitespace-nowrap">
                         <div className="relative inline-flex items-center">
                           <select
-                            value={visit.status}
+                            value={visit.status || "new"}
                             disabled={isUpdatingThis}
                             onChange={(e) =>
                               handleInlineStatusChange(
@@ -458,12 +461,13 @@ export default function BookedVisitManage() {
                                 e.target.value as BookedVisitStatus
                               )
                             }
-                            className={`text-xs font-semibold rounded-lg px-2.5 py-1 border transition cursor-pointer appearance-none pr-6 ${visit.status === "new"
-                              ? "bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100"
-                              : visit.status === "read"
+                            className={`text-xs font-semibold rounded-lg px-2.5 py-1 border transition cursor-pointer appearance-none pr-6 ${
+                              visit.status === "new"
+                                ? "bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100"
+                                : visit.status === "read"
                                 ? "bg-sky-50 text-sky-800 border-sky-300 hover:bg-sky-100"
                                 : "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100"
-                              } ${isUpdatingThis ? "opacity-50 cursor-wait" : ""}`}
+                            } ${isUpdatingThis ? "opacity-50 cursor-wait" : ""}`}
                           >
                             <option value="new">New</option>
                             <option value="read">Read</option>
@@ -475,7 +479,7 @@ export default function BookedVisitManage() {
                         </div>
                       </td>
 
-                      {/* Booked On */}
+                      {/* Booked On Date */}
                       <td className="py-3 px-4 text-slate-500 text-[11px] font-medium whitespace-nowrap">
                         {bookedOnFormatted}
                       </td>
@@ -487,7 +491,7 @@ export default function BookedVisitManage() {
                           <button
                             type="button"
                             onClick={() => setSelectedVisitForDetails(visit)}
-                            title="View appointment details"
+                            title="View visit details"
                             className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-sky-600 hover:bg-sky-50 hover:border-sky-200 transition cursor-pointer"
                           >
                             <Icon name="eye" size={13} />
@@ -497,7 +501,7 @@ export default function BookedVisitManage() {
                           <button
                             type="button"
                             onClick={() => setEditingVisit(visit)}
-                            title="Edit appointment"
+                            title="Edit visit"
                             className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-sky-600 hover:bg-sky-50 hover:border-sky-200 transition cursor-pointer"
                           >
                             <Icon name="pen" size={13} />
@@ -564,6 +568,35 @@ export default function BookedVisitManage() {
         )}
       </Card>
 
+      {/* Create Modal */}
+      <CreateBookedVisit
+        open={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        onSuccess={() => {
+          setFeedback({
+            type: "success",
+            message: "New visit booking created successfully.",
+          });
+          loadVisitData(true);
+        }}
+      />
+
+      {/* Edit Modal */}
+      {editingVisit && (
+        <EditBookedVisit
+          open={!!editingVisit}
+          visit={editingVisit}
+          onClose={() => setEditingVisit(null)}
+          onSuccess={() => {
+            setFeedback({
+              type: "success",
+              message: "Visit appointment updated successfully.",
+            });
+            loadVisitData(true);
+          }}
+        />
+      )}
+
       {/* Details Modal */}
       {selectedVisitForDetails && (
         <BookedVisitDetails
@@ -584,36 +617,9 @@ export default function BookedVisitManage() {
             setSelectedVisitForDetails((prev) =>
               prev ? { ...prev, status: newStatus } : null
             );
-            loadVisitData(true);
-          }}
-        />
-      )}
-
-      {/* Create Modal */}
-      {isCreateOpen && (
-        <CreateBookedVisit
-          open={isCreateOpen}
-          onClose={() => setIsCreateOpen(false)}
-          onSuccess={() => {
             setFeedback({
               type: "success",
-              message: "Booked visit appointment created successfully.",
-            });
-            loadVisitData(true);
-          }}
-        />
-      )}
-
-      {/* Edit Modal */}
-      {editingVisit && (
-        <EditBookedVisit
-          open={!!editingVisit}
-          visit={editingVisit}
-          onClose={() => setEditingVisit(null)}
-          onSuccess={() => {
-            setFeedback({
-              type: "success",
-              message: "Booked visit appointment updated successfully.",
+              message: `Status updated to ${BOOKED_VISIT_STATUS_LABELS[newStatus]}.`,
             });
             loadVisitData(true);
           }}

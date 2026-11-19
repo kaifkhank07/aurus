@@ -28,15 +28,15 @@ export const developerHeroData: DeveloperHeroData = {
       variant: "solid",
     },
     {
-      label: "FINANCIAL MODEL",
+      label: "OPERATOR MODEL",
       href: "#partnership-models",
       variant: "outline",
     },
-    {
-      label: "PROTOTYPE",
-      href: "#what-we-look-for",
-      variant: "outline",
-    },
+    // {
+    //   label: "PROTOTYPE",
+    //   href: "#what-we-look-for",
+    //   variant: "outline",
+    // },
   ],
   image: {
     src: assets.developerHero,
