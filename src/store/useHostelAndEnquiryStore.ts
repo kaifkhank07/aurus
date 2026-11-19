@@ -308,7 +308,9 @@ export const useHostelAndEnquiryStore = create<HostelAndEnquiryState>((set, get)
 
   fetchLatestHostels: async (params = {}, force = false) => {
     const queryParams: Partial<PublicHostelQueryParams> = {
-      limit: 6,
+      all: true,
+      sortBy: "createdAt",
+      sortOrder: "asc",
       ...params,
     };
     const key = `latest_hostels_${JSON.stringify(queryParams)}`;
@@ -336,19 +338,30 @@ export const useHostelAndEnquiryStore = create<HostelAndEnquiryState>((set, get)
 
         if (res.data.success && res.data.data) {
           const rawData = res.data.data;
-          // Normalize items so both id and _id are available, restricted to 6 entries
-          const items = (rawData.items || [])
-            .slice(0, 6)
-            .map((item: any) => ({
-              ...item,
-              id: item.id || (item._id ? String(item._id) : ""),
-              _id: item._id ? String(item._id) : item.id,
-            }));
+          // Normalize items so both id and _id are available (all entries, sorted oldest to newest)
+          const items = (rawData.items || []).map((item: any) => ({
+            ...item,
+            id: item.id || (item._id ? String(item._id) : ""),
+            _id: item._id ? String(item._id) : item.id,
+          }));
+
+          // Ensure reliable sorting: oldest to newest when asc order requested
+          const isAsc =
+            queryParams.sortOrder === "asc" ||
+            queryParams.sortOrderDir === "asc" ||
+            queryParams.order === "asc";
+          if (isAsc) {
+            items.sort((a: any, b: any) => {
+              const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+              const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+              return dateA - dateB;
+            });
+          }
 
           const pagination: PaginationMeta = {
             total: rawData.total ?? items.length,
             page: rawData.page ?? 1,
-            limit: 6,
+            limit: rawData.limit ?? items.length,
             totalPages: rawData.totalPages ?? 1,
             hasNextPage: (rawData.page ?? 1) < (rawData.totalPages ?? 1),
             hasPrevPage: (rawData.page ?? 1) > 1,

@@ -142,6 +142,11 @@ export interface PublicHostelQueryParams {
   occupancy?: string;
   page?: number;
   limit?: number;
+  sortBy?: "rent" | "title" | "createdAt" | "star";
+  sortOrder?: "asc" | "desc";
+  sortOrderDir?: "asc" | "desc";
+  order?: "asc" | "desc";
+  all?: boolean;
 }
 
 export interface PublicHostelsResult {

@@ -43,9 +43,9 @@ export function Residences() {
     fetchLatestHostels,
   } = useHostelAndEnquiryStore();
 
-  // Fetch dynamic public latest hostel
+  // Fetch dynamic public residences (all active hostels, sorted oldest to newest)
   useEffect(() => {
-    fetchLatestHostels({ limit: 10 });
+    fetchLatestHostels({ all: true, sortBy: "createdAt", sortOrder: "asc" });
   }, [fetchLatestHostels]);
 
   const sync = useCallback(() => {
@@ -151,9 +151,10 @@ export function Residences() {
 
             {latestHostels.map((item, index) => (
               <li
-                key={index}
-                className={`w-[85vw] shrink-0 sm:w-[48vw] lg:w-[min(21vw,400px)] ${index === 0 ? "ml-5 sm:ml-8 lg:ml-[6.25vw] 3xl:ml-[7.25vh]" : ""
-                  }`}
+                key={item.id || item._id || index}
+                className={`w-[85vw] shrink-0 sm:w-[48vw] lg:w-[min(21vw,400px)] ${
+                  index === 0 ? "ml-5 sm:ml-8 lg:ml-[6.25vw] 3xl:ml-[7.25vh]" : ""
+                }`}
               >
                 <ResidenceCard item={item} />
               </li>
@@ -165,7 +166,7 @@ export function Residences() {
           <p className="font-sans text-[16px] text-muted">
             {isLoadingLatestHostels && latestHostels.length === 0
               ? "Loading residences..."
-              : "No available at the moment. Please check baack soon."}
+              : "No residences available at the moment. Please check back soon."}
           </p>
         </div>
       )}

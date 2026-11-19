@@ -1161,7 +1161,30 @@ export async function listPublic(request: NextRequest): Promise<NextResponse> {
     const occupancy = searchParams.get("occupancy")?.trim() || searchParams.get("occupancyId")?.trim();
     const search = searchParams.get("search")?.trim();
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20", 10) || 20));
+    const limitParam = searchParams.get("limit")?.trim().toLowerCase();
+    const isAll = searchParams.get("all") === "true" || limitParam === "all" || limitParam === "0";
+    const limit = isAll
+      ? 1000
+      : Math.min(500, Math.max(1, parseInt(searchParams.get("limit") || "20", 10) || 20));
+
+    const sortBy = searchParams.get("sortBy")?.trim();
+    const sortOrderParam = (
+      searchParams.get("sortOrder") ||
+      searchParams.get("sortOrderDir") ||
+      searchParams.get("order")
+    )?.trim().toLowerCase();
+    const dir: 1 | -1 = sortOrderParam === "asc" ? 1 : -1;
+
+    const sortOptions: Record<string, 1 | -1> = {};
+    if (sortBy === "rent") {
+      sortOptions["rent.amount"] = dir;
+    } else if (sortBy === "star") {
+      sortOptions["rating.star"] = dir;
+    } else if (sortBy === "title") {
+      sortOptions.title = dir;
+    } else {
+      sortOptions.createdAt = dir;
+    }
 
     logger.info("Listing public residences/hostels started", {
       operation,
@@ -1172,6 +1195,9 @@ export async function listPublic(request: NextRequest): Promise<NextResponse> {
       search,
       page,
       limit,
+      isAll,
+      sortBy,
+      sortOrder: sortOrderParam || "desc",
     });
 
     await connectToDatabase();
@@ -1231,22 +1257,25 @@ export async function listPublic(request: NextRequest): Promise<NextResponse> {
       ];
     }
 
-    const skip = (page - 1) * limit;
+    const skip = isAll ? 0 : (page - 1) * limit;
+
+    const hostelQuery = Hostel.find(filter)
+      .populate("location.city", "city state country slug")
+      .populate("location.locality", "name slug")
+      .populate("amenities", "name image")
+      .populate("occupancy", "name image")
+      .populate("room", "name image")
+      .populate("services", "name image")
+      .populate("institute", "name slug")
+      .populate("rent.frequency", "name")
+      .sort(sortOptions);
+
+    if (!isAll) {
+      hostelQuery.skip(skip).limit(limit);
+    }
 
     const [docs, total] = await Promise.all([
-      Hostel.find(filter)
-        .populate("location.city", "city state country slug")
-        .populate("location.locality", "name slug")
-        .populate("amenities", "name image")
-        .populate("occupancy", "name image")
-        .populate("room", "name image")
-        .populate("services", "name image")
-        .populate("institute", "name slug")
-        .populate("rent.frequency", "name")
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
+      hostelQuery.lean(),
       Hostel.countDocuments(filter),
     ]);
 
@@ -1256,14 +1285,15 @@ export async function listPublic(request: NextRequest): Promise<NextResponse> {
       _id: doc._id?.toString() || doc.id || "",
     }));
 
-    const totalPages = Math.ceil(total / limit) || 1;
+    const totalPages = isAll ? 1 : Math.ceil(total / limit) || 1;
+    const responseLimit = isAll ? total : limit;
 
     return apiSuccess(
       {
         items,
         total,
-        page,
-        limit,
+        page: isAll ? 1 : page,
+        limit: responseLimit,
         totalPages,
       },
       "Residences retrieved successfully"
