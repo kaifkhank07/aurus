@@ -10,6 +10,16 @@ export const nav = {
   cta: { label: "Enquire", href: "/contact" },
 };
 
+export const managedNav = {
+  links: [
+    { label: "Residences", href: "/hostel" },
+    { label: "How It Works", href: "#how-it-works" },
+    { label: "Corporate Stays", href: "#callback" },
+    { label: "Contact", href: "/contact" },
+  ],
+  cta: { label: "Enquire", href: "/contact" },
+};
+
 
 export const navmenu = {
   links: [

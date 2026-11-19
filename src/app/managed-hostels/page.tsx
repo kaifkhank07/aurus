@@ -1,45 +1,61 @@
 import type { Metadata } from "next";
+import { Hero } from "@/components/managed-hostels/Hero";
+import { Intro } from "@/components/managed-hostels/Intro";
+import { PropertyOverview } from "@/components/managed-hostels/PropertyOverview";
+import { Residences } from "@/components/managed-hostels/Residences";
+import { Amenities } from "@/components/managed-hostels/Amenities";
+import { PricingAddons } from "@/components/managed-hostels/PricingAddons";
+import { LocationMatrix } from "@/components/managed-hostels/LocationMatrix";
+import { HowItWorks } from "@/components/managed-hostels/HowItWorks";
+import { ManagedFaq } from "@/components/managed-hostels/ManagedFaq";
+import { CallbackSection } from "@/components/managed-hostels/CallbackSection";
+import ManagedNavbar from "@/components/layout/ManagedNavbar";
 
 export const metadata: Metadata = {
-  title: "Managed Hostels | Premium Co-living & Hospitality by AURUS",
+  title: "Aurus GIFT City | Luxury Managed Residences & Serviced Living",
   description:
-    "Experience turnkey managed living by Aurus. Designed for students and young professionals seeking luxury, hospitality-driven amenities, reliable services, and inspiring shared spaces.",
+    "Experience premium turnkey managed living in GIFT City, Gandhinagar by Aurus. Thoughtfully designed fully-serviced Studio and 1 BHK residences for finance, fintech, and global professionals.",
   keywords: [
     "managed hostels",
-    "luxury managed hostel",
-    "co-living management",
-    "hospitality student living",
-    "Aurus managed hostels",
-    "premium accommodation India",
-    "turnkey student housing",
+    "GIFT City residences",
+    "GIFT City serviced apartments",
+    "luxury managed hostel Gandhinagar",
+    "Aurus GIFT City",
+    "turnkey professional living",
+    "co-living GIFT City",
   ],
   alternates: {
     canonical: "/managed-hostels",
   },
   openGraph: {
-    title: "Managed Hostels | Premium Co-living & Hospitality by AURUS",
+    title: "Aurus GIFT City | Luxury Managed Residences & Serviced Living",
     description:
-      "Turnkey managed hostels with world-class hospitality, security, and vibrant community amenities.",
+      "Turnkey managed residences with world-class hospitality, housekeeping, high-speed Wi-Fi, and 24/7 security in GIFT City.",
     url: "/managed-hostels",
     siteName: "AURUS",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Managed Hostels | Premium Co-living & Hospitality by AURUS",
+    title: "Aurus GIFT City | Luxury Managed Residences",
     description:
-      "Turnkey managed hostels for students and young professionals across India.",
+      "Fully serviced Studio and 1 BHK residences for young professionals building India's international finance hub.",
   },
 };
 
 export default function ManagedHostelsPage() {
   return (
-    <main className="flex flex-col gap-5 min-h-dvh items-center justify-center">
-      <h1 className="text-3xl font-bold">Managed Hostels</h1>
-      <p className="text-xl font-medium">
-        Managed Hostels Page content update here
-      </p>
+    <main>
+      <Hero />
+      <Intro />
+      <PropertyOverview />
+      <Residences />
+      <Amenities />
+      <PricingAddons />
+      <LocationMatrix />
+      <HowItWorks />
+      <ManagedFaq />
+      <CallbackSection />
     </main>
   );
 }
-

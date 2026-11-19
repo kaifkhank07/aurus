@@ -3,6 +3,7 @@ export * from "./shared";
 export * from "./home";
 export * from "./about";
 export * from "./student-residences";
+export * from "./managed-hostels";
 export * from "./residences";
 export * from "./city";
 export * from "./lifeataurus";

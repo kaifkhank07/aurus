@@ -112,6 +112,9 @@ export const useAssets = () => {
         aurusvoyages1: "/images/static/image-68.png",
         aurusvoyages2: "/images/static/image-69.png",
 
+        // Managed Hostels / Residences
+        managedHostelsHeroBg: "/images/static/image-70.png",
+        managedHostelsPropertyOverview: "/images/static/image-71.png",
 
         // Other
         projectplaceholder: "/images/static/workplaceholder.jpg",

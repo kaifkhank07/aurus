@@ -6,6 +6,7 @@ import SmoothScroll from "./SmoothScroll";
 import { Footer } from "./Footer";
 import { Navbar } from "./Navbar";
 import FloatingActions from "./FloatingActions";
+import ManagedNavbar from "./ManagedNavbar";
 
 /**
  * Resets scroll position on navigation while preserving anchor navigation.
@@ -100,6 +101,13 @@ function LayoutNav() {
   const isAdmin = useIsAdminRoute();
 
   if (isAdmin) return null;
+
+  // Managed Hostels routes
+  const isManagedHostels = pathname?.startsWith("/managed-hostels");
+
+  if (isManagedHostels) {
+    return <ManagedNavbar variant="light" />;
+  }
 
   const isNotHomepage =
     pathname !== "/" &&
