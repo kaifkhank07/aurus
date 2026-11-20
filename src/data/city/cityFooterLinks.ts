@@ -94,15 +94,15 @@ export function generateLocalityHostelLinks(
   if (!localities || localities.length === 0) return [];
   return localities.flatMap((loc) => [
     {
-      label: `Hostel near ${loc.name}`,
+      label: `Hostels near ${loc.name}`,
       href: `/hostel-listing/${citySlug}/${loc.slug}`,
     },
     {
-      label: `Girls Hostel near ${loc.name}`,
+      label: `Girls Hostels near ${loc.name}`,
       href: `/girls-hostel-listing/${citySlug}/${loc.slug}`,
     },
     {
-      label: `Boys Hostel near ${loc.name}`,
+      label: `Boys Hostels near ${loc.name}`,
       href: `/boys-hostel-listing/${citySlug}/${loc.slug}`,
     },
   ]);
@@ -125,7 +125,7 @@ export function generateCollegeLinks(
         href: `/pg-listing/${citySlug}${hrefLocality}/${col.slug}`,
       },
       {
-        label: `Hostel near ${col.name}${localitySuffix}`,
+        label: `Hostels near ${col.name}${localitySuffix}`,
         href: `/hostel-listing/${citySlug}${hrefLocality}/${col.slug}`,
       },
     ];

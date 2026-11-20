@@ -29,7 +29,7 @@ export const developerHeroData: DeveloperHeroData = {
     },
     {
       label: "OPERATOR MODEL",
-      href: "#partnership-models",
+      href: "/operator",
       variant: "outline",
     },
     // {

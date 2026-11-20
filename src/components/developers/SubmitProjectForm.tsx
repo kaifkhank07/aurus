@@ -1,44 +1,114 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import useMasterStore from "@/store/useMasterStore";
+import { EnquiryGender } from "@/types/enquiry.types";
 import { Eyebrow, Panel } from "@/components/ui/Primitives";
 import { ViewReveal } from "@/components/animation";
 import { submitProjectData } from "@/data/developers/submitProject";
 
 export function SubmitProjectForm() {
   const submitProject = submitProjectData;
+  const { publicCities, fetchPublicCities } = useMasterStore();
 
-  const [formData, setFormData] = useState({
-    fullName: "",
-    mobileNumber: "",
-    email: "",
-    city: "",
-    propertyType: "",
-    message: "",
-    agreeToTerms: false,
-  });
+  const [fullName, setFullName] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [email, setEmail] = useState("");
+  const [hostelCity, setHostelCity] = useState("");
+  const [gender, setGender] = useState<EnquiryGender | "">("");
+  const [message, setMessage] = useState("");
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittedName, setSubmittedName] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    void fetchPublicCities();
+  }, [fetchPublicCities]);
+
+  const cityOptions = useMemo(() => {
+    if (publicCities && publicCities.length > 0) {
+      return publicCities
+        .map((c) => c.city || c.name)
+        .filter((n): n is string => Boolean(n));
+    }
+    return ["Mumbai", "Noida", "Ahmedabad", "Pune", "Jalandhar"];
+  }, [publicCities]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.fullName || !formData.mobileNumber || !formData.email) {
-      alert("Please fill in the required fields (Name, Mobile, Email).");
+
+    if (!fullName.trim()) {
+      setErrorMessage("Please enter your name.");
       return;
     }
-    if (!formData.agreeToTerms) {
-      alert("Please agree to the Terms and Privacy Policy to proceed.");
+
+    if (!mobileNumber.trim()) {
+      setErrorMessage("Please enter your mobile number.");
+      return;
+    }
+
+    if (!hostelCity.trim()) {
+      setErrorMessage("Please select a hostel city.");
+      return;
+    }
+
+    if (!gender) {
+      setErrorMessage("Please select hostel gender (boys or girls).");
+      return;
+    }
+
+    if (!agreeToTerms) {
+      setErrorMessage("Please agree to the terms and privacy policy.");
       return;
     }
 
     setIsSubmitting(true);
-    // Simulate submission delay
-    setTimeout(() => {
-      setIsSubmitting(false);
+    setErrorMessage(null);
+
+    try {
+      const res = await fetch("/api/enquiries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: fullName.trim(),
+          number: mobileNumber.trim(),
+          email: email.trim() || undefined,
+          hostelCity: hostelCity.trim(),
+          gender,
+          message: message.trim() || undefined,
+          status: "new",
+        }),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        setErrorMessage(
+          data?.message || "Unable to submit your enquiry. Please check your details and try again."
+        );
+        return;
+      }
+
+      setSubmittedName(fullName.trim());
       setIsSubmitted(true);
-    }, 900);
+      setFullName("");
+      setMobileNumber("");
+      setEmail("");
+      setHostelCity("");
+      setGender("");
+      setMessage("");
+      setAgreeToTerms(false);
+    } catch {
+      setErrorMessage("Something went wrong. Please check your internet connection and try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -95,21 +165,20 @@ export function SubmitProjectForm() {
                       Property Details Received
                     </h3>
                     <p className="font-sans text-[14px] text-muted max-w-sm mt-2">
-                      Thank you, {formData.fullName}. Our institutional partnerships team will evaluate your property and connect with you within 24 hours.
+                      Thank you{submittedName ? `, ${submittedName}` : ""}. Our institutional partnerships team will evaluate your property and connect with you within 24 hours.
                     </p>
                     <button
                       type="button"
                       onClick={() => {
                         setIsSubmitted(false);
-                        setFormData({
-                          fullName: "",
-                          mobileNumber: "",
-                          email: "",
-                          city: "",
-                          propertyType: "",
-                          message: "",
-                          agreeToTerms: false,
-                        });
+                        setSubmittedName("");
+                        setFullName("");
+                        setMobileNumber("");
+                        setEmail("");
+                        setHostelCity("");
+                        setGender("");
+                        setMessage("");
+                        setAgreeToTerms(false);
                       }}
                       className="mt-6 font-mono text-[11px] tracking-[2px] uppercase text-ink underline underline-offset-4 hover:opacity-75"
                     >
@@ -118,6 +187,13 @@ export function SubmitProjectForm() {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+                    {/* Error Alert */}
+                    {errorMessage && (
+                      <div className="p-3.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs sm:text-[13px] font-medium leading-relaxed">
+                        {errorMessage}
+                      </div>
+                    )}
+
                     {/* Row 1: Full Name & Mobile */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
@@ -131,12 +207,11 @@ export function SubmitProjectForm() {
                           id="fullName"
                           type="text"
                           required
-                          value={formData.fullName}
-                          onChange={(e) =>
-                            setFormData({ ...formData, fullName: e.target.value })
-                          }
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          disabled={isSubmitting}
                           placeholder="e.g. Rajesh Sharma"
-                          className="w-full h-11 px-3.5 rounded-lg border border-ink/15 bg-cream/30 text-ink text-sm focus:outline-none focus:border-ink transition-colors placeholder:text-muted/50"
+                          className="w-full h-11 px-3.5 rounded-lg border border-ink/15 bg-cream/30 text-ink text-sm focus:outline-none focus:border-ink transition-colors placeholder:text-muted/50 disabled:opacity-60"
                         />
                       </div>
 
@@ -151,106 +226,114 @@ export function SubmitProjectForm() {
                           id="mobileNumber"
                           type="tel"
                           required
-                          value={formData.mobileNumber}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              mobileNumber: e.target.value,
-                            })
-                          }
+                          value={mobileNumber}
+                          onChange={(e) => setMobileNumber(e.target.value)}
+                          disabled={isSubmitting}
                           placeholder="+91 98765 43210"
-                          className="w-full h-11 px-3.5 rounded-lg border border-ink/15 bg-cream/30 text-ink text-sm focus:outline-none focus:border-ink transition-colors placeholder:text-muted/50"
+                          className="w-full h-11 px-3.5 rounded-lg border border-ink/15 bg-cream/30 text-ink text-sm focus:outline-none focus:border-ink transition-colors placeholder:text-muted/50 disabled:opacity-60"
                         />
                       </div>
                     </div>
 
-                    {/* Row 2: Email */}
-                    <div>
-                      <label
-                        htmlFor="email"
-                        className="font-mono text-[10px] sm:text-[11px] tracking-[1.5px] uppercase text-muted block mb-1.5"
-                      >
-                        EMAIL *
-                      </label>
-                      <input
-                        id="email"
-                        type="email"
-                        required
-                        value={formData.email}
-                        onChange={(e) =>
-                          setFormData({ ...formData, email: e.target.value })
-                        }
-                        placeholder="rajesh@company.com"
-                        className="w-full h-11 px-3.5 rounded-lg border border-ink/15 bg-cream/30 text-ink text-sm focus:outline-none focus:border-ink transition-colors placeholder:text-muted/50"
-                      />
-                    </div>
-
-                    {/* Row 3: City & Property Type */}
+                    {/* Row 2: Email & Hostel City */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label
-                          htmlFor="city"
+                          htmlFor="email"
                           className="font-mono text-[10px] sm:text-[11px] tracking-[1.5px] uppercase text-muted block mb-1.5"
                         >
-                          CITY
+                          EMAIL
+                          {/* <span className="text-[10px] font-normal lowercase">(optional)</span> */}
                         </label>
                         <input
-                          id="city"
-                          type="text"
-                          value={formData.city}
-                          onChange={(e) =>
-                            setFormData({ ...formData, city: e.target.value })
-                          }
-                          placeholder="e.g. Bengaluru, Pune"
-                          className="w-full h-11 px-3.5 rounded-lg border border-ink/15 bg-cream/30 text-ink text-sm focus:outline-none focus:border-ink transition-colors placeholder:text-muted/50"
+                          id="email"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          disabled={isSubmitting}
+                          placeholder="rajesh@company.com"
+                          className="w-full h-11 px-3.5 rounded-lg border border-ink/15 bg-cream/30 text-ink text-sm focus:outline-none focus:border-ink transition-colors placeholder:text-muted/50 disabled:opacity-60"
                         />
                       </div>
 
                       <div>
                         <label
-                          htmlFor="propertyType"
+                          htmlFor="hostelCity"
                           className="font-mono text-[10px] sm:text-[11px] tracking-[1.5px] uppercase text-muted block mb-1.5"
                         >
-                          PROPERTY TYPE
+                          HOSTEL CITY *
                         </label>
-                        <select
-                          id="propertyType"
-                          value={formData.propertyType}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              propertyType: e.target.value,
-                            })
-                          }
-                          className="w-full h-11 px-3.5 rounded-lg border border-ink/15 bg-cream/30 text-ink text-sm focus:outline-none focus:border-ink transition-colors"
-                        >
-                          <option value="">Select Property Type</option>
-                          {submitProject.propertyTypes.map((type) => (
-                            <option key={type} value={type}>
-                              {type}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="relative">
+                          <select
+                            id="hostelCity"
+                            required
+                            value={hostelCity}
+                            onChange={(e) => setHostelCity(e.target.value)}
+                            disabled={isSubmitting}
+                            className="w-full h-11 px-3.5 rounded-lg border border-ink/15 bg-cream/30 text-ink text-sm focus:outline-none focus:border-ink transition-colors appearance-none cursor-pointer disabled:opacity-60"
+                          >
+                            <option value="">Select Hostel City</option>
+                            {cityOptions.map((c) => (
+                              <option key={c} value={c}>
+                                {c}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-ink/60">
+                            <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                            </svg>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Row 4: Tell Us More */}
+                    {/* Row 3: Gender Selection */}
+                    <div>
+                      <label
+                        htmlFor="gender"
+                        className="font-mono text-[10px] sm:text-[11px] tracking-[1.5px] uppercase text-muted block mb-1.5"
+                      >
+                        GENDER *
+                      </label>
+                      <div className="relative">
+                        <select
+                          id="gender"
+                          required
+                          value={gender}
+                          onChange={(e) => setGender(e.target.value as EnquiryGender)}
+                          disabled={isSubmitting}
+                          className="w-full h-11 px-3.5 rounded-lg border border-ink/15 bg-cream/30 text-ink text-sm focus:outline-none focus:border-ink transition-colors appearance-none cursor-pointer disabled:opacity-60"
+                        >
+                          <option value="">Select Gender</option>
+                          <option value="boys">Boys</option>
+                          <option value="girls">Girls</option>
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-ink/60">
+                          <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Row 4: Message */}
                     <div>
                       <label
                         htmlFor="message"
                         className="font-mono text-[10px] sm:text-[11px] tracking-[1.5px] uppercase text-muted block mb-1.5"
                       >
-                        TELL US MORE
+                        MESSAGE
+                        {/* <span className="text-[10px] font-normal lowercase">(optional)</span> */}
                       </label>
                       <textarea
                         id="message"
                         rows={3}
-                        value={formData.message}
-                        onChange={(e) =>
-                          setFormData({ ...formData, message: e.target.value })
-                        }
-                        placeholder="Total bed capacity, plot size, location proximity to universities, timeline..."
-                        className="w-full px-3.5 py-2.5 rounded-lg border border-ink/15 bg-cream/30 text-ink text-sm focus:outline-none focus:border-ink transition-colors placeholder:text-muted/50 resize-none"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        disabled={isSubmitting}
+                        placeholder="Tell us what you're looking for or any questions you have…"
+                        className="w-full px-3.5 py-2.5 rounded-lg border border-ink/15 bg-cream/30 text-ink text-sm focus:outline-none focus:border-ink transition-colors placeholder:text-muted/50 resize-none disabled:opacity-60"
                       />
                     </div>
 
@@ -259,18 +342,15 @@ export function SubmitProjectForm() {
                       <input
                         id="agreeToTerms"
                         type="checkbox"
-                        checked={formData.agreeToTerms}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            agreeToTerms: e.target.checked,
-                          })
-                        }
-                        className="mt-1 h-4 w-4 rounded border-ink/20 text-ink focus:ring-ink"
+                        required
+                        checked={agreeToTerms}
+                        onChange={(e) => setAgreeToTerms(e.target.checked)}
+                        disabled={isSubmitting}
+                        className="h-4 w-4 rounded border-ink/20 text-ink focus:ring-ink"
                       />
                       <label
                         htmlFor="agreeToTerms"
-                        className="font-mono text-[10px] sm:text-[10.5px] tracking-[1px] uppercase text-muted leading-tight"
+                        className="font-mono text-[10px] sm:text-[10.5px] tracking-[1px] uppercase text-muted leading-tight cursor-pointer select-none"
                       >
                         I AGREE TO THE{" "}
                         <Link href="/terms" className="underline hover:text-ink">
@@ -289,10 +369,13 @@ export function SubmitProjectForm() {
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full h-12 rounded-full bg-ink text-white font-mono uppercase text-[11px] sm:text-[12px] tracking-[2px] hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-[0.99]"
+                        className="w-full h-12 rounded-full bg-ink text-white font-mono uppercase text-[11px] sm:text-[12px] tracking-[2px] hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
                       >
                         {isSubmitting ? (
-                          <span>SUBMITTING...</span>
+                          <>
+                            <span className="inline-block w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <span>SUBMITTING...</span>
+                          </>
                         ) : (
                           <span>REQUEST CALLBACK</span>
                         )}
@@ -305,7 +388,7 @@ export function SubmitProjectForm() {
           </div>
         </div>
       </Panel>
-    </section >
+    </section>
   );
 }
 

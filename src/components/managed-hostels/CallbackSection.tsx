@@ -1,47 +1,71 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
+import useMasterStore from "@/store/useMasterStore";
+import { EnquiryGender } from "@/types/enquiry.types";
 import { managedCallback } from "@/data/managed-hostels";
 import { Container, ArrowRight } from "@/components/ui/Primitives";
 import { Heading } from "../utils/Heading";
 
 export function CallbackSection() {
+  const { publicCities, fetchPublicCities } = useMasterStore();
+
   const [fullName, setFullName] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
   const [email, setEmail] = useState("");
-  const [hostelCity, setHostelCity] = useState("Ahmedabad");
-  const [moveInDate, setMoveInDate] = useState("");
-  const [duration, setDuration] = useState("3–6 Months");
+  const [hostelCity, setHostelCity] = useState("");
+  const [gender, setGender] = useState<EnquiryGender | "">("");
   const [message, setMessage] = useState("");
+  const [agreed, setAgreed] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  useEffect(() => {
+    void fetchPublicCities();
+  }, [fetchPublicCities]);
+
+  const cityOptions = useMemo(() => {
+    if (publicCities && publicCities.length > 0) {
+      return publicCities
+        .map((c) => c.city || c.name)
+        .filter((n): n is string => Boolean(n));
+    }
+    return ["Mumbai", "Noida", "Ahmedabad", "Pune", "Jalandhar"];
+  }, [publicCities]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!fullName.trim()) {
-      setErrorMessage("Please enter your full name.");
+      setErrorMessage("Please enter your name.");
       return;
     }
 
     if (!mobileNumber.trim()) {
-      setErrorMessage("Please enter your mobile contact number.");
+      setErrorMessage("Please enter your mobile number.");
+      return;
+    }
+
+    if (!hostelCity.trim()) {
+      setErrorMessage("Please select a hostel city.");
+      return;
+    }
+
+    if (!gender) {
+      setErrorMessage("Please select hostel gender (boys or girls).");
+      return;
+    }
+
+    if (!agreed) {
+      setErrorMessage("Please agree to the terms and privacy policy.");
       return;
     }
 
     setIsSubmitting(true);
     setErrorMessage(null);
-
-    const compiledMessage = [
-      `[GIFT City Managed Residence Enquiry]`,
-      moveInDate ? `Preferred Move-In: ${moveInDate}` : null,
-      duration ? `Stay Duration: ${duration}` : null,
-      message.trim() ? `Note: ${message.trim()}` : null,
-    ]
-      .filter(Boolean)
-      .join(" | ");
 
     try {
       const res = await fetch("/api/enquiries", {
@@ -53,9 +77,9 @@ export function CallbackSection() {
           name: fullName.trim(),
           number: mobileNumber.trim(),
           email: email.trim() || undefined,
-          hostelCity: hostelCity.trim() || "Ahmedabad",
-          gender: "boys", // General/co-ed professional default
-          message: compiledMessage,
+          hostelCity: hostelCity.trim(),
+          gender,
+          message: message.trim() || undefined,
           status: "new",
         }),
       });
@@ -64,24 +88,25 @@ export function CallbackSection() {
 
       if (!res.ok) {
         setErrorMessage(
-          data?.message || "Failed to submit enquiry. Please try again."
+          data?.message || "Unable to submit your enquiry. Please check your details and try again."
         );
         return;
       }
 
       setIsSubmitted(true);
+      setFullName("");
+      setMobileNumber("");
+      setEmail("");
+      setHostelCity("");
+      setGender("");
+      setMessage("");
+      setAgreed(false);
     } catch {
-      setErrorMessage("A network error occurred. Please try again.");
+      setErrorMessage("Something went wrong. Please check your internet connection and try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const inputClass =
-    "w-full h-[46px] rounded-[12px] border border-neutral-700 bg-neutral-900/90 px-3.5 text-[13.5px] text-white placeholder:text-neutral-500 outline-none transition-colors focus:border-white focus:bg-neutral-900 disabled:opacity-50";
-
-  const labelClass =
-    "mb-1.5 block font-mono text-[10.5px] uppercase tracking-[1px] text-neutral-400";
 
   return (
     <section id="callback" className="py-8 sm:py-12 lg:py-16">
@@ -172,8 +197,15 @@ export function CallbackSection() {
                   Callback Requested
                 </h3>
                 <p className="text-neutral-400 text-sm max-w-sm leading-relaxed">
-                  Thank you. Our GIFT City residence advisor will contact you within the hour.
+                  Thank you. Our residence advisor will review your enquiry and call you back shortly.
                 </p>
+                <button
+                  type="button"
+                  onClick={() => setIsSubmitted(false)}
+                  className="mt-4 font-mono text-[11px] tracking-[2px] uppercase text-neutral-300 underline underline-offset-4 hover:text-white"
+                >
+                  Submit another request
+                </button>
               </div>
             ) : (
               <form
@@ -227,7 +259,7 @@ export function CallbackSection() {
                   </div>
                 </div>
 
-                {/* Row 2: Email & Location */}
+                {/* Row 2: Email & Hostel City */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="min-w-0">
                     <label
@@ -235,6 +267,7 @@ export function CallbackSection() {
                       className="block font-mono uppercase text-[10px] sm:text-[11px] text-neutral-400 mb-2"
                     >
                       EMAIL ADDRESS
+                      {/* <span className="text-[10px] font-normal lowercase">(optional)</span> */}
                     </label>
                     <input
                       id="callbackEmail"
@@ -252,59 +285,59 @@ export function CallbackSection() {
                       htmlFor="callbackCity"
                       className="block font-mono uppercase text-[10px] sm:text-[11px] text-neutral-400 mb-2"
                     >
-                      LOCATION
+                      HOSTEL CITY <span className="text-white">*</span>
                     </label>
-                    <input
-                      id="callbackCity"
-                      type="text"
-                      value={hostelCity}
-                      onChange={(e) => setHostelCity(e.target.value)}
-                      disabled={isSubmitting}
-                      placeholder="GIFT City / Gandhinagar"
-                      className="w-full rounded-[10px] sm:rounded-[12px] bg-white border border-neutral-300 px-4 py-2.5 font-sans text-[13px] sm:text-[14px] text-neutral-900 placeholder:text-neutral-400 outline-none focus:border-white transition-all disabled:opacity-60"
-                    />
+                    <div className="relative">
+                      <select
+                        id="callbackCity"
+                        required
+                        value={hostelCity}
+                        onChange={(e) => setHostelCity(e.target.value)}
+                        disabled={isSubmitting}
+                        className="w-full rounded-[10px] sm:rounded-[12px] bg-white border border-neutral-300 px-4 py-2.5 font-sans text-[13px] sm:text-[14px] text-neutral-900 outline-none focus:border-white appearance-none cursor-pointer transition-all disabled:opacity-60"
+                      >
+                        <option value="">Select Hostel City</option>
+                        {cityOptions.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-neutral-600">
+                        <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                          <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Row 3: Move-in Date & Duration */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="min-w-0">
-                    <label
-                      htmlFor="callbackDate"
-                      className="block font-mono uppercase text-[10px] sm:text-[11px] text-neutral-400 mb-2"
-                    >
-                      MOVE-IN DATE
-                    </label>
-                    <input
-                      id="callbackDate"
-                      type="date"
-                      min={new Date().toISOString().split("T")[0]}
-                      value={moveInDate}
-                      onChange={(e) => setMoveInDate(e.target.value)}
-                      disabled={isSubmitting}
-                      className="w-full rounded-[10px] sm:rounded-[12px] bg-white border border-neutral-300 px-4 py-2.5 font-sans text-[13px] sm:text-[14px] text-neutral-900 placeholder:text-neutral-400 outline-none focus:border-white transition-all disabled:opacity-60"
-                    />
-                  </div>
-
-                  <div className="min-w-0">
-                    <label
-                      htmlFor="callbackDuration"
-                      className="block font-mono uppercase text-[10px] sm:text-[11px] text-neutral-400 mb-2"
-                    >
-                      LENGTH OF STAY
-                    </label>
+                {/* Row 3: Gender Selection */}
+                <div className="min-w-0">
+                  <label
+                    htmlFor="callbackGender"
+                    className="block font-mono uppercase text-[10px] sm:text-[11px] text-neutral-400 mb-2"
+                  >
+                    GENDER <span className="text-white">*</span>
+                  </label>
+                  <div className="relative">
                     <select
-                      id="callbackDuration"
-                      value={duration}
-                      onChange={(e) => setDuration(e.target.value)}
+                      id="callbackGender"
+                      required
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value as EnquiryGender)}
                       disabled={isSubmitting}
-                      className="w-full rounded-[10px] sm:rounded-[12px] bg-white border border-neutral-300 px-4 py-2.5 font-sans text-[13px] sm:text-[14px] text-neutral-900 placeholder:text-neutral-400 outline-none focus:border-white transition-all disabled:opacity-60"
+                      className="w-full rounded-[10px] sm:rounded-[12px] bg-white border border-neutral-300 px-4 py-2.5 font-sans text-[13px] sm:text-[14px] text-neutral-900 outline-none focus:border-white appearance-none cursor-pointer transition-all disabled:opacity-60"
                     >
-                      <option value="1–3 Months">1–3 Months</option>
-                      <option value="3–6 Months">3–6 Months</option>
-                      <option value="6–11 Months">6–11 Months</option>
-                      <option value="1+ Year">1+ Year</option>
+                      <option value="">Select Gender</option>
+                      <option value="boys">Boys</option>
+                      <option value="girls">Girls</option>
                     </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-neutral-600">
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
 
@@ -314,7 +347,8 @@ export function CallbackSection() {
                     htmlFor="callbackMessage"
                     className="block font-mono uppercase text-[10px] sm:text-[11px] text-neutral-400 mb-2"
                   >
-                    ANYTHING ELSE
+                    MESSAGE
+                    {/* <span className="text-[10px] font-normal lowercase">(optional)</span> */}
                   </label>
                   <textarea
                     id="callbackMessage"
@@ -322,12 +356,37 @@ export function CallbackSection() {
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     disabled={isSubmitting}
-                    placeholder="Team size, budget, special requests..."
-                    className="w-full rounded-[10px] sm:rounded-[12px] bg-white border border-neutral-300 px-4 py-2.5 font-sans text-[13px] sm:text-[14px] text-neutral-900 placeholder:text-neutral-400 outline-none focus:border-white transition-all disabled:opacity-60"
+                    placeholder="Tell us what you're looking for or any questions you have…"
+                    className="w-full rounded-[10px] sm:rounded-[12px] bg-white border border-neutral-300 px-4 py-2.5 font-sans text-[13px] sm:text-[14px] text-neutral-900 placeholder:text-neutral-400 outline-none focus:border-white transition-all disabled:opacity-60 resize-none"
                   />
                 </div>
 
-                {/* Row 5: Submit Button */}
+                {/* Row 5: Agreement Checkbox */}
+                <div className="pt-1">
+                  <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      required
+                      checked={agreed}
+                      onChange={(e) => setAgreed(e.target.checked)}
+                      disabled={isSubmitting}
+                      className="h-4 w-4 rounded border-neutral-700 bg-neutral-900 text-white focus:ring-white"
+                    />
+                    <span className="font-sans uppercase text-[10px] sm:text-[11px] text-neutral-400 leading-tight">
+                      I AGREE TO THE{" "}
+                      <Link href="/terms" className="underline hover:text-white">
+                        TERMS
+                      </Link>{" "}
+                      AND{" "}
+                      <Link href="/privacy" className="underline hover:text-white">
+                        PRIVACY POLICY
+                      </Link>{" "}
+                      AND TO BE CONTACTED BY AURUS
+                    </span>
+                  </label>
+                </div>
+
+                {/* Row 6: Submit Button */}
                 <div className="pt-1">
                   <button
                     type="submit"
@@ -355,3 +414,5 @@ export function CallbackSection() {
     </section>
   );
 }
+
+export default CallbackSection;

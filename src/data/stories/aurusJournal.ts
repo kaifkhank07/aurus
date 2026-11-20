@@ -29,7 +29,7 @@ export interface AurusJournalData {
 export const journalSectionData: AurusJournalData = {
   titleTop: "THE AURUS",
   titleAccent: "Journal.",
-  body: "Insights on relocation, student life in Mumbai, Noida & Pune, study productivity hacks, and hostel guides.",
+  body: "Insights on relocation, student life in Mumbai, Noida & Pune, study productivity hacks, and hostels guides.",
 };
 
 export const communityBannerData: CommunityBannerData = {

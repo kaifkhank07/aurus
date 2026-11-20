@@ -1,3 +1,5 @@
+import { componyInfoData } from "../compony/infro";
+
 export interface SubmitProjectData {
   eyebrow: string;
   title: string;
@@ -10,7 +12,7 @@ export const submitProjectData: SubmitProjectData = {
   eyebrow: "PARTNER WITH US",
   title: "SUBMIT YOUR PROPERTY OR PROJECT",
   body: "Developers, landowners and investors with land, under-construction projects or ready assets near education hubs — our partnerships team will evaluate the opportunity and get back to you.",
-  email: "dev@auruslife.com",
+  email: `${componyInfoData.email}`,
   propertyTypes: [
     "Bare Shell Residential Building",
     "Under Construction Project",

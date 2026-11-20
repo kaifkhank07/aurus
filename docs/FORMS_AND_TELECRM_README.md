@@ -86,6 +86,9 @@ The Enquiry system captures prospective students, parents, or working profession
 **Entry Points on Website:**
 - **Global Modal Trigger**: Click on any "Enquire Now" or "Get in Touch" buttons located across navigation headers, hero banners, and residence detail pages.
 - **Embedded Contact Page Form**: Inline form located on the `/contact` page under "Request a Callback / Talk to Us".
+- **Managed Hostels Callback Section**: Dedicated callback enquiry form on the `/managed-hostels` page for GIFT City residences.
+- **Developers & Landowners Form**: Institutional property submission and partnership enquiry form on the `/developers` page.
+- **Operator Operations Form**: Dedicated property operations enquiry form on the `/operator` page ("Talk to Our Operations Team").
 
 ---
 
@@ -101,6 +104,21 @@ The Enquiry system captures prospective students, parents, or working profession
 2. **Inline Contact Form**: [`src/components/contact/CallbackForm.tsx`](file:///d:/MyWork/Buzzlink/aurus/src/components/contact/CallbackForm.tsx)
    - Reusable standalone form embedded directly inside the `/contact` page.
    - Clears inputs upon submission and surfaces an in-page toast alert.
+
+3. **Managed Hostels Callback Section**: [`src/components/managed-hostels/CallbackSection.tsx`](file:///d:/MyWork/Buzzlink/aurus/src/components/managed-hostels/CallbackSection.tsx)
+   - Embedded enquiry form styled with dark aesthetic on `/managed-hostels`.
+   - Uses the unified Enquiry schema (`name`, `number`, `email`, `hostelCity`, `gender`, `message`, `status: "new"`).
+   - Fetches dynamic public cities with `"Ahmedabad"` initial city default.
+
+4. **Developers Project Submission Form**: [`src/components/developers/SubmitProjectForm.tsx`](file:///d:/MyWork/Buzzlink/aurus/src/components/developers/SubmitProjectForm.tsx)
+   - Partnerships and property submission form embedded on `/developers`.
+   - Uses the unified Enquiry schema (`name`, `number`, `email`, `hostelCity`, `gender`, `message`, `status: "new"`).
+   - Posts directly to `/api/enquiries`, saving to MongoDB and synchronizing lead to TeleCRM.
+
+5. **Operator Page Operations Form**: [`src/components/operator/TalkToOperationsForm.tsx`](file:///d:/MyWork/Buzzlink/aurus/src/components/operator/TalkToOperationsForm.tsx)
+   - Property operations and co-living management enquiry form embedded on `/operator`.
+   - Uses the unified Enquiry schema (`name`, `number`, `email`, `hostelCity`, `gender`, `message`, `status: "new"`).
+   - Features dynamic public cities selection via `useMasterStore.fetchPublicCities()`, full client validation, and real-time TeleCRM sync through `/api/enquiries`.
 
 ---
 

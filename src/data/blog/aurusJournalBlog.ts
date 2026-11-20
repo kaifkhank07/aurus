@@ -31,7 +31,7 @@ export interface AurusJournalBlogData {
 export const journalSectionData: AurusJournalBlogData = {
   titleTop: "THE AURUS",
   titleAccent: "Journal.",
-  body: "Insights on relocation, student life in Mumbai, Noida & Pune, study productivity hacks, and hostel guides.",
+  body: "Insights on relocation, student life in Mumbai, Noida & Pune, study productivity hacks, and hostels guides.",
   articles: [],
 };
 

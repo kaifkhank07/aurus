@@ -9,6 +9,7 @@ export * from "./city";
 export * from "./lifeataurus";
 export * from "./aurusyear";
 export * from "./developers";
+export * from "./operator";
 export * from "./contact";
 export * from "./faq";
 export * from "./stories";
